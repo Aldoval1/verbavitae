@@ -1,8 +1,8 @@
 :root {
-    --color-dark-blue: #213661; /* Matched from reference */
+    --color-dark-blue: #213661;
     --color-blue-secondary: #3b5998;
-    --color-cream: #faecd9; /* The cream background */
-    --color-orange: #d68b2d; /* Button and leaf color */
+    --color-cream: #ffffff; /* Changed to white to leave background blank */
+    --color-orange: #d68b2d;
     --color-text-dark: #333333;
     --color-text-light: #ffffff;
     --font-main: 'Montserrat', sans-serif;
@@ -50,19 +50,20 @@ body {
     display: flex;
     align-items: center;
     gap: 15px;
+    width: 100%; /* Take full width to manage flex alignment easily */
 }
 
-/* Spacing out the links to make room for the centered logo box */
+/* Adjusted spacing since top bar links are gone */
 .left-links {
-    width: 45%;
+    width: 50%;
     justify-content: flex-end;
-    padding-right: 140px;
+    padding-right: 150px;
 }
 
 .right-links {
-    width: 45%;
+    width: 50%;
     justify-content: flex-start;
-    padding-left: 140px;
+    padding-left: 150px;
 }
 
 .top-bar a {
@@ -74,7 +75,7 @@ body {
 }
 
 .top-bar a:hover {
-    color: var(--color-orange);
+    color: var(--color-dark-blue);
 }
 
 .secondary-bar a {
@@ -86,7 +87,7 @@ body {
 }
 
 .secondary-bar a:hover {
-    color: var(--color-cream);
+    color: #cccccc;
 }
 
 .divider {
@@ -99,7 +100,7 @@ body {
 }
 
 .btn-login {
-    background-color: var(--color-orange);
+    background-color: var(--color-dark-blue); /* Changed from orange to blue */
     color: white !important;
     padding: 8px 25px;
     border-radius: 3px;
@@ -108,7 +109,7 @@ body {
 }
 
 .btn-login:hover {
-    background-color: #c07a22;
+    background-color: #1a2a4b;
 }
 
 /* Floating Logo Box */
@@ -163,83 +164,21 @@ body {
     background-color: var(--color-cream);
 }
 
-.hero-content {
-    max-width: 550px;
-    position: relative;
-    z-index: 5;
-}
-
-.hero-heading {
-    color: var(--color-dark-blue);
-    font-size: 4rem;
-    line-height: 1.15;
-    font-weight: 700;
-    margin-bottom: 30px;
-}
-
-.hero-text {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    margin-bottom: 40px;
-    color: #444;
-}
-
-.btn-join {
-    display: inline-block;
-    background-color: var(--color-orange);
-    color: white;
-    text-decoration: none;
-    font-weight: 700;
-    padding: 15px 45px;
-    border-radius: 3px;
-    font-size: 1rem;
-    box-shadow: 0 4px 10px rgba(214, 139, 45, 0.3);
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.btn-join:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(214, 139, 45, 0.4);
-    background-color: #c07a22;
-}
-
-/* Background Leaves Elements */
-.leaf {
-    position: absolute;
-    background-color: var(--color-orange);
-    border-radius: 0 100px 0 100px;
-    opacity: 0.85;
-    z-index: 1;
-}
-
-/* Left side leaves */
-.leaf-1 { width: 140px; height: 140px; top: 10%; left: -40px; transform: rotate(50deg); }
-.leaf-2 { width: 220px; height: 220px; top: 40%; left: 3%; transform: rotate(-10deg); }
-.leaf-3 { width: 160px; height: 160px; bottom: 5%; left: -20px; transform: rotate(70deg); }
-
-/* Right side leaves */
-.leaf-4 { width: 250px; height: 250px; top: 15%; right: -20px; transform: rotate(-50deg); border-radius: 120px 0 120px 0;}
-.leaf-5 { width: 180px; height: 180px; top: 60%; right: 8%; transform: rotate(20deg); }
-.leaf-6 { width: 140px; height: 140px; bottom: -30px; right: 25%; transform: rotate(-30deg); border-radius: 100px 0 100px 0;}
-
 /* Responsive */
 @media (max-width: 1200px) {
-    .left-links { padding-right: 80px; }
-    .right-links { padding-left: 80px; }
+    .left-links { padding-right: 150px; }
+    .right-links { padding-left: 150px; }
 }
 
 @media (max-width: 1024px) {
     .left-links { padding-right: 40px; width: auto; }
     .right-links { padding-left: 40px; width: auto; }
-    .hero-heading { font-size: 3rem; }
     .hero-section { padding: 100px 10%; }
 }
 
 @media (max-width: 768px) {
     .nav-links { display: none; }
-    .hero-heading { font-size: 2.5rem; }
     .hero-section { padding-top: 200px; text-align: center; }
-    .hero-content { margin: 0 auto; }
     .floating-logo-box { width: 220px; padding: 30px 15px 30px; }
     .logo-img { width: 100px; }
 }
