@@ -118,8 +118,8 @@ body {
     top: 0;
     left: 50%;
     transform: translateX(-50%);
-    width: 220px;
-    height: 220px;
+    width: 180px;
+    height: 180px;
     border-radius: 50%;
     background-color: var(--color-dark-blue);
     display: flex;
@@ -132,15 +132,15 @@ body {
 }
 
 .logo-img {
-    width: 100px;
+    width: 80px;
     height: auto;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     border-radius: 4px;
 }
 
 .logo-title {
     color: var(--color-text-light);
-    font-size: 1.1rem;
+    font-size: 0.9rem;
     font-weight: 400;
     letter-spacing: 2px;
     margin-bottom: 5px;
@@ -148,8 +148,8 @@ body {
 
 .logo-subtitle {
     color: var(--color-text-light);
-    font-size: 0.65rem;
-    letter-spacing: 3px;
+    font-size: 0.55rem;
+    letter-spacing: 2px;
     text-transform: uppercase;
     font-weight: 600;
     opacity: 0.8;
