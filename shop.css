@@ -37,6 +37,7 @@ a {
     justify-content: flex-end;
     font-size: 0.75rem;
     font-weight: 600;
+    min-height: 24px;
 }
 
 .top-bar-links a {
@@ -66,7 +67,7 @@ a {
 .search-container {
     flex-grow: 1;
     position: relative;
-    max-width: 800px;
+    max-width: 1000px;
 }
 
 .search-container input {
@@ -98,6 +99,7 @@ a {
     display: flex;
     align-items: center;
     gap: 20px;
+    margin-left: auto;
 }
 
 .action-link {
