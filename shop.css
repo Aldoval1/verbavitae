@@ -153,6 +153,14 @@ a {
     gap: 30px;
 }
 
+.dropdown {
+    padding-bottom: 5px;
+}
+
+.dropdown.active {
+    border-bottom: 3px solid var(--color-dark-blue);
+}
+
 .dropdown a {
     font-weight: 600;
     font-size: 0.95rem;
