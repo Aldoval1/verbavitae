@@ -1,0 +1,192 @@
+:root {
+    --color-dark-blue: #1d0c8d;
+    --color-blue-light: #eaebf4; /* For log in button background */
+    --color-text-dark: #333333;
+    --color-text-light: #ffffff;
+    --font-main: 'Montserrat', sans-serif;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: var(--font-main);
+}
+
+body {
+    background-color: #ffffff;
+    color: var(--color-text-dark);
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Header Utilities */
+.shop-header {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+/* Top Utility Bar */
+.shop-top-bar {
+    background-color: var(--color-dark-blue);
+    color: white;
+    padding: 6px 5%;
+    display: flex;
+    justify-content: flex-end;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.top-bar-links a {
+    margin-left: 20px;
+    color: white;
+    transition: opacity 0.2s;
+}
+
+.top-bar-links a:hover {
+    text-decoration: underline;
+}
+
+/* Main Nav Bar */
+.shop-main-nav {
+    display: flex;
+    align-items: center;
+    padding: 15px 5%;
+    background-color: #ffffff;
+    gap: 30px;
+}
+
+.shop-logo {
+    height: 60px;
+    width: auto;
+}
+
+.search-container {
+    flex-grow: 1;
+    position: relative;
+    max-width: 800px;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 12px 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.search-container input:focus {
+    border-color: var(--color-dark-blue);
+}
+
+.search-btn {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: var(--color-dark-blue);
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.action-link {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-dark-blue);
+}
+
+.btn-shop-login {
+    background-color: var(--color-blue-light);
+    color: var(--color-dark-blue);
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+}
+
+.btn-shop-login:hover {
+    background-color: #d1d5eb;
+}
+
+.btn-shop-signup {
+    background-color: var(--color-dark-blue);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: background-color 0.2s;
+}
+
+.btn-shop-signup:hover {
+    background-color: #11075c;
+}
+
+/* Secondary Nav Bar */
+.shop-secondary-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 5% 15px 5%;
+    background-color: #ffffff;
+}
+
+.secondary-links {
+    display: flex;
+    gap: 30px;
+}
+
+.dropdown a {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--color-dark-blue);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dropdown a:hover {
+    text-decoration: underline;
+}
+
+.arrow {
+    font-size: 0.7rem;
+}
+
+.location-info {
+    text-align: right;
+    font-size: 0.8rem;
+    color: var(--color-dark-blue);
+}
+
+.store-name {
+    font-weight: 700;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .user-actions .action-link span { display: none; }
+    .secondary-links { gap: 15px; }
+}
+
+@media (max-width: 768px) {
+    .shop-top-bar { display: none; }
+    .shop-main-nav { flex-wrap: wrap; }
+    .search-container { order: 3; width: 100%; margin-top: 15px; }
+    .shop-secondary-nav { display: none; }
+}
