@@ -441,6 +441,12 @@
                         if (added) {
                             newBtn.textContent = 'Added to Cart!';
                             newBtn.style.backgroundColor = '#48bb78'; // Green success color
+                            
+                            // Trigger the global toast
+                            if (typeof window.showToast === 'function') {
+                                window.showToast('This item is temporarily reserved in your cart for 30 minutes while you continue exploring the store.');
+                            }
+
                             setTimeout(() => { modal.style.display = 'none'; }, 1000);
                         } else {
                             newBtn.textContent = 'Already in Cart';
