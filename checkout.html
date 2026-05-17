@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verba Vitae - Checkout</title>
+    <link rel="stylesheet" href="shop.css">
+    <link rel="stylesheet" href="checkout.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header class="shop-header">
+        <div class="shop-main-nav">
+            <a href="index.html" class="shop-logo-link">
+                <img src="verbavitaelogoblue.png" alt="Verba Vitae Logo" class="shop-logo">
+            </a>
+            <div class="user-actions">
+                <a href="shop.html" class="action-link">Back to Shop</a>
+            </div>
+        </div>
+    </header>
+    
+    <main class="checkout-content">
+        <div class="checkout-header">
+            <h1>Checkout</h1>
+            <div id="checkoutTimer" class="checkout-timer">
+                Loading timer...
+            </div>
+        </div>
+
+        <div class="checkout-container">
+            <!-- Left Side: Order Summary -->
+            <div class="order-summary">
+                <h2>Order Summary</h2>
+                <div id="cartItemsList" class="cart-items-list">
+                    <!-- Dynamic Cart Items Here -->
+                </div>
+                <div class="order-total">
+                    <span>Total:</span>
+                    <span id="orderTotalAmount">$0.00</span>
+                </div>
+            </div>
+
+            <!-- Right Side: Payment Methods -->
+            <div class="payment-methods">
+                <h2>Payment Method</h2>
+                <form id="checkoutForm">
+                    <div class="payment-option">
+                        <input type="radio" id="payCash" name="paymentMethod" value="cash" checked>
+                        <label for="payCash">
+                            <span class="pay-icon">💵</span>
+                            Pay with Cash
+                        </label>
+                    </div>
+                    <div class="payment-option">
+                        <input type="radio" id="payOnline" name="paymentMethod" value="online">
+                        <label for="payOnline">
+                            <span class="pay-icon">💳</span>
+                            Pay Online (Card/PayPal)
+                        </label>
+                    </div>
+
+                    <button type="button" class="place-order-btn" id="placeOrderBtn">Place Order</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script src="cart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cartItemsList = document.getElementById('cartItemsList');
+            const orderTotalAmount = document.getElementById('orderTotalAmount');
+            const checkoutTimer = document.getElementById('checkoutTimer');
+            const placeOrderBtn = document.getElementById('placeOrderBtn');
+
+            function renderCart() {
+                const cart = getCart();
+                cartItemsList.innerHTML = '';
+
+                if (cart.length === 0) {
+                    cartItemsList.innerHTML = '<p class="empty-cart-msg">Your cart is empty.</p>';
+                    orderTotalAmount.textContent = '$0.00';
+                    placeOrderBtn.disabled = true;
+                    checkoutTimer.style.display = 'none';
+                    return;
+                }
+
+                placeOrderBtn.disabled = false;
+                checkoutTimer.style.display = 'block';
+                let total = 0;
+
+                cart.forEach(item => {
+                    const priceVal = parseFloat(item.price.replace('$', ''));
+                    total += priceVal;
+
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'cart-item';
+                    itemEl.innerHTML = `
+                        <div class="cart-item-cover">${item.category}</div>
+                        <div class="cart-item-details">
+                            <h3>${item.title}</h3>
+                            <p>${item.author}</p>
+                            <p class="cart-item-isbn">ISBN: ${item.isbn}</p>
+                        </div>
+                        <div class="cart-item-action">
+                            <p class="cart-item-price">${item.price}</p>
+                            <button class="remove-btn" data-isbn="${item.isbn}">Remove</button>
+                        </div>
+                    `;
+                    cartItemsList.appendChild(itemEl);
+                });
+
+                orderTotalAmount.textContent = '$' + total.toFixed(2);
+
+                // Add remove listeners
+                document.querySelectorAll('.remove-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const isbn = e.target.getAttribute('data-isbn');
+                        window.removeFromCart(isbn);
+                        renderCart();
+                    });
+                });
+            }
+
+            // Timer logic
+            function updateTimer() {
+                const expiresAt = window.getCartExpirationTime();
+                if (!expiresAt) {
+                    checkoutTimer.textContent = 'Cart is empty or expired.';
+                    return;
+                }
+
+                const now = Date.now();
+                const diff = expiresAt - now;
+
+                if (diff <= 0) {
+                    renderCart(); 
+                    return;
+                }
+
+                const minutes = Math.floor(diff / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                
+                checkoutTimer.textContent = `Time remaining: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                checkoutTimer.style.color = minutes < 5 ? '#e53e3e' : '#2d3748';
+            }
+
+            renderCart();
+            updateTimer();
+            setInterval(updateTimer, 1000);
+
+            // Place Order
+            placeOrderBtn.addEventListener('click', () => {
+                const method = document.querySelector('input[name="paymentMethod"]:checked').value;
+                alert(`Order placed successfully using ${method}! (This is a placeholder)`);
+                localStorage.removeItem('verba_cart');
+                localStorage.removeItem('verba_cart_expires');
+                window.location.href = 'shop.html';
+            });
+        });
+    </script>
+</body>
+</html>

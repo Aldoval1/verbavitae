@@ -27,8 +27,8 @@
             </div>
 
             <div class="user-actions">
-                <a href="#" class="action-link">
-                    <span class="icon">🛒</span> Cart
+                <a href="checkout.html" class="action-link" id="navCart">
+                    <span class="icon">🛒</span> Cart (<span id="cartCount">0</span>)
                 </a>
                 <a href="login.html" class="btn-shop-login">Log in</a>
             </div>
@@ -344,7 +344,7 @@
                     
                     const matchesSearch = titleText.includes(searchText) || authorText.includes(searchText) || isbnText.includes(searchText);
 
-                    if (matchesCategory && matchesSearch) {
+                    if (matchesCategory && matchesSearch && !card.classList.contains('in-cart')) {
                         card.style.display = 'flex';
                         visibleCount++;
                     } else {
@@ -371,6 +371,8 @@
                     emptyMessage.style.display = 'none';
                 }
             }
+            
+            window.triggerFilterBooks = filterBooks;
 
             // Category Click Event
             sidebarLinks.forEach(link => {
@@ -415,6 +417,37 @@
 
                     // Show Modal
                     modal.style.display = 'flex';
+                    
+                    // Setup Add to Cart button
+                    const addToCartBtn = document.querySelector('.add-to-cart-btn');
+                    const newBtn = addToCartBtn.cloneNode(true);
+                    addToCartBtn.parentNode.replaceChild(newBtn, addToCartBtn);
+                    
+                    newBtn.textContent = 'Add to Cart';
+                    newBtn.disabled = false;
+                    newBtn.style.backgroundColor = 'var(--color-accent-blue)';
+                    newBtn.style.cursor = 'pointer';
+
+                    newBtn.addEventListener('click', () => {
+                        const bookObj = {
+                            title: title,
+                            author: author,
+                            price: price,
+                            isbn: isbn,
+                            category: category
+                        };
+                        
+                        const added = window.addToCart(bookObj);
+                        if (added) {
+                            newBtn.textContent = 'Added to Cart!';
+                            newBtn.style.backgroundColor = '#48bb78'; // Green success color
+                            setTimeout(() => { modal.style.display = 'none'; }, 1000);
+                        } else {
+                            newBtn.textContent = 'Already in Cart';
+                            newBtn.disabled = true;
+                            newBtn.style.cursor = 'not-allowed';
+                        }
+                    });
                 });
             });
 
@@ -433,5 +466,6 @@
             });
         });
     </script>
+    <script src="cart.js"></script>
 </body>
 </html>
