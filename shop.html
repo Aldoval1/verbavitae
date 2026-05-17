@@ -101,57 +101,62 @@
         <div class="shop-split-layout">
             <!-- Sidebar -->
             <aside class="shop-sidebar">
+                <h3>All</h3>
+                <ul>
+                    <li><a href="#" class="active-category" data-category="all">All Books</a></li>
+                </ul>
+                
                 <h3>Fiction</h3>
                 <ul>
-                    <li><a href="#">Fantasy</a></li>
-                    <li><a href="#">Romance</a></li>
-                    <li><a href="#">Mystery & Thriller</a></li>
-                    <li><a href="#">Sci-Fi</a></li>
-                    <li><a href="#">Horror</a></li>
-                    <li><a href="#">Literary Fiction</a></li>
-                    <li><a href="#">Young Adult</a></li>
-                    <li><a href="#">Manga & Comics</a></li>
+                    <li><a href="#" data-category="fantasy">Fantasy</a></li>
+                    <li><a href="#" data-category="romance">Romance</a></li>
+                    <li><a href="#" data-category="mystery-thriller">Mystery & Thriller</a></li>
+                    <li><a href="#" data-category="sci-fi">Sci-Fi</a></li>
+                    <li><a href="#" data-category="horror">Horror</a></li>
+                    <li><a href="#" data-category="literary-fiction">Literary Fiction</a></li>
+                    <li><a href="#" data-category="young-adult">Young Adult</a></li>
+                    <li><a href="#" data-category="manga-comics">Manga & Comics</a></li>
                 </ul>
 
                 <h3>Non-Fiction</h3>
                 <ul>
-                    <li><a href="#">Business</a></li>
-                    <li><a href="#">Self-Help</a></li>
-                    <li><a href="#">Biography</a></li>
-                    <li><a href="#">History & Politics</a></li>
-                    <li><a href="#">Science & Technology</a></li>
-                    <li><a href="#">Health & Fitness</a></li>
-                    <li><a href="#">Religion & Spirituality</a></li>
-                    <li><a href="#">Cooking & Travel</a></li>
+                    <li><a href="#" data-category="business">Business</a></li>
+                    <li><a href="#" data-category="self-help">Self-Help</a></li>
+                    <li><a href="#" data-category="biography">Biography</a></li>
+                    <li><a href="#" data-category="history">History & Politics</a></li>
+                    <li><a href="#" data-category="science-technology">Science & Technology</a></li>
+                    <li><a href="#" data-category="health-fitness">Health & Fitness</a></li>
+                    <li><a href="#" data-category="religion-spirituality">Religion & Spirituality</a></li>
+                    <li><a href="#" data-category="cooking-travel">Cooking & Travel</a></li>
                 </ul>
 
                 <h3>School Books</h3>
                 <ul>
-                    <li><a href="#">K-12</a></li>
-                    <li><a href="#">College</a></li>
-                    <li><a href="#">Test Prep</a></li>
-                    <li><a href="#">Language Learning</a></li>
+                    <li><a href="#" data-category="k-12">K-12</a></li>
+                    <li><a href="#" data-category="college">College</a></li>
+                    <li><a href="#" data-category="test-prep">Test Prep</a></li>
+                    <li><a href="#" data-category="language-learning">Language Learning</a></li>
                 </ul>
 
                 <h3>Kids</h3>
                 <ul>
-                    <li><a href="#">Picture Books</a></li>
-                    <li><a href="#">Educational</a></li>
-                    <li><a href="#">Teen Reads</a></li>
+                    <li><a href="#" data-category="kids">Picture Books</a></li>
+                    <li><a href="#" data-category="educational">Educational</a></li>
+                    <li><a href="#" data-category="teen-reads">Teen Reads</a></li>
                 </ul>
 
                 <h3>Digital</h3>
                 <ul>
-                    <li><a href="#">eBooks</a></li>
-                    <li><a href="#">Audiobooks</a></li>
+                    <li><a href="#" data-category="ebooks">eBooks</a></li>
+                    <li><a href="#" data-category="audiobooks">Audiobooks</a></li>
                 </ul>
 
                 <h3>Explore</h3>
                 <ul>
-                    <li><a href="#">Best Sellers</a></li>
-                    <li><a href="#">New Releases</a></li>
-                    <li><a href="#">Trending</a></li>
-                    <li><a href="#">Staff Picks</a></li>
+                    <li><a href="#" data-category="best-sellers">Best Sellers</a></li>
+                    <li><a href="#" data-category="new-releases">New Releases</a></li>
+                    <li><a href="#" data-category="trending">Trending</a></li>
+                    <li><a href="#" data-category="staff-picks">Staff Picks</a></li>
                 </ul>
 
             </aside>
@@ -197,7 +202,7 @@
 
                 <div class="results-grid">
                     <!-- Example 1: Fantasy -->
-                    <div class="book-card">
+                    <div class="book-card" data-category="fantasy">
                         <div class="placeholder-cover">FANTASY</div>
                         <p class="book-title">Dragon's Breath</p>
                         <p class="book-price">$19.99</p>
@@ -205,7 +210,7 @@
                     </div>
 
                     <!-- Example 2: Romance -->
-                    <div class="book-card">
+                    <div class="book-card" data-category="romance">
                         <div class="placeholder-cover">ROMANCE</div>
                         <p class="book-title">Summer in Paris</p>
                         <p class="book-price">$12.50</p>
@@ -213,7 +218,7 @@
                     </div>
 
                     <!-- Example 3: Business -->
-                    <div class="book-card">
+                    <div class="book-card" data-category="business">
                         <div class="placeholder-cover">BUSINESS</div>
                         <p class="book-title">Lead from the Front</p>
                         <p class="book-price">$24.00</p>
@@ -221,7 +226,7 @@
                     </div>
 
                     <!-- Example 4: History -->
-                    <div class="book-card">
+                    <div class="book-card" data-category="history">
                         <div class="placeholder-cover">HISTORY</div>
                         <p class="book-title">The Fall of Rome</p>
                         <p class="book-price">$18.75</p>
@@ -229,7 +234,7 @@
                     </div>
 
                     <!-- Example 5: College -->
-                    <div class="book-card">
+                    <div class="book-card" data-category="college">
                         <div class="placeholder-cover">COLLEGE</div>
                         <p class="book-title">Calculus Vol. 1</p>
                         <p class="book-price">$120.00</p>
@@ -237,7 +242,7 @@
                     </div>
 
                     <!-- Example 6: Kids -->
-                    <div class="book-card">
+                    <div class="book-card" data-category="kids">
                         <div class="placeholder-cover">KIDS</div>
                         <p class="book-title">The Hungry Little Bear</p>
                         <p class="book-price">$9.99</p>
@@ -245,7 +250,7 @@
                     </div>
 
                     <!-- Example 7: Audiobooks -->
-                    <div class="book-card">
+                    <div class="book-card" data-category="audiobooks">
                         <div class="placeholder-cover">AUDIOBOOK</div>
                         <p class="book-title">Mindfulness Daily</p>
                         <p class="book-price">$14.99</p>
@@ -253,7 +258,7 @@
                     </div>
 
                     <!-- Example 8: Sci-Fi -->
-                    <div class="book-card">
+                    <div class="book-card" data-category="sci-fi">
                         <div class="placeholder-cover">SCI-FI</div>
                         <p class="book-title">Neon Horizons</p>
                         <p class="book-price">$15.00</p>
@@ -267,6 +272,8 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const sidebarLinks = document.querySelectorAll('.shop-sidebar a');
+            const bookCards = document.querySelectorAll('.results-grid .book-card');
+            const grid = document.querySelector('.results-grid');
             
             sidebarLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
@@ -280,6 +287,39 @@
                     
                     // Add active class to clicked link
                     this.classList.add('active-category');
+
+                    // Filter logic
+                    const selectedCategory = this.getAttribute('data-category');
+                    let visibleCount = 0;
+
+                    bookCards.forEach(card => {
+                        // Show all or check if category matches
+                        if (!selectedCategory || selectedCategory === 'all' || card.getAttribute('data-category') === selectedCategory) {
+                            card.style.display = 'flex';
+                            visibleCount++;
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+
+                    // Handle empty state message
+                    let emptyMessage = document.querySelector('.empty-message');
+                    if (visibleCount === 0) {
+                        if (!emptyMessage) {
+                            emptyMessage = document.createElement('div');
+                            emptyMessage.className = 'empty-message';
+                            emptyMessage.style.gridColumn = '1 / -1';
+                            emptyMessage.style.textAlign = 'center';
+                            emptyMessage.style.padding = '40px 0';
+                            emptyMessage.style.color = '#718096';
+                            emptyMessage.style.fontSize = '1.1rem';
+                            grid.appendChild(emptyMessage);
+                        }
+                        emptyMessage.textContent = 'No books currently available in this category.';
+                        emptyMessage.style.display = 'block';
+                    } else if (emptyMessage) {
+                        emptyMessage.style.display = 'none';
+                    }
                 });
             });
         });
