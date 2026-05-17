@@ -276,6 +276,13 @@ a {
     text-align: center;
 }
 
+.book-author {
+    font-size: 0.9rem;
+    color: #4a5568;
+    text-align: center;
+    margin-top: 2px;
+}
+
 .book-price {
     font-weight: 700;
     color: var(--color-dark-blue);

@@ -205,6 +205,7 @@
                     <div class="book-card" data-category="fantasy">
                         <div class="placeholder-cover">FANTASY</div>
                         <p class="book-title">Dragon's Breath</p>
+                        <p class="book-author">By E. R. Vance</p>
                         <p class="book-price">$19.99</p>
                         <p class="book-isbn">ISBN: 978-0-12345-678-9</p>
                     </div>
@@ -213,6 +214,7 @@
                     <div class="book-card" data-category="romance">
                         <div class="placeholder-cover">ROMANCE</div>
                         <p class="book-title">Summer in Paris</p>
+                        <p class="book-author">By Clara Miles</p>
                         <p class="book-price">$12.50</p>
                         <p class="book-isbn">ISBN: 978-1-23456-789-0</p>
                     </div>
@@ -221,6 +223,7 @@
                     <div class="book-card" data-category="business">
                         <div class="placeholder-cover">BUSINESS</div>
                         <p class="book-title">Lead from the Front</p>
+                        <p class="book-author">By Marcus Sterling</p>
                         <p class="book-price">$24.00</p>
                         <p class="book-isbn">ISBN: 978-2-34567-890-1</p>
                     </div>
@@ -229,6 +232,7 @@
                     <div class="book-card" data-category="history">
                         <div class="placeholder-cover">HISTORY</div>
                         <p class="book-title">The Fall of Rome</p>
+                        <p class="book-author">By Dr. Julian Thorne</p>
                         <p class="book-price">$18.75</p>
                         <p class="book-isbn">ISBN: 978-3-45678-901-2</p>
                     </div>
@@ -237,6 +241,7 @@
                     <div class="book-card" data-category="college">
                         <div class="placeholder-cover">COLLEGE</div>
                         <p class="book-title">Calculus Vol. 1</p>
+                        <p class="book-author">By Helen Carter</p>
                         <p class="book-price">$120.00</p>
                         <p class="book-isbn">ISBN: 978-4-56789-012-3</p>
                     </div>
@@ -245,6 +250,7 @@
                     <div class="book-card" data-category="kids">
                         <div class="placeholder-cover">KIDS</div>
                         <p class="book-title">The Hungry Little Bear</p>
+                        <p class="book-author">By Timmy Walters</p>
                         <p class="book-price">$9.99</p>
                         <p class="book-isbn">ISBN: 978-5-67890-123-4</p>
                     </div>
@@ -253,6 +259,7 @@
                     <div class="book-card" data-category="audiobooks">
                         <div class="placeholder-cover">AUDIOBOOK</div>
                         <p class="book-title">Mindfulness Daily</p>
+                        <p class="book-author">By Sarah Jennings</p>
                         <p class="book-price">$14.99</p>
                         <p class="book-isbn">ISBN: 978-6-78901-234-5</p>
                     </div>
@@ -261,6 +268,7 @@
                     <div class="book-card" data-category="sci-fi">
                         <div class="placeholder-cover">SCI-FI</div>
                         <p class="book-title">Neon Horizons</p>
+                        <p class="book-author">By Arthur K. Vane</p>
                         <p class="book-price">$15.00</p>
                         <p class="book-isbn">ISBN: 978-7-89012-345-6</p>
                     </div>
@@ -286,9 +294,11 @@
                 bookCards.forEach(card => {
                     const matchesCategory = !selectedCategory || selectedCategory === 'all' || card.getAttribute('data-category') === selectedCategory;
                     
-                    const titleElement = card.querySelector('.book-title');
-                    const titleText = titleElement ? titleElement.textContent.toLowerCase() : '';
-                    const matchesSearch = titleText.includes(searchText);
+                    const titleText = card.querySelector('.book-title') ? card.querySelector('.book-title').textContent.toLowerCase() : '';
+                    const authorText = card.querySelector('.book-author') ? card.querySelector('.book-author').textContent.toLowerCase() : '';
+                    const isbnText = card.querySelector('.book-isbn') ? card.querySelector('.book-isbn').textContent.toLowerCase() : '';
+                    
+                    const matchesSearch = titleText.includes(searchText) || authorText.includes(searchText) || isbnText.includes(searchText);
 
                     if (matchesCategory && matchesSearch) {
                         card.style.display = 'flex';
