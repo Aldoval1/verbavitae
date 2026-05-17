@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="shop.css">
     <link rel="stylesheet" href="checkout.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
     <header class="shop-header">
@@ -29,16 +30,30 @@
         </div>
 
         <div class="checkout-container">
-            <!-- Left Side: Order Summary -->
-            <div class="order-summary">
-                <h2>Order Summary</h2>
-                <div id="cartItemsList" class="cart-items-list">
+            <!-- Left Side: Order Summary & Details -->
+            <div class="checkout-left">
+                <div class="customer-details">
+                    <h2>Customer Details</h2>
+                    <div class="form-group">
+                        <label for="customerName">Full Name</label>
+                        <input type="text" id="customerName" placeholder="e.g. John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerEmail">Email Address</label>
+                        <input type="email" id="customerEmail" placeholder="e.g. john@example.com" required>
+                    </div>
+                </div>
+
+                <div class="order-summary">
+                    <h2>Order Summary</h2>
+                    <div id="cartItemsList" class="cart-items-list">
                     <!-- Dynamic Cart Items Here -->
                 </div>
                 <div class="order-total">
                     <span>Total:</span>
                     <span id="orderTotalAmount">$0.00</span>
                 </div>
+            </div>
             </div>
 
             <!-- Right Side: Payment Methods -->
@@ -148,9 +163,56 @@
 
             // Place Order
             placeOrderBtn.addEventListener('click', () => {
+                const name = document.getElementById('customerName').value.trim();
+                const email = document.getElementById('customerEmail').value.trim();
+
+                if (!name || !email) {
+                    alert('Please enter your Full Name and Email Address so we can send the invoice.');
+                    return;
+                }
+
+                placeOrderBtn.textContent = 'Sending Invoice...';
+                placeOrderBtn.disabled = true;
+
+                const cart = getCart();
+                let total = 0;
+                const ordersParams = cart.map(item => {
+                    const priceVal = parseFloat(item.price.replace('$', ''));
+                    total += priceVal;
+                    return {
+                        name: item.title + ' (by ' + item.author + ')',
+                        price: priceVal.toFixed(2),
+                        units: 1
+                    };
+                });
+
+                const templateParams = {
+                    order_id: "ORD-" + Math.floor(Math.random() * 1000000),
+                    to_name: name,
+                    to_email: email,
+                    orders: ordersParams,
+                    cost: {
+                        shipping: "0.00",
+                        tax: "0.00",
+                        total: total.toFixed(2)
+                    }
+                };
+
+                // The last parameter must be your Public Key from EmailJS!
+                emailjs.send("service_7v4lwfn", "template_o63ti47", templateParams, "YOUR_PUBLIC_KEY")
+                    .then(() => {
+                        completeOrderSuccess();
+                    })
+                    .catch((error) => {
+                        console.error('EmailJS Error:', error);
+                        alert('There was an error sending the email (did you add the Public Key?), but your order was still reserved.');
+                        completeOrderSuccess();
+                    });
+            });
+
+            function completeOrderSuccess() {
                 alert('Your order has been reserved! Please pick up your books within 1 week.');
                 
-                // Add items to purchased list to simulate them being out of stock
                 const cart = getCart();
                 const purchasedStr = localStorage.getItem('verba_purchased');
                 const purchased = purchasedStr ? JSON.parse(purchasedStr) : [];
@@ -161,11 +223,10 @@
                 });
                 localStorage.setItem('verba_purchased', JSON.stringify(purchased));
 
-                // Clear cart
                 localStorage.removeItem('verba_cart');
                 localStorage.removeItem('verba_cart_expires');
                 window.location.href = 'shop.html';
-            });
+            }
         });
     </script>
 </body>
