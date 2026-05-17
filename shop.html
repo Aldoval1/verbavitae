@@ -277,6 +277,51 @@
         </div>
     </main>
 
+    <!-- Book Modal -->
+    <div id="bookModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            
+            <!-- Left Column: Cover & Links -->
+            <div class="modal-left">
+                <div class="modal-cover-placeholder" id="modalCover">COVER</div>
+                <div class="modal-links">
+                    <a href="#" class="modal-link">⭐ Read Reviews</a>
+                    <a href="#" class="modal-link">📖 Preview Book</a>
+                </div>
+            </div>
+
+            <!-- Center Column: Info & Synopsis -->
+            <div class="modal-center">
+                <h2 id="modalTitle">Book Title</h2>
+                <p class="modal-author" id="modalAuthor">By Author Name</p>
+                
+                <div class="modal-details">
+                    <p><strong>Condition:</strong> New</p>
+                    <p><strong>ISBN:</strong> <span id="modalIsbn">123-4-567</span></p>
+                    <p><strong>Pages:</strong> 350</p>
+                    <p><strong>Publisher:</strong> Verba Publishing</p>
+                    <p><strong>Language:</strong> English</p>
+                </div>
+
+                <div class="modal-synopsis">
+                    <h3>Synopsis</h3>
+                    <p>Dive into an unforgettable journey. This compelling masterpiece explores the depths of imagination, taking readers on a thrilling ride from start to finish. Highly acclaimed by critics and loved by readers worldwide.</p>
+                </div>
+            </div>
+
+            <!-- Right Column: Price & Action -->
+            <div class="modal-right">
+                <div class="price-container">
+                    <p class="price-label">Price</p>
+                    <p class="modal-price" id="modalPrice">$0.00</p>
+                </div>
+                <button class="add-to-cart-btn">Add to Cart 🛒</button>
+                <p class="shipping-info">Free shipping on orders over $50</p>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const sidebarLinks = document.querySelectorAll('.shop-sidebar a');
@@ -346,6 +391,47 @@
             if (searchInput) {
                 searchInput.addEventListener('input', filterBooks);
             }
+
+            // Modal Logic
+            const modal = document.getElementById('bookModal');
+            const closeModalBtn = document.querySelector('.close-modal');
+
+            // Open Modal
+            bookCards.forEach(card => {
+                card.style.cursor = 'pointer'; // Add pointer to show it's clickable
+                card.addEventListener('click', () => {
+                    // Extract data
+                    const title = card.querySelector('.book-title').textContent;
+                    const author = card.querySelector('.book-author').textContent;
+                    const price = card.querySelector('.book-price').textContent;
+                    const isbn = card.querySelector('.book-isbn').textContent.replace('ISBN: ', '');
+                    const category = card.querySelector('.placeholder-cover').textContent;
+
+                    // Populate Modal
+                    document.getElementById('modalTitle').textContent = title;
+                    document.getElementById('modalAuthor').textContent = author;
+                    document.getElementById('modalPrice').textContent = price;
+                    document.getElementById('modalIsbn').textContent = isbn;
+                    document.getElementById('modalCover').textContent = category;
+
+                    // Show Modal
+                    modal.style.display = 'flex';
+                });
+            });
+
+            // Close Modal via X
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+            }
+
+            // Close Modal via background click
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
         });
     </script>
 </body>
