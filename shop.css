@@ -614,10 +614,17 @@ a {
     align-items: center;
     justify-content: center;
     gap: 20px;
-    background-color: #f7fafc;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #e2e8f0;
+    position: relative;
+}
+
+.modal-right::before {
+    content: '';
+    position: absolute;
+    left: -15px; /* Centered in the 30px gap between columns */
+    top: 10%;
+    bottom: 10%;
+    width: 1px;
+    background-color: #cbd5e0;
 }
 
 .price-container {
@@ -666,5 +673,9 @@ a {
         grid-template-columns: 1fr;
         max-height: 90vh;
         overflow-y: auto;
+    }
+    
+    .modal-right::before {
+        display: none;
     }
 }
