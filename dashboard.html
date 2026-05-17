@@ -110,5 +110,26 @@
             </div>
         </section>
     </main>
+
+    <script>
+        // Protect Dashboard Route
+        document.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn = localStorage.getItem('verba_logged_in');
+            if (isLoggedIn !== 'true') {
+                window.location.href = 'login.html';
+            }
+
+            // Simple Logout Logic
+            const configLink = document.querySelector('.config-link');
+            if (configLink) {
+                configLink.textContent = 'Log Out';
+                configLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    localStorage.removeItem('verba_logged_in');
+                    window.location.href = 'login.html';
+                });
+            }
+        });
+    </script>
 </body>
 </html>

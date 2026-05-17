@@ -23,7 +23,7 @@
                     </a>
                 </div>
 
-                <form class="login-form">
+                <form class="login-form" id="loginForm">
                     <div class="form-group">
                         <div class="form-label-row">
                             <label for="username">Username (Email Address)</label>
@@ -49,6 +49,9 @@
                     <div class="form-actions">
                         <button type="submit" class="btn-signin">Sign In</button>
                     </div>
+                    <div id="loginError" style="color: #e53e3e; margin-top: 15px; display: none; font-size: 0.9rem; text-align: center; font-weight: 600;">
+                        Invalid credentials. Please use the test account.
+                    </div>
                 </form>
             </div>
 
@@ -63,5 +66,22 @@
             <a href="#">800.946.9995</a> between 8:30 am and 5:00 pm CT.
         </div>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const user = document.getElementById('username').value.trim().toLowerCase();
+            const pass = document.getElementById('password').value;
+            const errorEl = document.getElementById('loginError');
+
+            // Test Account Verification
+            if (user === 'test@verbavitae.com' && pass === '1234') {
+                localStorage.setItem('verba_logged_in', 'true');
+                window.location.href = 'dashboard.html';
+            } else {
+                errorEl.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>
