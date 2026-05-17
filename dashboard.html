@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verba Vitae - Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Nav -->
+    <header class="dash-header">
+        <div class="dash-logo">
+            <img src="verbavitaelogoblue.png" alt="Verba Vitae">
+            <span>Verba Vitae Org</span>
+        </div>
+        <div class="dash-profile">
+            <a href="#" class="config-link">Configuración</a>
+            <div class="profile-pic">
+                <img src="cover1.png" alt="Profile">
+            </div>
+        </div>
+    </header>
+
+    <main class="dash-main">
+        <!-- News Banner -->
+        <section class="news-banner">
+            <div class="news-content">
+                <span class="news-badge">LATEST NEWS</span>
+                <h1>Welcome to your new Dashboard!</h1>
+                <p>Stay updated with the latest community events, new book arrivals, and exclusive study group sessions starting this week.</p>
+                <button class="news-btn">Read More</button>
+            </div>
+            <div class="news-image"></div>
+        </section>
+
+        <!-- Split Layout -->
+        <section class="dash-grid-container">
+            <!-- Left: Calendar -->
+            <div class="dash-calendar-section">
+                <h2>Group Activities</h2>
+                <div class="calendar-card">
+                    <div class="calendar-header">
+                        <button>&lt;</button>
+                        <h3>May 2026</h3>
+                        <button>&gt;</button>
+                    </div>
+                    <div class="calendar-grid">
+                        <div class="day-name">Sun</div><div class="day-name">Mon</div><div class="day-name">Tue</div>
+                        <div class="day-name">Wed</div><div class="day-name">Thu</div><div class="day-name">Fri</div>
+                        <div class="day-name">Sat</div>
+                        <!-- Empty slots for previous month -->
+                        <div class="day empty"></div><div class="day empty"></div><div class="day empty"></div>
+                        <div class="day empty"></div><div class="day empty"></div>
+                        <!-- Days 1-31 -->
+                        <div class="day">1</div><div class="day">2</div><div class="day">3</div><div class="day">4</div>
+                        <div class="day event-blue">5</div><div class="day">6</div><div class="day">7</div><div class="day">8</div>
+                        <div class="day">9</div><div class="day event-green">10</div><div class="day">11</div><div class="day">12</div>
+                        <div class="day">13</div><div class="day">14</div><div class="day event-blue">15</div><div class="day today">16</div>
+                        <div class="day">17</div><div class="day">18</div><div class="day">19</div><div class="day">20</div>
+                        <div class="day event-purple">21</div><div class="day">22</div><div class="day">23</div><div class="day">24</div>
+                        <div class="day">25</div><div class="day">26</div><div class="day">27</div><div class="day">28</div>
+                        <div class="day">29</div><div class="day event-green">30</div><div class="day">31</div>
+                    </div>
+                    <div class="upcoming-events">
+                        <h4>Upcoming this week</h4>
+                        <ul>
+                            <li><span class="dot blue"></span> <strong>May 15:</strong> Monthly Book Reading</li>
+                            <li><span class="dot purple"></span> <strong>May 21:</strong> Advanced Tech Study Group</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Services Grid -->
+            <div class="dash-services-section">
+                <h2>Your Services</h2>
+                <div class="services-grid">
+                    <a href="#" class="service-card">
+                        <div class="service-icon">📚</div>
+                        <h3>Mis Libros</h3>
+                        <p>Access your library</p>
+                    </a>
+                    <a href="#" class="service-card">
+                        <div class="service-icon">💬</div>
+                        <h3>Mensajes</h3>
+                        <p>Inbox & chats</p>
+                    </a>
+                    <a href="#" class="service-card">
+                        <div class="service-icon">🧑‍🏫</div>
+                        <h3>Tutorías</h3>
+                        <p>Schedule a session</p>
+                    </a>
+                    <a href="#" class="service-card">
+                        <div class="service-icon">👥</div>
+                        <h3>Grupos</h3>
+                        <p>Study communities</p>
+                    </a>
+                    <a href="#" class="service-card">
+                        <div class="service-icon">📅</div>
+                        <h3>Eventos</h3>
+                        <p>Register for events</p>
+                    </a>
+                    <a href="#" class="service-card">
+                        <div class="service-icon">❓</div>
+                        <h3>Ayuda</h3>
+                        <p>Support & FAQ</p>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
