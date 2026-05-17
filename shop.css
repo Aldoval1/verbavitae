@@ -551,18 +551,15 @@ a {
 .modal-link {
     display: block;
     text-align: center;
-    padding: 10px;
-    background-color: #f7fafc;
     color: var(--color-dark-blue);
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: 600;
-    transition: background-color 0.3s;
-    border: 1px solid #e2e8f0;
+    text-decoration: underline;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: color 0.3s;
 }
 
 .modal-link:hover {
-    background-color: #edf2f7;
+    color: var(--color-accent-blue);
 }
 
 /* Modal Center */
