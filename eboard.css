@@ -1,0 +1,152 @@
+/* E-Board Specific Styles */
+.eboard-container {
+    max-width: 1000px;
+    margin: 60px auto;
+    padding: 0 20px;
+    font-family: 'Montserrat', sans-serif;
+}
+
+.eboard-hero {
+    text-align: center;
+    margin-bottom: 50px;
+}
+
+.eboard-hero h1 {
+    font-size: 2.5rem;
+    color: #0d1b2a; /* Deep blue from Verba brand */
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.eboard-hero p {
+    font-size: 1.1rem;
+    color: #4a5568;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Horizontal Card Layout */
+.eboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.eboard-card {
+    display: flex;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 1px solid #e2e8f0;
+}
+
+.eboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+.eboard-photo {
+    flex: 0 0 300px; /* Fixed width for the photo column */
+    background-color: #edf2f7;
+}
+
+.eboard-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.eboard-info {
+    flex: 1;
+    padding: 35px 40px;
+    display: flex;
+    flex-direction: column;
+}
+
+.eboard-header {
+    margin-bottom: 15px;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 15px;
+}
+
+.eboard-header h2 {
+    font-size: 1.8rem;
+    color: #0d1b2a;
+    margin: 0 0 5px 0;
+}
+
+.eboard-role {
+    font-size: 1.1rem;
+    color: #3182ce; /* Verba accent blue */
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: block;
+}
+
+.eboard-desc {
+    font-size: 1rem;
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.eboard-responsibilities h3 {
+    font-size: 1.1rem;
+    color: #2d3748;
+    margin-bottom: 10px;
+}
+
+.eboard-responsibilities ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    color: #4a5568;
+    margin-bottom: 25px;
+}
+
+.eboard-responsibilities li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+    font-size: 0.95rem;
+}
+
+.eboard-contact {
+    margin-top: auto; /* Pushes contact to the bottom */
+}
+
+.contact-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #f7fafc;
+    color: #2d3748;
+    text-decoration: none;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #cbd5e0;
+    transition: all 0.2s;
+}
+
+.contact-btn:hover {
+    background-color: #3182ce;
+    color: #ffffff;
+    border-color: #3182ce;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .eboard-card {
+        flex-direction: column;
+    }
+
+    .eboard-photo {
+        flex: 0 0 250px; /* Fixed height on mobile */
+    }
+
+    .eboard-info {
+        padding: 25px;
+    }
+}
