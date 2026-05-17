@@ -274,54 +274,68 @@
             const sidebarLinks = document.querySelectorAll('.shop-sidebar a');
             const bookCards = document.querySelectorAll('.results-grid .book-card');
             const grid = document.querySelector('.results-grid');
+            const searchInput = document.getElementById('bookSearch');
             
+            function filterBooks() {
+                const activeCategoryLink = document.querySelector('.shop-sidebar a.active-category');
+                const selectedCategory = activeCategoryLink ? activeCategoryLink.getAttribute('data-category') : 'all';
+                const searchText = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                
+                let visibleCount = 0;
+
+                bookCards.forEach(card => {
+                    const matchesCategory = !selectedCategory || selectedCategory === 'all' || card.getAttribute('data-category') === selectedCategory;
+                    
+                    const titleElement = card.querySelector('.book-title');
+                    const titleText = titleElement ? titleElement.textContent.toLowerCase() : '';
+                    const matchesSearch = titleText.includes(searchText);
+
+                    if (matchesCategory && matchesSearch) {
+                        card.style.display = 'flex';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Handle empty state message
+                let emptyMessage = document.querySelector('.empty-message');
+                if (visibleCount === 0) {
+                    if (!emptyMessage) {
+                        emptyMessage = document.createElement('div');
+                        emptyMessage.className = 'empty-message';
+                        emptyMessage.style.gridColumn = '1 / -1';
+                        emptyMessage.style.textAlign = 'center';
+                        emptyMessage.style.padding = '40px 0';
+                        emptyMessage.style.color = '#718096';
+                        emptyMessage.style.fontSize = '1.1rem';
+                        grid.appendChild(emptyMessage);
+                    }
+                    emptyMessage.textContent = searchText ? 'No books match your search in this category.' : 'No books currently available in this category.';
+                    emptyMessage.style.display = 'block';
+                } else if (emptyMessage) {
+                    emptyMessage.style.display = 'none';
+                }
+            }
+
+            // Category Click Event
             sidebarLinks.forEach(link => {
                 link.addEventListener('click', function(e) {
-                    // Prevent default jumping behavior if href is just '#'
                     if (this.getAttribute('href') === '#') {
                         e.preventDefault();
                     }
                     
-                    // Remove active class from all links
                     sidebarLinks.forEach(l => l.classList.remove('active-category'));
-                    
-                    // Add active class to clicked link
                     this.classList.add('active-category');
 
-                    // Filter logic
-                    const selectedCategory = this.getAttribute('data-category');
-                    let visibleCount = 0;
-
-                    bookCards.forEach(card => {
-                        // Show all or check if category matches
-                        if (!selectedCategory || selectedCategory === 'all' || card.getAttribute('data-category') === selectedCategory) {
-                            card.style.display = 'flex';
-                            visibleCount++;
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-
-                    // Handle empty state message
-                    let emptyMessage = document.querySelector('.empty-message');
-                    if (visibleCount === 0) {
-                        if (!emptyMessage) {
-                            emptyMessage = document.createElement('div');
-                            emptyMessage.className = 'empty-message';
-                            emptyMessage.style.gridColumn = '1 / -1';
-                            emptyMessage.style.textAlign = 'center';
-                            emptyMessage.style.padding = '40px 0';
-                            emptyMessage.style.color = '#718096';
-                            emptyMessage.style.fontSize = '1.1rem';
-                            grid.appendChild(emptyMessage);
-                        }
-                        emptyMessage.textContent = 'No books currently available in this category.';
-                        emptyMessage.style.display = 'block';
-                    } else if (emptyMessage) {
-                        emptyMessage.style.display = 'none';
-                    }
+                    filterBooks();
                 });
             });
+
+            // Search Input Event
+            if (searchInput) {
+                searchInput.addEventListener('input', filterBooks);
+            }
         });
     </script>
 </body>
