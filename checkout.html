@@ -154,6 +154,19 @@
             placeOrderBtn.addEventListener('click', () => {
                 const method = document.querySelector('input[name="paymentMethod"]:checked').value;
                 alert(`Order placed successfully using ${method}! (This is a placeholder)`);
+                
+                // Add items to purchased list to simulate them being out of stock
+                const cart = getCart();
+                const purchasedStr = localStorage.getItem('verba_purchased');
+                const purchased = purchasedStr ? JSON.parse(purchasedStr) : [];
+                cart.forEach(item => {
+                    if (!purchased.includes(item.isbn)) {
+                        purchased.push(item.isbn);
+                    }
+                });
+                localStorage.setItem('verba_purchased', JSON.stringify(purchased));
+
+                // Clear cart
                 localStorage.removeItem('verba_cart');
                 localStorage.removeItem('verba_cart_expires');
                 window.location.href = 'shop.html';

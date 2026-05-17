@@ -344,7 +344,7 @@
                     
                     const matchesSearch = titleText.includes(searchText) || authorText.includes(searchText) || isbnText.includes(searchText);
 
-                    if (matchesCategory && matchesSearch && !card.classList.contains('in-cart')) {
+                    if (matchesCategory && matchesSearch && !card.classList.contains('in-cart') && !card.classList.contains('purchased')) {
                         card.style.display = 'flex';
                         visibleCount++;
                     } else {

@@ -53,12 +53,24 @@ function updateCartUI() {
         cartCountEl.textContent = cart.length;
     }
 
+    const purchasedStr = localStorage.getItem('verba_purchased');
+    const purchased = purchasedStr ? JSON.parse(purchasedStr) : [];
+
     const bookCards = document.querySelectorAll('.results-grid .book-card');
     if (bookCards.length > 0) {
         bookCards.forEach(card => {
             const isbnEl = card.querySelector('.book-isbn');
             if (isbnEl) {
                 const isbn = isbnEl.textContent.replace('ISBN: ', '').trim();
+                
+                // If purchased, hide completely
+                if (purchased.includes(isbn)) {
+                    card.classList.add('purchased');
+                    card.classList.remove('in-cart');
+                    card.style.display = 'none';
+                    return;
+                }
+
                 const isInCart = cart.some(item => item.isbn === isbn);
                 if (isInCart) {
                     card.classList.add('in-cart'); 
