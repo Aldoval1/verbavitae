@@ -295,6 +295,7 @@ a {
     color: #718096;
     margin-top: 5px;
     text-align: center;
+    display: none;
 }
 
 .placeholder-cover {
