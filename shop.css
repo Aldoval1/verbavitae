@@ -494,7 +494,7 @@ a {
 }
 
 .modal-content {
-    background-color: var(--color-white);
+    background-color: #ffffff;
     width: 90%;
     max-width: 900px;
     border-radius: 8px;
