@@ -154,18 +154,47 @@
                     <li><a href="#">Staff Picks</a></li>
                 </ul>
 
-                <h3>Filters</h3>
-                <ul>
-                    <li><a href="#">Under $10</a></li>
-                    <li><a href="#">$10 - $25</a></li>
-                    <li><a href="#">Over $25</a></li>
-                    <li><a href="#">4+ Stars</a></li>
-                </ul>
             </aside>
 
             <!-- Search Results Area -->
             <section class="search-results">
-                <h2>Browse All Books</h2>
+                <div class="results-header">
+                    <h2>Browse All Books</h2>
+                    
+                    <!-- Horizontal Filters -->
+                    <div class="horizontal-filters">
+                        <div class="filter-group search-filter">
+                            <input type="text" placeholder="Search by name, author, ISBN..." id="bookSearch">
+                        </div>
+                        <div class="filter-group">
+                            <label for="sortDate">Sort By:</label>
+                            <select id="sortDate">
+                                <option value="newest">Newest Releases</option>
+                                <option value="oldest">Oldest</option>
+                                <option value="az">A-Z</option>
+                                <option value="za">Z-A</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterPrice">Price:</label>
+                            <select id="filterPrice">
+                                <option value="all">All Prices</option>
+                                <option value="under10">Under $10</option>
+                                <option value="10to25">$10 - $25</option>
+                                <option value="over25">Over $25</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="filterRating">Rating:</label>
+                            <select id="filterRating">
+                                <option value="all">Any Rating</option>
+                                <option value="4star">4+ Stars</option>
+                                <option value="3star">3+ Stars</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="results-grid">
                     <div class="book-card">
                         <img src="cover1.png" alt="The Silent Blade">
@@ -195,5 +224,26 @@
             </section>
         </div>
     </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebarLinks = document.querySelectorAll('.shop-sidebar a');
+            
+            sidebarLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Prevent default jumping behavior if href is just '#'
+                    if (this.getAttribute('href') === '#') {
+                        e.preventDefault();
+                    }
+                    
+                    // Remove active class from all links
+                    sidebarLinks.forEach(l => l.classList.remove('active-category'));
+                    
+                    // Add active class to clicked link
+                    this.classList.add('active-category');
+                });
+            });
+        });
+    </script>
 </body>
 </html>
