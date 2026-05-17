@@ -48,14 +48,12 @@
                     <div class="payment-option">
                         <input type="radio" id="payCash" name="paymentMethod" value="cash" checked>
                         <label for="payCash">
-                            Pay with Cash
+                            Pay with Cash (In-Store Pickup)
                         </label>
                     </div>
-                    <div class="payment-option">
-                        <input type="radio" id="payOnline" name="paymentMethod" value="online">
-                        <label for="payOnline">
-                            Pay Online (Card/PayPal)
-                        </label>
+                    
+                    <div class="pickup-notice" id="pickupNotice">
+                        <p><strong>Important:</strong> Products must be picked up within 1 week of placing the order. If not collected, the books will be released back to the store.</p>
                     </div>
 
                     <button type="button" class="place-order-btn" id="placeOrderBtn">Place Order</button>
@@ -150,8 +148,7 @@
 
             // Place Order
             placeOrderBtn.addEventListener('click', () => {
-                const method = document.querySelector('input[name="paymentMethod"]:checked').value;
-                alert(`Order placed successfully using ${method}! (This is a placeholder)`);
+                alert('Your order has been reserved! Please pick up your books within 1 week.');
                 
                 // Add items to purchased list to simulate them being out of stock
                 const cart = getCart();
