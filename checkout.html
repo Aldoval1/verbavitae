@@ -215,6 +215,28 @@
                 alert('Your order has been reserved! Please pick up your books within 1 week.');
                 
                 const cart = getCart();
+
+                // Save order to E-Board Dashboard
+                const name = document.getElementById('customerName').value.trim();
+                const email = document.getElementById('customerEmail').value.trim();
+                let total = 0;
+                const itemsForOrder = cart.map(item => {
+                    total += parseFloat(item.price.replace('$', ''));
+                    return { title: item.title, quantity: 1 };
+                });
+                
+                const newOrder = {
+                    customerName: name,
+                    customerEmail: email,
+                    total: total,
+                    items: itemsForOrder,
+                    date: new Date().toISOString()
+                };
+                
+                const orders = JSON.parse(localStorage.getItem('verba_orders')) || [];
+                orders.push(newOrder);
+                localStorage.setItem('verba_orders', JSON.stringify(orders));
+
                 const purchasedStr = localStorage.getItem('verba_purchased');
                 const purchased = purchasedStr ? JSON.parse(purchasedStr) : [];
                 cart.forEach(item => {

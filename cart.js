@@ -191,3 +191,60 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 10000);
 });
+
+// --- Dynamic Products Logic ---
+document.addEventListener('DOMContentLoaded', () => {
+    let pageCategory = 'books';
+    const path = window.location.pathname;
+    if (path.includes('accessories')) pageCategory = 'accessories';
+    else if (path.includes('snacks')) pageCategory = 'snacks';
+    else if (path.includes('technology')) pageCategory = 'technology';
+
+    const products = JSON.parse(localStorage.getItem('verba_products')) || [];
+    const grids = document.querySelectorAll('.results-grid');
+    
+    if (grids.length > 0) {
+        const grid = grids[0];
+        products.forEach(p => {
+            if (p.category === pageCategory) {
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.setAttribute('data-category', 'custom-eboard');
+                
+                let imageHtml = p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:250px; object-fit:cover; margin-bottom:15px; border-radius: 0;">` : `<div class="placeholder-cover">NEW</div>`;
+                
+                card.innerHTML = `
+                    ${imageHtml}
+                    <div class="book-hover">
+                        <button class="add-to-cart-btn custom-cart-btn" data-isbn="CUST-${p.id}" data-title="${p.name}" data-price="${parseFloat(p.price).toFixed(2)}" data-category="${p.category}">Add to Cart</button>
+                    </div>
+                    <p class="book-title">${p.name}</p>
+                    <p class="book-author">By E-Board</p>
+                    <p class="book-price">$${parseFloat(p.price).toFixed(2)}</p>
+                    <p class="book-isbn" style="display:none;">ISBN: CUST-${p.id}</p>
+                `;
+                grid.prepend(card);
+            }
+        });
+        
+        document.querySelectorAll('.custom-cart-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const b = e.target;
+                const success = window.addToCart({
+                    title: b.getAttribute('data-title'),
+                    author: "E-Board",
+                    price: "$" + b.getAttribute('data-price'),
+                    isbn: b.getAttribute('data-isbn'),
+                    category: b.getAttribute('data-category').toUpperCase()
+                });
+                if (success) {
+                    if (typeof window.showToast === 'function') {
+                        window.showToast('Item reserved in your cart for 30 minutes.');
+                    }
+                } else {
+                    alert('Item is already in your cart!');
+                }
+            });
+        });
+    }
+});

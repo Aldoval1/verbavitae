@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verba Vitae - E-Board Admin Console</title>
+    <link rel="icon" type="image/png" href="verbavitaelogoblue.png">
+    <link rel="stylesheet" href="eboard-dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Nav -->
+    <header class="dash-header">
+        <div class="dash-logo">
+            <img src="verbavitaelogoblue.png" alt="Verba Vitae">
+            <span>Verba Vitae E-Board Console</span>
+        </div>
+        <div class="dash-profile">
+            <div class="profile-pic">
+                <img src="cover1.png" alt="Profile" id="navProfilePic">
+            </div>
+            <a href="dashboard.html" class="config-link" title="Return to User Dashboard" style="display: flex; align-items: center; color: var(--text-muted); transition: color 0.3s; padding: 5px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="dash-main">
+        <div class="admin-grid">
+            
+            <!-- Event Manager Section -->
+            <section class="admin-card">
+                <h2>Add Calendar Event</h2>
+                <form id="eventForm" class="admin-form">
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title</label>
+                        <input type="text" id="eventTitle" required placeholder="e.g. Monthly Meeting">
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDate">Date</label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventColor">Category Color</label>
+                        <select id="eventColor" required>
+                            <option value="blue">Blue (General)</option>
+                            <option value="green">Green (Important)</option>
+                            <option value="purple">Purple (Study Group)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="admin-btn">Add Event</button>
+                </form>
+            </section>
+
+            <!-- Shop Manager Section -->
+            <section class="admin-card">
+                <h2>Add Shop Product</h2>
+                <form id="productForm" class="admin-form">
+                    <div class="form-group">
+                        <label for="productName">Product Name</label>
+                        <input type="text" id="productName" required placeholder="e.g. Advanced Calculus Book">
+                    </div>
+                    <div class="form-group">
+                        <label for="productCategory">Category (Page)</label>
+                        <select id="productCategory" required>
+                            <option value="books">Books (shop.html)</option>
+                            <option value="accessories">Accessories</option>
+                            <option value="snacks">Snacks</option>
+                            <option value="technology">Technology</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="productPrice">Price ($)</label>
+                        <input type="number" id="productPrice" step="0.01" required placeholder="25.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="productImage">Image URL</label>
+                        <input type="text" id="productImage" required placeholder="https://example.com/image.jpg">
+                    </div>
+                    <button type="submit" class="admin-btn">Add Product to Store</button>
+                </form>
+            </section>
+
+            <!-- Pending Orders Section -->
+            <section class="admin-card orders-section">
+                <h2>Pending Receipts</h2>
+                <div id="ordersList" class="orders-list">
+                    <!-- Orders will be injected here via JS -->
+                    <p class="empty-state">No pending orders at this time.</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Global Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Protect Route (Optional: Check if user is eboard)
+            const isLoggedIn = localStorage.getItem('verba_logged_in');
+            if (isLoggedIn !== 'true') {
+                window.location.href = 'login.html';
+            }
+
+            // Toast Notification System
+            function showToast(message) {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('fade-out');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            // --- Event Manager Logic ---
+            const eventForm = document.getElementById('eventForm');
+            eventForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const title = document.getElementById('eventTitle').value;
+                const date = document.getElementById('eventDate').value;
+                const color = document.getElementById('eventColor').value;
+                
+                const events = JSON.parse(localStorage.getItem('verba_events')) || [];
+                events.push({ title, date, color });
+                localStorage.setItem('verba_events', JSON.stringify(events));
+                
+                showToast('Event added successfully!');
+                eventForm.reset();
+            });
+
+            // --- Shop Manager Logic ---
+            const productForm = document.getElementById('productForm');
+            productForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('productName').value;
+                const category = document.getElementById('productCategory').value;
+                const price = document.getElementById('productPrice').value;
+                const image = document.getElementById('productImage').value;
+                
+                const products = JSON.parse(localStorage.getItem('verba_products')) || [];
+                products.push({ id: Date.now(), name, category, price, image });
+                localStorage.setItem('verba_products', JSON.stringify(products));
+                
+                showToast('Product added to ' + category + '!');
+                productForm.reset();
+            });
+
+            // --- Orders Logic ---
+            function loadOrders() {
+                const ordersList = document.getElementById('ordersList');
+                const orders = JSON.parse(localStorage.getItem('verba_orders')) || [];
+                
+                if (orders.length === 0) {
+                    ordersList.innerHTML = '<p class="empty-state">No pending orders at this time.</p>';
+                    return;
+                }
+
+                ordersList.innerHTML = '';
+                orders.forEach((order, index) => {
+                    const orderCard = document.createElement('div');
+                    orderCard.className = 'order-card';
+                    
+                    let itemsHtml = order.items.map(item => `<li>${item.quantity}x ${item.title}</li>`).join('');
+                    
+                    orderCard.innerHTML = `
+                        <div class="order-header">
+                            <h4>${order.customerName}</h4>
+                            <span class="order-total">$${parseFloat(order.total).toFixed(2)}</span>
+                        </div>
+                        <p class="order-email">${order.customerEmail}</p>
+                        <p class="order-date">${new Date(order.date).toLocaleString()}</p>
+                        <ul class="order-items">${itemsHtml}</ul>
+                        <button class="admin-btn resolve-btn" data-index="${index}">Mark as Resolved</button>
+                    `;
+                    ordersList.appendChild(orderCard);
+                });
+
+                // Attach resolve events
+                document.querySelectorAll('.resolve-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const index = e.target.getAttribute('data-index');
+                        orders.splice(index, 1);
+                        localStorage.setItem('verba_orders', JSON.stringify(orders));
+                        loadOrders();
+                        showToast('Order resolved!');
+                    });
+                });
+            }
+
+            loadOrders();
+        });
+    </script>
+</body>
+</html>

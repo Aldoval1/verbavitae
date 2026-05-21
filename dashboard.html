@@ -47,34 +47,20 @@
                 <h2>Group Activities</h2>
                 <div class="calendar-card">
                     <div class="calendar-header">
-                        <button>&lt;</button>
-                        <h3>May 2026</h3>
-                        <button>&gt;</button>
+                        <button id="prevMonthBtn">&lt;</button>
+                        <h3 id="currentMonthYear">May 2026</h3>
+                        <button id="nextMonthBtn">&gt;</button>
                     </div>
-                    <div class="calendar-grid">
-                        <div class="day-name">Sun</div><div class="day-name">Mon</div><div class="day-name">Tue</div>
-                        <div class="day-name">Wed</div><div class="day-name">Thu</div><div class="day-name">Fri</div>
-                        <div class="day-name">Sat</div>
-                        <!-- Empty slots for previous month -->
-                        <div class="day empty"></div><div class="day empty"></div><div class="day empty"></div>
-                        <div class="day empty"></div><div class="day empty"></div>
-                        <!-- Days 1-31 -->
-                        <div class="day">1</div><div class="day">2</div><div class="day">3</div><div class="day">4</div>
-                        <div class="day event-blue">5</div><div class="day">6</div><div class="day">7</div><div class="day">8</div>
-                        <div class="day">9</div><div class="day event-green">10</div><div class="day">11</div><div class="day">12</div>
-                        <div class="day">13</div><div class="day">14</div><div class="day event-blue">15</div><div class="day today">16</div>
-                        <div class="day">17</div><div class="day">18</div><div class="day">19</div><div class="day">20</div>
-                        <div class="day event-purple">21</div><div class="day">22</div><div class="day">23</div><div class="day">24</div>
-                        <div class="day">25</div><div class="day">26</div><div class="day">27</div><div class="day">28</div>
-                        <div class="day">29</div><div class="day event-green">30</div><div class="day">31</div>
+                    <div class="calendar-grid" id="calendarGrid">
+                        <!-- Populated by JS -->
                     </div>
                     <div class="upcoming-events">
-                        <h4>Upcoming this week</h4>
-                        <ul>
-                            <li><span class="dot blue"></span> <strong>May 15:</strong> Monthly Book Reading</li>
-                            <li><span class="dot purple"></span> <strong>May 21:</strong> Advanced Tech Study Group</li>
+                        <h4>Upcoming events</h4>
+                        <ul id="upcomingEventsList">
+                            <!-- Populated by JS -->
                         </ul>
                     </div>
+                    <button id="exportCalendarBtn" style="width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 0; font-weight: 600; cursor: pointer; margin-top: 20px; transition: background-color 0.2s;">Add to my Calendar</button>
                 </div>
             </div>
 
@@ -203,6 +189,103 @@
             document.getElementById('logoutBtn').addEventListener('click', () => {
                 localStorage.removeItem('verba_logged_in');
                 window.location.href = 'login.html';
+            });
+
+            // --- Dynamic Calendar Logic ---
+            const calendarGrid = document.getElementById('calendarGrid');
+            const currentMonthYear = document.getElementById('currentMonthYear');
+            const upcomingEventsList = document.getElementById('upcomingEventsList');
+            const prevMonthBtn = document.getElementById('prevMonthBtn');
+            const nextMonthBtn = document.getElementById('nextMonthBtn');
+            
+            let currentDate = new Date();
+            let events = JSON.parse(localStorage.getItem('verba_events')) || [];
+
+            function renderCalendar() {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                
+                const firstDay = new Date(year, month, 1).getDay();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+                
+                const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                currentMonthYear.textContent = `${monthNames[month]} ${year}`;
+                
+                let gridHtml = '<div class="day-name">Sun</div><div class="day-name">Mon</div><div class="day-name">Tue</div><div class="day-name">Wed</div><div class="day-name">Thu</div><div class="day-name">Fri</div><div class="day-name">Sat</div>';
+                
+                for (let i = 0; i < firstDay; i++) {
+                    gridHtml += '<div class="day empty"></div>';
+                }
+                
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const eventForDay = events.find(e => e.date === dateStr);
+                    
+                    let classes = 'day';
+                    if (eventForDay) {
+                        classes += ` event-${eventForDay.color}`;
+                    }
+                    
+                    const today = new Date();
+                    if (day === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                        classes += ' today';
+                    }
+                    
+                    gridHtml += `<div class="${classes}" title="${eventForDay ? eventForDay.title : ''}">${day}</div>`;
+                }
+                
+                calendarGrid.innerHTML = gridHtml;
+                
+                // Update upcoming
+                upcomingEventsList.innerHTML = '';
+                const upcoming = events.filter(e => new Date(e.date) >= new Date(year, month, 1) && new Date(e.date) <= new Date(year, month + 1, 0)).sort((a,b) => new Date(a.date) - new Date(b.date));
+                if (upcoming.length === 0) {
+                    upcomingEventsList.innerHTML = '<li>No events this month</li>';
+                } else {
+                    upcoming.forEach(e => {
+                        upcomingEventsList.innerHTML += `<li><span class="dot ${e.color}"></span> <strong>${e.date}:</strong> ${e.title}</li>`;
+                    });
+                }
+            }
+
+            prevMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
+            });
+            nextMonthBtn.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+
+            renderCalendar();
+
+            // Export ICS
+            document.getElementById('exportCalendarBtn').addEventListener('click', () => {
+                if (events.length === 0) {
+                    alert('No events to export. The E-Board has not added any yet.');
+                    return;
+                }
+                
+                let icsData = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Verba Vitae//EN\n";
+                events.forEach(e => {
+                    const dateParts = e.date.split('-');
+                    const dateStr = dateParts[0] + dateParts[1] + dateParts[2];
+                    icsData += "BEGIN:VEVENT\n";
+                    icsData += `DTSTART;VALUE=DATE:${dateStr}\n`;
+                    icsData += `SUMMARY:${e.title}\n`;
+                    icsData += "END:VEVENT\n";
+                });
+                icsData += "END:VCALENDAR";
+                
+                const blob = new Blob([icsData], { type: 'text/calendar' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'verbavitae_events.ics';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
             });
         });
     </script>
