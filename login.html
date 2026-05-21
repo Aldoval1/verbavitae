@@ -75,10 +75,16 @@
             const pass = document.getElementById('password').value;
             const errorEl = document.getElementById('loginError');
 
-            // Test Account Verification
-            if (user === 'test@verbavitae.com' && pass === '1234') {
+            // Simulated Authentication Routing
+            if (user && pass) {
                 localStorage.setItem('verba_logged_in', 'true');
-                window.location.href = 'dashboard.html';
+                localStorage.setItem('verba_user_email', user);
+                
+                if (user.includes('@verbavitae')) {
+                    window.location.href = 'eboard-dashboard.html';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
             } else {
                 errorEl.style.display = 'block';
             }
