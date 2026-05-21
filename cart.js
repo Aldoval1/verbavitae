@@ -215,9 +215,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 card.innerHTML = `
                     ${imageHtml}
-                    <div class="book-hover">
-                        <button class="add-to-cart-btn custom-cart-btn" data-isbn="CUST-${p.id}" data-title="${p.name}" data-price="${parseFloat(p.price).toFixed(2)}" data-category="${p.category}">Add to Cart</button>
-                    </div>
                     <p class="book-title">${p.name}</p>
                     <p class="book-author">By E-Board</p>
                     <p class="book-price">$${parseFloat(p.price).toFixed(2)}</p>
@@ -312,26 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 grid.prepend(card);
             }
-        });
-        
-        document.querySelectorAll('.custom-cart-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const b = e.target;
-                const success = window.addToCart({
-                    title: b.getAttribute('data-title'),
-                    author: "E-Board",
-                    price: "$" + b.getAttribute('data-price'),
-                    isbn: b.getAttribute('data-isbn'),
-                    category: b.getAttribute('data-category').toUpperCase()
-                });
-                if (success) {
-                    if (typeof window.showToast === 'function') {
-                        window.showToast('Item reserved in your cart for 30 minutes.');
-                    }
-                } else {
-                    alert('Item is already in your cart!');
-                }
-            });
         });
     }
 });
