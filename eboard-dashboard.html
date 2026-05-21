@@ -72,6 +72,46 @@
                             <option value="technology">Technology</option>
                         </select>
                     </div>
+                    <div id="bookExtraFields" style="border-left: 3px solid var(--accent-color); padding-left: 15px; margin-bottom: 20px;">
+                        <div class="form-group">
+                            <label for="bookSubCategory">Sub-category</label>
+                            <input type="text" id="bookSubCategory" placeholder="e.g. Fantasy, Romance">
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 15px;">
+                            <div style="flex: 1;">
+                                <label for="bookCondition">Condition</label>
+                                <select id="bookCondition">
+                                    <option value="New">New</option>
+                                    <option value="Like New">Like New</option>
+                                    <option value="Good">Good</option>
+                                    <option value="Fair">Fair</option>
+                                </select>
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="bookPages">Pages</label>
+                                <input type="number" id="bookPages" placeholder="e.g. 350">
+                            </div>
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 15px;">
+                            <div style="flex: 1;">
+                                <label for="bookISBN">ISBN</label>
+                                <input type="text" id="bookISBN" placeholder="e.g. 978-...">
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="bookPublisher">Publisher</label>
+                                <input type="text" id="bookPublisher" placeholder="e.g. Penguin">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookSynopsis">Synopsis</label>
+                            <textarea id="bookSynopsis" rows="3" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); font-family: inherit; resize: vertical;" placeholder="A brief summary..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="bookGoodreads">Goodreads Link (Optional)</label>
+                            <input type="url" id="bookGoodreads" placeholder="https://www.goodreads.com/book/show/...">
+                            <small style="color: var(--text-muted); display: block; margin-top: 5px;">We'll try to fetch the rating automatically!</small>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label for="productPrice">Price ($)</label>
                         <input type="number" id="productPrice" step="0.01" required placeholder="25.00">
@@ -137,19 +177,77 @@
 
             // --- Shop Manager Logic ---
             const productForm = document.getElementById('productForm');
-            productForm.addEventListener('submit', (e) => {
+            const catSelect = document.getElementById('productCategory');
+            const bookFields = document.getElementById('bookExtraFields');
+            const submitBtn = productForm.querySelector('button[type="submit"]');
+
+            catSelect.addEventListener('change', (e) => {
+                if (e.target.value === 'books') {
+                    bookFields.style.display = 'block';
+                } else {
+                    bookFields.style.display = 'none';
+                }
+            });
+
+            productForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Processing...';
+
                 const name = document.getElementById('productName').value;
                 const category = document.getElementById('productCategory').value;
                 const price = document.getElementById('productPrice').value;
                 const image = document.getElementById('productImage').value;
                 
+                let productData = { id: Date.now(), name, category, price, image };
+
+                if (category === 'books') {
+                    productData.subCategory = document.getElementById('bookSubCategory').value;
+                    productData.condition = document.getElementById('bookCondition').value;
+                    productData.pages = document.getElementById('bookPages').value;
+                    productData.isbn = document.getElementById('bookISBN').value;
+                    productData.publisher = document.getElementById('bookPublisher').value;
+                    productData.synopsis = document.getElementById('bookSynopsis').value;
+                    productData.goodreadsLink = document.getElementById('bookGoodreads').value;
+                    productData.rating = null;
+
+                    if (productData.goodreadsLink) {
+                        submitBtn.textContent = 'Fetching Rating...';
+                        try {
+                            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(productData.goodreadsLink)}`;
+                            const response = await fetch(proxyUrl);
+                            if (response.ok) {
+                                const data = await response.json();
+                                const html = data.contents;
+                                let match = html.match(/class="RatingStatistics__rating">([\d.]+)<\/div>/);
+                                if (!match) match = html.match(/<span itemprop="ratingValue">([\d.]+)<\/span>/);
+                                if (!match) match = html.match(/Rating ([\d.]+) out of 5/);
+                                if (!match) match = html.match(/aria-label="([\d.]+) out of 5/);
+                                
+                                if (match && match[1]) {
+                                    productData.rating = match[1];
+                                    showToast('Fetched Goodreads rating: ' + productData.rating);
+                                } else {
+                                    productData.rating = prompt("Could not fetch rating automatically. Enter rating manually (e.g. 4.28):", "4.00") || "4.00";
+                                }
+                            } else {
+                                productData.rating = prompt("Proxy error fetching rating. Enter manually:", "4.00") || "4.00";
+                            }
+                        } catch(err) {
+                            productData.rating = prompt("Network error. Enter rating manually:", "4.00") || "4.00";
+                        }
+                    }
+                }
+                
                 const products = JSON.parse(localStorage.getItem('verba_products')) || [];
-                products.push({ id: Date.now(), name, category, price, image });
+                products.push(productData);
                 localStorage.setItem('verba_products', JSON.stringify(products));
                 
-                showToast('Product added to ' + category + '!');
+                showToast('Product added successfully!');
                 productForm.reset();
+                if (catSelect.value === 'books') bookFields.style.display = 'block';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Add Product to Store';
             });
 
             // --- Orders Logic ---
