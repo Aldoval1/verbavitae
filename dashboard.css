@@ -71,7 +71,7 @@ body {
 .profile-pic {
     width: 45px;
     height: 45px;
-    border-radius: 0;
+    border-radius: 50%;
     overflow: hidden;
     border: 2px solid var(--accent-color);
 }
@@ -333,7 +333,7 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0;
+    border-radius: 50%;
     transition: background-color 0.3s, transform 0.3s;
 }
 
