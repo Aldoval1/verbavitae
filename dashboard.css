@@ -385,5 +385,115 @@ h2 {
     
     .dash-logo span {
         display: none;
-    }
+}
+
+/* Settings Modal */
+.settings-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(13, 27, 42, 0.5); /* Semi-transparent dark blue overlay */
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.settings-modal-content {
+    background-color: var(--card-bg);
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    width: 90%;
+    max-width: 400px;
+    position: relative;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.settings-close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.settings-close:hover {
+    color: var(--primary-color);
+}
+
+.settings-modal-content h2 {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.settings-group {
+    margin-bottom: 20px;
+}
+
+.settings-group label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 8px;
+}
+
+.settings-group input,
+.settings-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    font-family: 'Montserrat', sans-serif;
+    color: var(--text-main);
+}
+
+.settings-group input:focus,
+.settings-group select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+}
+
+.settings-btn {
+    display: inline-block;
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.settings-btn:hover {
+    background-color: var(--accent-color);
+}
+
+.logout-btn {
+    background-color: #e53e3e;
+}
+
+.logout-btn:hover {
+    background-color: #c53030;
 }

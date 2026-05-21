@@ -16,9 +16,9 @@
             <span>Verba Vitae Org</span>
         </div>
         <div class="dash-profile">
-            <a href="#" class="config-link">Configuración</a>
+            <a href="#" class="config-link" id="openSettingsBtn" title="Settings" style="font-size: 1.5rem;">⚙️</a>
             <div class="profile-pic">
-                <img src="cover1.png" alt="Profile">
+                <img src="cover1.png" alt="Profile" id="navProfilePic">
             </div>
         </div>
     </header>
@@ -112,24 +112,81 @@
         </section>
     </main>
 
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="settings-modal" style="display: none;">
+        <div class="settings-modal-content">
+            <span class="settings-close" id="closeSettingsBtn">&times;</span>
+            <h2>Settings</h2>
+            
+            <div class="settings-group">
+                <label for="profilePicInput">Change Profile Picture (Image URL)</label>
+                <input type="text" id="profilePicInput" placeholder="https://example.com/image.png">
+                <button id="updatePicBtn" class="settings-btn">Update Picture</button>
+            </div>
+
+            <div class="settings-group">
+                <label for="languageSelect">Language</label>
+                <select id="languageSelect">
+                    <option value="en">English</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                </select>
+            </div>
+
+            <div class="settings-group" style="margin-top: 30px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
+                <button id="logoutBtn" class="settings-btn logout-btn">Log Out</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Protect Dashboard Route
         document.addEventListener('DOMContentLoaded', () => {
+            // Protect Dashboard Route
             const isLoggedIn = localStorage.getItem('verba_logged_in');
             if (isLoggedIn !== 'true') {
                 window.location.href = 'login.html';
             }
 
-            // Simple Logout Logic
-            const configLink = document.querySelector('.config-link');
-            if (configLink) {
-                configLink.textContent = 'Log Out';
-                configLink.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    localStorage.removeItem('verba_logged_in');
-                    window.location.href = 'login.html';
-                });
+            // Load saved profile picture if any
+            const savedPic = localStorage.getItem('verba_profile_pic');
+            if (savedPic) {
+                document.getElementById('navProfilePic').src = savedPic;
             }
+
+            // Modal Logic
+            const modal = document.getElementById('settingsModal');
+            const openBtn = document.getElementById('openSettingsBtn');
+            const closeBtn = document.getElementById('closeSettingsBtn');
+
+            openBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                modal.style.display = 'flex';
+            });
+
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+
+            // Update Picture
+            document.getElementById('updatePicBtn').addEventListener('click', () => {
+                const url = document.getElementById('profilePicInput').value.trim();
+                if (url) {
+                    localStorage.setItem('verba_profile_pic', url);
+                    document.getElementById('navProfilePic').src = url;
+                    alert('Profile picture updated successfully!');
+                }
+            });
+
+            // Language Change (Simulated)
+            document.getElementById('languageSelect').addEventListener('change', (e) => {
+                alert(`Language preferences saved: ${e.target.value.toUpperCase()}`);
+            });
+
+            // Logout Logic
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                localStorage.removeItem('verba_logged_in');
+                window.location.href = 'login.html';
+            });
         });
     </script>
 </body>
