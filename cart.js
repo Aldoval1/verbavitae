@@ -213,32 +213,103 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 let imageHtml = p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:250px; object-fit:cover; margin-bottom:15px; border-radius: 0;">` : `<div class="placeholder-cover">NEW</div>`;
                 
-                let extraInfoHtml = '';
-                if (p.category === 'books' && p.condition) {
-                    const ratingHtml = p.rating ? `<a href="${p.goodreadsLink}" target="_blank" style="color: #d69e2e; text-decoration: none; display: block; font-weight: bold; margin-top: 10px; margin-bottom: 5px;">⭐ ${p.rating} on Goodreads</a>` : '';
-                    const synopsisHtml = p.synopsis ? `<p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">${p.synopsis}</p>` : '';
-                    
-                    extraInfoHtml = `
-                        ${ratingHtml}
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px; line-height: 1.4; border-top: 1px solid #eee; padding-top: 5px;">
-                            <strong>Condition:</strong> ${p.condition} &nbsp;|&nbsp; <strong>Pages:</strong> ${p.pages || 'N/A'}<br>
-                            <strong>Publisher:</strong> ${p.publisher || 'N/A'} &nbsp;|&nbsp; <strong>ISBN:</strong> ${p.isbn || 'N/A'}<br>
-                        </div>
-                        ${synopsisHtml}
-                    `;
-                }
-
                 card.innerHTML = `
                     ${imageHtml}
                     <div class="book-hover">
                         <button class="add-to-cart-btn custom-cart-btn" data-isbn="CUST-${p.id}" data-title="${p.name}" data-price="${parseFloat(p.price).toFixed(2)}" data-category="${p.category}">Add to Cart</button>
                     </div>
-                    <p class="book-title" style="margin-bottom: 5px;">${p.name}</p>
-                    <p class="book-author" style="margin-bottom: 5px;">By E-Board</p>
-                    <p class="book-price" style="margin-bottom: 5px;">$${parseFloat(p.price).toFixed(2)}</p>
-                    ${extraInfoHtml}
+                    <p class="book-title">${p.name}</p>
+                    <p class="book-author">By E-Board</p>
+                    <p class="book-price">$${parseFloat(p.price).toFixed(2)}</p>
                     <p class="book-isbn" style="display:none;">ISBN: CUST-${p.id}</p>
                 `;
+                
+                card.style.cursor = 'pointer';
+                card.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('custom-cart-btn')) return;
+                    
+                    const modal = document.getElementById('bookModal');
+                    if (!modal) return;
+                    
+                    document.getElementById('modalTitle').textContent = p.name;
+                    document.getElementById('modalAuthor').textContent = "By E-Board";
+                    document.getElementById('modalPrice').textContent = "$" + parseFloat(p.price).toFixed(2);
+                    
+                    const coverEl = document.getElementById('modalCover');
+                    if(p.image) {
+                        coverEl.innerHTML = `<img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">`;
+                    } else {
+                        coverEl.textContent = p.category.toUpperCase();
+                    }
+
+                    const modalDetails = document.querySelector('.modal-details');
+                    if (modalDetails && p.category === 'books') {
+                        modalDetails.innerHTML = `
+                            <p><strong>Condition:</strong> ${p.condition || 'New'}</p>
+                            <p><strong>ISBN:</strong> <span id="modalIsbn">CUST-${p.id}</span></p>
+                            <p><strong>Pages:</strong> ${p.pages || 'N/A'}</p>
+                            <p><strong>Publisher:</strong> ${p.publisher || 'N/A'}</p>
+                            <p><strong>Language:</strong> English</p>
+                        `;
+                    } else if (modalDetails) {
+                        modalDetails.innerHTML = `<p><strong>Item ID:</strong> CUST-${p.id}</p>`;
+                    }
+
+                    const modalSynopsis = document.querySelector('.modal-synopsis');
+                    if (modalSynopsis && p.category === 'books') {
+                        modalSynopsis.innerHTML = `
+                            <h3>Synopsis</h3>
+                            <p>${p.synopsis || 'No synopsis provided.'}</p>
+                        `;
+                    } else if (modalSynopsis) {
+                        modalSynopsis.innerHTML = '';
+                    }
+
+                    const modalLinks = document.querySelector('.modal-links');
+                    if (modalLinks) {
+                        if (p.rating && p.goodreadsLink && p.category === 'books') {
+                            modalLinks.innerHTML = `
+                                <a href="${p.goodreadsLink}" target="_blank" class="modal-link" style="color: #d69e2e; font-weight: bold; font-size: 1.1rem; text-decoration: none;">⭐ ${p.rating} on Goodreads</a>
+                            `;
+                        } else {
+                            modalLinks.innerHTML = '';
+                        }
+                    }
+
+                    modal.style.display = 'flex';
+                    
+                    const addToCartBtn = modal.querySelector('.add-to-cart-btn');
+                    if (addToCartBtn) {
+                        const newBtn = addToCartBtn.cloneNode(true);
+                        addToCartBtn.parentNode.replaceChild(newBtn, addToCartBtn);
+                        
+                        newBtn.textContent = 'Add to Cart';
+                        newBtn.disabled = false;
+                        newBtn.style.backgroundColor = 'var(--color-accent-blue)';
+                        newBtn.style.cursor = 'pointer';
+
+                        newBtn.addEventListener('click', () => {
+                            const added = window.addToCart({
+                                title: p.name,
+                                author: "E-Board",
+                                price: "$" + parseFloat(p.price).toFixed(2),
+                                isbn: "CUST-" + p.id,
+                                category: p.category.toUpperCase()
+                            });
+                            if (added) {
+                                newBtn.textContent = 'Added to Cart!';
+                                newBtn.style.backgroundColor = '#48bb78';
+                                if (typeof window.showToast === 'function') window.showToast('Item reserved in your cart for 30 minutes.');
+                                setTimeout(() => { modal.style.display = 'none'; }, 1000);
+                            } else {
+                                newBtn.textContent = 'Already in Cart';
+                                newBtn.disabled = true;
+                                newBtn.style.cursor = 'not-allowed';
+                            }
+                        });
+                    }
+                });
+
                 grid.prepend(card);
             }
         });
