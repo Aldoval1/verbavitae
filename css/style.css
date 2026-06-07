@@ -228,6 +228,29 @@ body {
     text-align: center;
 }
 
+.btn-hero {
+    display: inline-block;
+    padding: 16px 50px;
+    background-color: var(--color-orange);
+    color: white;
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 40px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(214, 139, 45, 0.4);
+    border: 2px solid var(--color-orange);
+}
+
+.btn-hero:hover {
+    background-color: transparent;
+    color: var(--color-orange);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
 /* Responsive */
 @media (max-width: 1200px) {
     .left-links { padding-right: 150px; }
