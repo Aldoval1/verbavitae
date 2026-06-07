@@ -263,7 +263,7 @@ body {
 }
 
 .about-card {
-    background-color: transparent; /* Fondo transparente para que solo se vea la imagen */
+    background-color: #ebebeb; /* Cuadro gris */
     width: 60%;
     max-width: 900px;
     padding: 60px;
