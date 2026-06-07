@@ -222,7 +222,9 @@ body {
 }
 
 .hero-content {
-    position: relative;
+    position: absolute;
+    bottom: 40px; /* Abajo del todo del banner */
+    left: 0;
     z-index: 10;
     width: 100%;
     text-align: center;
@@ -230,25 +232,22 @@ body {
 
 .btn-hero {
     display: inline-block;
-    padding: 16px 50px;
-    background-color: var(--color-orange);
-    color: white;
-    font-size: 1.3rem;
+    padding: 18px 60px;
+    background-color: var(--color-cream);
+    color: var(--color-dark-blue);
+    font-size: 1.2rem;
     font-weight: 700;
     text-decoration: none;
-    border-radius: 40px;
+    border-radius: 0px; /* Completamente cuadrado */
     letter-spacing: 3px;
     text-transform: uppercase;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(214, 139, 45, 0.4);
-    border: 2px solid var(--color-orange);
+    border: 2px solid var(--color-cream);
 }
 
 .btn-hero:hover {
     background-color: transparent;
-    color: var(--color-orange);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    color: var(--color-cream);
 }
 
 /* Responsive */
