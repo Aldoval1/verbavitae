@@ -257,17 +257,17 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-color: var(--color-dark-blue); /* Fallback */
+    background-color: transparent;
     display: flex;
     justify-content: center;
 }
 
 .about-card {
-    background-color: #ebebeb; /* Cuadro gris */
+    background-color: transparent; /* Fondo transparente para que solo se vea la imagen */
     width: 60%;
     max-width: 900px;
     padding: 60px;
-    border-radius: 0px; /* Cuadrado total, sin bordes redondeados */
+    border-radius: 0px;
     text-align: left;
 }
 
