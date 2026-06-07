@@ -253,7 +253,7 @@ body {
 /* About Section */
 .about-section {
     padding: 120px 20px;
-    background-image: url('../images/fondoverbafinal.png');
+    background-image: linear-gradient(rgba(238, 245, 251, 0.2), rgba(238, 245, 251, 0.2)), url('../images/fondoverbafinal.png'); /* Transparencia simulada al 80% con el color de fondo */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -263,7 +263,7 @@ body {
 }
 
 .about-card {
-    background-color: #f4f4f4; /* Gris un poco más claro (menor tonalidad) */
+    background-color: #dbe4ec; /* Azul grisáceo, un poco más oscuro que el gris original */
     width: 60%;
     max-width: 900px;
     padding: 60px;
