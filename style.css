@@ -115,7 +115,7 @@ body {
 /* Floating Logo Box */
 .floating-logo-box {
     position: absolute;
-    top: 0;
+    top: 20px;
     left: 50%;
     transform: translateX(-50%);
     width: 180px;
