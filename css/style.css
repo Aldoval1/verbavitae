@@ -294,6 +294,7 @@ body {
 .features-section {
     padding: 100px 5%;
     background-color: var(--color-cream);
+    border-bottom: 5px solid var(--color-dark-blue);
 }
 
 .features-container {
@@ -341,6 +342,39 @@ body {
     font-size: 1rem;
     line-height: 1.6;
     padding: 0 25px 35px;
+}
+
+/* Events Section */
+.events-section {
+    padding: 100px 20px;
+    background-color: var(--color-cream);
+    text-align: center;
+    border-bottom: 5px solid var(--color-dark-blue);
+}
+
+.week-display {
+    font-size: 1.2rem;
+    color: var(--color-orange);
+    font-weight: 600;
+    margin-top: -10px;
+    margin-bottom: 40px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.events-board {
+    background-color: #ebebeb; /* Cuadro gris clásico */
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 50px;
+    border-radius: 0px; /* Cuadrado */
+    text-align: center;
+}
+
+.no-events {
+    font-size: 1.2rem;
+    color: var(--color-text-dark);
+    font-style: italic;
 }
 
 /* Responsive */

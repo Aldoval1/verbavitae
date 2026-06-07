@@ -90,5 +90,31 @@
         </div>
     </section>
 
+    <section class="events-section">
+        <h2 class="about-title">EVENTS</h2>
+        <p class="week-display" id="weekDisplay"></p>
+
+        <div class="events-board">
+            <p class="no-events">Currently, there are no events scheduled for this week.</p>
+        </div>
+    </section>
+
+    <script>
+        function updateWeek() {
+            const now = new Date();
+            const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
+            
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            
+            const options = { month: 'short', day: 'numeric' };
+            const weekStr = `Week of ${startOfWeek.toLocaleDateString('en-US', options)} to ${endOfWeek.toLocaleDateString('en-US', options)}`;
+            
+            document.getElementById('weekDisplay').innerText = weekStr;
+        }
+        updateWeek();
+    </script>
 </body>
 </html>
