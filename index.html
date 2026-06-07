@@ -13,6 +13,20 @@
 </head>
 <body>
     <header class="main-header">
+        <div class="burger-menu" id="burger-menu">
+            <i class="fas fa-bars"></i>
+        </div>
+        
+        <div class="mobile-nav" id="mobile-nav">
+            <a href="login.html">Log In</a>
+            <a href="#">Join</a>
+            <a href="eboard.html">Our E-Board</a>
+            <a href="#">Opportunities</a>
+            <a href="#">News</a>
+            <a href="#">Events</a>
+            <a href="shop.html">Shop</a>
+        </div>
+
         <div class="top-bar">
             <div class="nav-links left-links">
             </div>
@@ -127,6 +141,15 @@
     </footer>
 
     <script>
+        // Burger Menu Toggle
+        const burgerMenu = document.getElementById('burger-menu');
+        const mobileNav = document.getElementById('mobile-nav');
+        
+        burgerMenu.addEventListener('click', () => {
+            mobileNav.classList.toggle('active');
+        });
+
+        // Weekly events logic
         function updateWeek() {
             const now = new Date();
             const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
