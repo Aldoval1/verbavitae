@@ -1,7 +1,7 @@
 :root {
     --color-dark-blue: #1d0c8d;
     --color-blue-secondary: #1d0c8d;
-    --color-cream: #ffffff; /* Changed to white to leave background blank */
+    --color-cream: #eef5fb; /* Azul muy muy leve */
     --color-orange: #d68b2d;
     --color-text-dark: #333333;
     --color-text-light: #ffffff;
@@ -263,7 +263,7 @@ body {
 }
 
 .about-card {
-    background-color: #ebebeb; /* Cuadro gris */
+    background-color: #f4f4f4; /* Gris un poco más claro (menor tonalidad) */
     width: 60%;
     max-width: 900px;
     padding: 60px;
