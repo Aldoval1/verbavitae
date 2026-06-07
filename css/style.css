@@ -233,8 +233,8 @@ body {
 .btn-hero {
     display: inline-block;
     padding: 18px 60px;
-    background-color: var(--color-cream);
-    color: var(--color-dark-blue);
+    background-color: var(--color-dark-blue);
+    color: var(--color-text-light);
     font-size: 1.2rem;
     font-weight: 700;
     text-decoration: none;
@@ -247,7 +247,7 @@ body {
 
 .btn-hero:hover {
     background-color: transparent;
-    color: var(--color-cream);
+    color: var(--color-text-light);
 }
 
 /* Responsive */
