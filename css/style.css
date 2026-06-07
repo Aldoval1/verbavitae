@@ -263,7 +263,7 @@ body {
     width: 60%;
     max-width: 900px;
     padding: 60px;
-    border-radius: 12px;
+    border-radius: 0px; /* Cuadrado total, sin bordes redondeados */
     text-align: left;
 }
 
@@ -274,9 +274,9 @@ body {
     margin-bottom: 25px;
     text-transform: uppercase;
     letter-spacing: 2px;
-    display: inline-block; /* El borde solo abarca el texto */
-    border-bottom: 3px solid var(--color-dark-blue); /* Delineado hasta el final de la palabra */
-    padding-bottom: 8px;
+    display: block; /* Para que la línea llegue hasta el borde del contenedor */
+    border-bottom: 2px solid #b0b0b0; /* Delineado de color grisáceo */
+    padding-bottom: 15px;
 }
 
 .about-content {
