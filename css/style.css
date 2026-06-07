@@ -252,8 +252,12 @@ body {
 
 /* About Section */
 .about-section {
-    padding: 100px 20px;
-    background-color: var(--color-cream);
+    padding: 120px 20px;
+    background-image: url('../images/fondoverbafinal.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: var(--color-dark-blue); /* Fallback */
     display: flex;
     justify-content: center;
 }
