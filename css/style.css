@@ -259,12 +259,11 @@ body {
 }
 
 .about-card {
-    background-color: #ffffff;
+    background-color: #ebebeb; /* Cuadro gris */
     width: 60%;
     max-width: 900px;
     padding: 60px;
     border-radius: 12px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
     text-align: left;
 }
 
@@ -275,6 +274,9 @@ body {
     margin-bottom: 25px;
     text-transform: uppercase;
     letter-spacing: 2px;
+    display: inline-block; /* El borde solo abarca el texto */
+    border-bottom: 3px solid var(--color-dark-blue); /* Delineado hasta el final de la palabra */
+    padding-bottom: 8px;
 }
 
 .about-content {
