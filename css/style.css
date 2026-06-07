@@ -164,7 +164,7 @@ body {
     align-items: center;
     overflow: hidden;
     background-color: var(--color-cream);
-    border-bottom: 2px solid var(--color-orange); /* Línea fina delineando por abajo */
+    border-bottom: 2px solid var(--color-dark-blue); /* Línea fina delineando por abajo */
 }
 
 /* Hero Slider */
