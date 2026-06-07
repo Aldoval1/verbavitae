@@ -467,11 +467,44 @@ body {
 }
 
 @media (max-width: 768px) {
+    /* Header */
     .nav-links { display: none; }
-    .hero-section { padding-top: 200px; text-align: center; }
-    .floating-logo-box { width: 220px; padding: 30px 15px 30px; }
-    .logo-img { width: 100px; }
-    .about-card { width: 95%; padding: 30px; }
-    .about-title { font-size: 1.8rem; }
-    .features-container { grid-template-columns: 1fr; gap: 25px; }
+    .nav-logo img { width: 150px; }
+    
+    /* Hero */
+    .hero-section { padding: 120px 15px 60px; min-height: 70vh; }
+    .floating-logo-box { width: 90%; max-width: 320px; padding: 40px 20px; }
+    .logo-img { width: 120px; }
+    .join-btn { width: 100%; font-size: 1.1rem; padding: 15px 30px; }
+
+    /* About */
+    .about-section { padding: 60px 15px; }
+    .about-card { width: 100%; padding: 30px 20px; }
+    .about-title { font-size: 1.6rem; margin-bottom: 20px; }
+    .about-content { font-size: 1rem; line-height: 1.6; }
+
+    /* Features */
+    .features-section { padding: 60px 15px; }
+    .features-container { grid-template-columns: 1fr; gap: 30px; }
+    .feature-img { height: 200px; }
+    .feature-title { font-size: 1.3rem; margin: 20px 0 10px; }
+    .feature-desc { padding: 0 15px 25px; }
+
+    /* Events */
+    .events-section { padding: 60px 15px; }
+    .events-board { padding: 30px 20px; width: 100%; }
+    .week-display { font-size: 1rem; margin-bottom: 30px; }
+
+    /* Footer */
+    .main-footer { padding: 40px 20px; }
+    .footer-container { flex-direction: column; text-align: center; gap: 30px; }
+    .footer-center { border: none; padding: 0; }
+    .footer-social-title { font-size: 1rem; }
+    .social-icons a { font-size: 1.8rem; margin: 0 12px; }
+    .footer-links { font-size: 0.85rem; line-height: 1.8; }
+}
+
+@media (max-width: 480px) {
+    .floating-logo-box { padding: 30px 15px; }
+    .hero-section { min-height: 60vh; }
 }
