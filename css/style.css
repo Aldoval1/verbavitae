@@ -260,6 +260,7 @@ body {
     background-color: transparent;
     display: flex;
     justify-content: center;
+    border-bottom: 5px solid var(--color-dark-blue);
 }
 
 .about-card {
