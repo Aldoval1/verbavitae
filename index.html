@@ -13,10 +13,19 @@
 </head>
 <body>
     <header class="main-header">
-        <div class="burger-menu" id="burger-menu">
-            <i class="fas fa-bars"></i>
+        
+        <!-- Mobile Header (Visible only on mobile) -->
+        <div class="mobile-header-bar">
+            <div class="burger-menu" id="burger-menu">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="mobile-logo-container">
+                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae" class="mobile-logo-img">
+                <span class="mobile-logo-text">VERBA VITAE</span>
+            </div>
         </div>
         
+        <!-- Mobile Navigation Menu -->
         <div class="mobile-nav" id="mobile-nav">
             <a href="login.html">Log In</a>
             <a href="#">Join</a>
@@ -27,28 +36,31 @@
             <a href="shop.html">Shop</a>
         </div>
 
-        <div class="top-bar">
-            <div class="nav-links left-links">
+        <!-- Desktop Navigation (Visible only on desktop) -->
+        <div class="desktop-nav">
+            <div class="top-bar">
+                <div class="nav-links left-links">
+                </div>
+                <div class="nav-links right-links" style="justify-content: flex-end; padding-right: 5%;">
+                    <a href="login.html" class="btn-login">LOG IN</a>
+                </div>
             </div>
-            <div class="nav-links right-links" style="justify-content: flex-end; padding-right: 5%;">
-                <a href="login.html" class="btn-login">LOG IN</a>
-            </div>
-        </div>
-        
-        <div class="secondary-bar">
-            <div class="nav-links left-links">
-                <a href="#">Join</a>
-                <span class="divider">|</span>
-                <a href="eboard.html">Our E-Board</a>
-                <span class="divider">|</span>
-                <a href="#">Opportunities</a>
-            </div>
-            <div class="nav-links right-links">
-                <a href="#">News</a>
-                <span class="divider">|</span>
-                <a href="#">Events</a>
-                <span class="divider">|</span>
-                <a href="shop.html">Shop</a>
+            
+            <div class="secondary-bar">
+                <div class="nav-links left-links">
+                    <a href="#">Join</a>
+                    <span class="divider">|</span>
+                    <a href="eboard.html">Our E-Board</a>
+                    <span class="divider">|</span>
+                    <a href="#">Opportunities</a>
+                </div>
+                <div class="nav-links right-links">
+                    <a href="#">News</a>
+                    <span class="divider">|</span>
+                    <a href="#">Events</a>
+                    <span class="divider">|</span>
+                    <a href="shop.html">Shop</a>
+                </div>
             </div>
         </div>
     </header>
