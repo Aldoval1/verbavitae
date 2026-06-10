@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Join Verba Vitae">
+    <title>Verba Vitae - Join Now</title>
+    <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="join-page">
+
+    <div class="join-wrapper">
+        <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> Back to Home</a>
+        
+        <div class="join-container">
+            <div class="join-header">
+                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae Logo" class="join-logo">
+                <h2 class="join-title">JOIN NOW</h2>
+            </div>
+
+            <!-- STEP 1: Code Verification -->
+            <div id="step-1" class="join-step">
+                <p class="join-subtitle">Enter your invitation code or email address to continue.</p>
+                <div class="input-group">
+                    <label for="invite-code">Invitation Code / Email</label>
+                    <input type="text" id="invite-code" placeholder="e.g. testing" autocomplete="off">
+                    <div id="code-error" class="error-msg" style="display: none;">Invalid code or email. Please try again.</div>
+                </div>
+                <button id="btn-verify" class="btn-join-primary">CONTINUE</button>
+            </div>
+
+            <!-- STEP 2: Registration Info -->
+            <div id="step-2" class="join-step" style="display: none; opacity: 0;">
+                <p class="join-subtitle">Please complete your profile information.</p>
+                
+                <div class="form-row">
+                    <div class="input-group half">
+                        <label for="first-name">First Name</label>
+                        <input type="text" id="first-name" placeholder="John">
+                    </div>
+                    <div class="input-group half">
+                        <label for="last-name">Last Name</label>
+                        <input type="text" id="last-name" placeholder="Doe">
+                    </div>
+                </div>
+                
+                <div class="input-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" placeholder="(123) 456-7890">
+                </div>
+
+                <div class="input-group">
+                    <label for="major">Major / Program</label>
+                    <input type="text" id="major" placeholder="e.g. Computer Science">
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Create Password</label>
+                    <input type="password" id="password" placeholder="••••••••">
+                </div>
+
+                <button id="btn-register" class="btn-join-primary">COMPLETE REGISTRATION</button>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const btnVerify = document.getElementById('btn-verify');
+        const inviteCodeInput = document.getElementById('invite-code');
+        const codeError = document.getElementById('code-error');
+        const step1 = document.getElementById('step-1');
+        const step2 = document.getElementById('step-2');
+        const btnRegister = document.getElementById('btn-register');
+
+        btnVerify.addEventListener('click', () => {
+            const val = inviteCodeInput.value.trim().toLowerCase();
+            if (val === 'testing') {
+                codeError.style.display = 'none';
+                
+                // Fade out step 1
+                step1.style.opacity = '0';
+                setTimeout(() => {
+                    step1.style.display = 'none';
+                    
+                    // Fade in step 2
+                    step2.style.display = 'block';
+                    // Trigger reflow for animation
+                    void step2.offsetWidth; 
+                    step2.style.opacity = '1';
+                }, 300);
+            } else {
+                codeError.style.display = 'block';
+            }
+        });
+
+        // Trigger verify on Enter key
+        inviteCodeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                btnVerify.click();
+            }
+        });
+
+        btnRegister.addEventListener('click', () => {
+            // Placeholder action
+            alert('Registration completed! Welcome to Verba Vitae.');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
