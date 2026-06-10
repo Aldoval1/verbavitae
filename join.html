@@ -16,55 +16,70 @@
         <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> Back to Home</a>
         
         <div class="join-container">
-            <div class="join-header">
-                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae Logo" class="join-logo">
-                <h2 class="join-title">JOIN NOW</h2>
-            </div>
-
-            <!-- STEP 1: Code Verification -->
-            <div id="step-1" class="join-step">
-                <p class="join-subtitle">Enter your invitation code or email address to continue.</p>
-                <div class="input-group">
-                    <label for="invite-code">Invitation Code / Email</label>
-                    <input type="text" id="invite-code" placeholder="e.g. testing" autocomplete="off">
-                    <div id="code-error" class="error-msg" style="display: none;">Invalid code or email. Please try again.</div>
-                </div>
-                <button id="btn-verify" class="btn-join-primary">CONTINUE</button>
-            </div>
-
-            <!-- STEP 2: Registration Info -->
-            <div id="step-2" class="join-step" style="display: none; opacity: 0;">
-                <p class="join-subtitle">Please complete your profile information.</p>
-                
-                <div class="form-row">
-                    <div class="input-group half">
-                        <label for="first-name">First Name</label>
-                        <input type="text" id="first-name" placeholder="John">
-                    </div>
-                    <div class="input-group half">
-                        <label for="last-name">Last Name</label>
-                        <input type="text" id="last-name" placeholder="Doe">
+            <div class="join-form-section">
+                <div class="join-header-row">
+                    <img src="images/verbavitaelogoblue.png" alt="Verba Vitae Logo" class="join-logo-new">
+                    <div class="join-header-text">
+                        <h2 class="join-title-new">VERBA VITAE</h2>
+                        <p class="join-subtitle-new">ORGANIZATION</p>
                     </div>
                 </div>
-                
-                <div class="input-group">
-                    <label for="phone">Phone Number</label>
-                    <input type="tel" id="phone" placeholder="(123) 456-7890">
+                <hr class="join-divider">
+
+                <!-- STEP 1: Code Verification -->
+                <div id="step-1" class="join-step">
+                    <p class="join-instruction">Enter your invitation code or email address to continue.</p>
+                    <div class="input-group">
+                        <div class="label-row">
+                            <label for="invite-code">Invitation Code / Email</label>
+                        </div>
+                        <input type="text" id="invite-code" class="input-new" placeholder="" autocomplete="off">
+                        <div id="code-error" class="error-msg" style="display: none;">Invalid code or email. Please try again.</div>
+                    </div>
+                    <div class="btn-row">
+                        <button id="btn-verify" class="btn-join-new">Continue</button>
+                    </div>
                 </div>
 
-                <div class="input-group">
-                    <label for="major">Major / Program</label>
-                    <input type="text" id="major" placeholder="e.g. Computer Science">
-                </div>
+                <!-- STEP 2: Registration Info -->
+                <div id="step-2" class="join-step" style="display: none; opacity: 0;">
+                    <p class="join-instruction">Please complete your profile information.</p>
+                    
+                    <div class="form-row">
+                        <div class="input-group half">
+                            <label for="first-name">First Name</label>
+                            <input type="text" id="first-name" class="input-new" placeholder="">
+                        </div>
+                        <div class="input-group half">
+                            <label for="last-name">Last Name</label>
+                            <input type="text" id="last-name" class="input-new" placeholder="">
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" class="input-new" placeholder="">
+                    </div>
 
-                <div class="input-group">
-                    <label for="password">Create Password</label>
-                    <input type="password" id="password" placeholder="••••••••">
-                </div>
+                    <div class="input-group">
+                        <label for="major">Major / Program</label>
+                        <input type="text" id="major" class="input-new" placeholder="">
+                    </div>
 
-                <button id="btn-register" class="btn-join-primary">COMPLETE REGISTRATION</button>
+                    <div class="input-group">
+                        <label for="password">Create Password</label>
+                        <input type="password" id="password" class="input-new" placeholder="">
+                    </div>
+
+                    <div class="btn-row">
+                        <button id="btn-register" class="btn-join-new">Complete Registration</button>
+                    </div>
+                </div>
             </div>
-
+            
+            <div class="join-bottom-section">
+                <!-- Space for future elements or images -->
+            </div>
         </div>
     </div>
 
