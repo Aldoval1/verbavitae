@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/admin-dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
     <!-- Top Nav -->
@@ -29,6 +30,19 @@
         </div>
     </header>
 
+    <nav class="admin-top-nav">
+        <a href="#store-section">Store</a>
+        <a href="#events-section">Add Events</a>
+        <div class="nav-dropdown">
+            <button class="dropbtn">Members <i class="fas fa-caret-down"></i></button>
+            <div class="dropdown-content">
+                <a href="#members-manage-section">Member Management</a>
+                <a href="#members-invite-section">Send Invitations</a>
+            </div>
+        </div>
+        <a href="#news-section">News & Updates</a>
+    </nav>
+
     <main class="dash-main">
         <div class="admin-header">
             <h1>Welcome, Aaron</h1>
@@ -38,7 +52,7 @@
         <div class="admin-grid">
             
             <!-- Send Invitations -->
-            <section class="admin-card">
+            <section id="members-invite-section" class="admin-card">
                 <h2>ðŸ“§ Send Invitations</h2>
                 <form id="inviteForm" class="admin-form">
                     <div class="form-group">
@@ -54,7 +68,7 @@
             </section>
 
             <!-- Member Management -->
-            <section class="admin-card">
+            <section id="members-manage-section" class="admin-card">
                 <h2>ðŸ‘¥ Member Management</h2>
                 <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Review and manage active community members.</p>
                 <div class="member-list" id="memberList">
@@ -91,7 +105,7 @@
             </section>
 
             <!-- Update Dashboard Banner -->
-            <section class="admin-card">
+            <section id="news-section" class="admin-card">
                 <h2>ðŸ“¢ Update Global Banner</h2>
                 <form id="bannerForm" class="admin-form">
                     <div class="form-group">
@@ -107,7 +121,7 @@
             </section>
 
             <!-- Event Manager Section -->
-            <section class="admin-card">
+            <section id="events-section" class="admin-card">
                 <h2>ðŸ“… Add Calendar Event</h2>
                 <form id="eventForm" class="admin-form">
                     <div class="form-group">
@@ -131,7 +145,7 @@
             </section>
 
             <!-- Store Inventory Manager -->
-            <section class="admin-card" style="grid-column: 1 / -1;">
+            <section id="store-section" class="admin-card" style="grid-column: 1 / -1;">
                 <h2>ðŸ›’ Store Inventory Management</h2>
                 <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Add new items or remove existing stock from the storefront.</p>
                 
