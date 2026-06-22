@@ -309,21 +309,39 @@ body {
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.admin-top-nav a, .admin-top-nav .dropbtn {
-    color: white;
+.admin-top-nav > a, .admin-top-nav .dropbtn {
+    color: rgba(255, 255, 255, 0.7);
     padding: 16px 24px;
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 600;
     border: none;
+    border-top: 3px solid transparent;
     background: none;
     font-family: 'Montserrat', sans-serif;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: all 0.3s;
 }
 
-.admin-top-nav a:hover, .nav-dropdown:hover .dropbtn {
+.admin-top-nav > a:hover, .nav-dropdown:hover .dropbtn {
     background-color: var(--admin-primary-hover);
+    color: white;
+}
+
+/* Active tab indicator - white line on top */
+.admin-top-nav > a.tab-link.active,
+.admin-top-nav .dropbtn.active {
+    color: white;
+    border-top: 3px solid white;
+}
+
+/* Tab Panels */
+.tab-panel {
+    display: none;
+}
+
+.tab-panel.active {
+    display: block;
 }
 
 .nav-dropdown {

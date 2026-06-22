@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verba Vitae - Executive Admin</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
-    <link rel="stylesheet" href="css/admin-dashboard.css?v=20260622">
+    <link rel="stylesheet" href="css/admin-dashboard.css?v=20260622b">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -30,17 +30,18 @@
         </div>
     </header>
 
+    <!-- Tab Navigation -->
     <nav class="admin-top-nav">
-        <a href="#store-section">Store</a>
-        <a href="#events-section">Add Events</a>
+        <a href="#" class="tab-link active" data-tab="store">Store</a>
+        <a href="#" class="tab-link" data-tab="events">Add Events</a>
         <div class="nav-dropdown">
             <button class="dropbtn">Members <i class="fas fa-caret-down"></i></button>
             <div class="dropdown-content">
-                <a href="#members-manage-section">Member Management</a>
-                <a href="#members-invite-section">Send Invitations</a>
+                <a href="#" class="tab-link" data-tab="members-manage">Member Management</a>
+                <a href="#" class="tab-link" data-tab="members-invite">Send Invitations</a>
             </div>
         </div>
-        <a href="#news-section">News &amp; Updates</a>
+        <a href="#" class="tab-link" data-tab="news">News &amp; Updates</a>
     </nav>
 
     <main class="dash-main">
@@ -49,103 +50,9 @@
             <p>Manage community operations, members, and resources from your executive dashboard.</p>
         </div>
 
-        <div class="admin-grid">
-            
-            <!-- Send Invitations -->
-            <section id="members-invite-section" class="admin-card">
-                <h2><i class="fas fa-envelope"></i> Send Invitations</h2>
-                <form id="inviteForm" class="admin-form">
-                    <div class="form-group">
-                        <label for="inviteEmail">Recipient Email Address</label>
-                        <input type="email" id="inviteEmail" required placeholder="newmember@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label for="inviteMessage">Custom Message (Optional)</label>
-                        <textarea id="inviteMessage" rows="3" placeholder="Welcome to Verba Vitae!"></textarea>
-                    </div>
-                    <button type="submit" class="admin-btn">Send Invitation</button>
-                </form>
-            </section>
-
-            <!-- Member Management -->
-            <section id="members-manage-section" class="admin-card">
-                <h2><i class="fas fa-users"></i> Member Management</h2>
-                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Review and manage active community members.</p>
-                <div class="member-list" id="memberList">
-                    <!-- Mock Members -->
-                    <div class="member-item">
-                        <div class="member-info">
-                            <strong>Jane Doe</strong>
-                            <span>janedoe@example.com</span>
-                        </div>
-                        <button class="btn-expel" onclick="expelMember(this, 'Jane Doe')">Expel</button>
-                    </div>
-                    <div class="member-item">
-                        <div class="member-info">
-                            <strong>John Smith</strong>
-                            <span>jsmith23@example.com</span>
-                        </div>
-                        <button class="btn-expel" onclick="expelMember(this, 'John Smith')">Expel</button>
-                    </div>
-                    <div class="member-item">
-                        <div class="member-info">
-                            <strong>Maria Garcia</strong>
-                            <span>mgarcia@example.com</span>
-                        </div>
-                        <button class="btn-expel" onclick="expelMember(this, 'Maria Garcia')">Expel</button>
-                    </div>
-                    <div class="member-item">
-                        <div class="member-info">
-                            <strong>Alex Johnson</strong>
-                            <span>alexj@example.com</span>
-                        </div>
-                        <button class="btn-expel" onclick="expelMember(this, 'Alex Johnson')">Expel</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Update Dashboard Banner -->
-            <section id="news-section" class="admin-card">
-                <h2><i class="fas fa-bullhorn"></i> Update Global Banner</h2>
-                <form id="bannerForm" class="admin-form">
-                    <div class="form-group">
-                        <label for="bannerTitleInput">Banner Title</label>
-                        <input type="text" id="bannerTitleInput" required placeholder="Welcome to your new Dashboard!">
-                    </div>
-                    <div class="form-group">
-                        <label for="bannerTextInput">Banner Text</label>
-                        <textarea id="bannerTextInput" rows="3" required placeholder="Stay updated with the latest community events..."></textarea>
-                    </div>
-                    <button type="submit" class="admin-btn">Push Update to Users</button>
-                </form>
-            </section>
-
-            <!-- Event Manager Section -->
-            <section id="events-section" class="admin-card">
-                <h2><i class="fas fa-calendar-plus"></i> Add Calendar Event</h2>
-                <form id="eventForm" class="admin-form">
-                    <div class="form-group">
-                        <label for="eventTitle">Event Title</label>
-                        <input type="text" id="eventTitle" required placeholder="e.g. Monthly Meeting">
-                    </div>
-                    <div class="form-group">
-                        <label for="eventDate">Date</label>
-                        <input type="date" id="eventDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="eventColor">Category Color</label>
-                        <select id="eventColor" required>
-                            <option value="blue">Blue (General)</option>
-                            <option value="green">Green (Important)</option>
-                            <option value="purple">Purple (Study Group)</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="admin-btn">Publish Event</button>
-                </form>
-            </section>
-
-            <!-- Store Inventory Manager -->
-            <section id="store-section" class="admin-card" style="grid-column: 1 / -1;">
+        <!-- TAB: Store -->
+        <div class="tab-panel active" id="tab-store">
+            <section class="admin-card">
                 <h2><i class="fas fa-cart-shopping"></i> Store Inventory Management</h2>
                 <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Add new items or remove existing stock from the storefront.</p>
                 
@@ -192,12 +99,150 @@
                 </div>
             </section>
         </div>
+
+        <!-- TAB: Add Events -->
+        <div class="tab-panel" id="tab-events">
+            <section class="admin-card">
+                <h2><i class="fas fa-calendar-plus"></i> Add Calendar Event</h2>
+                <form id="eventForm" class="admin-form">
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title</label>
+                        <input type="text" id="eventTitle" required placeholder="e.g. Monthly Meeting">
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDate">Date</label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventColor">Category Color</label>
+                        <select id="eventColor" required>
+                            <option value="blue">Blue (General)</option>
+                            <option value="green">Green (Important)</option>
+                            <option value="purple">Purple (Study Group)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="admin-btn">Publish Event</button>
+                </form>
+            </section>
+        </div>
+
+        <!-- TAB: Member Management -->
+        <div class="tab-panel" id="tab-members-manage">
+            <section class="admin-card">
+                <h2><i class="fas fa-users"></i> Member Management</h2>
+                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Review and manage active community members.</p>
+                <div class="member-list" id="memberList">
+                    <!-- Mock Members -->
+                    <div class="member-item">
+                        <div class="member-info">
+                            <strong>Jane Doe</strong>
+                            <span>janedoe@example.com</span>
+                        </div>
+                        <button class="btn-expel" onclick="expelMember(this, 'Jane Doe')">Expel</button>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-info">
+                            <strong>John Smith</strong>
+                            <span>jsmith23@example.com</span>
+                        </div>
+                        <button class="btn-expel" onclick="expelMember(this, 'John Smith')">Expel</button>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-info">
+                            <strong>Maria Garcia</strong>
+                            <span>mgarcia@example.com</span>
+                        </div>
+                        <button class="btn-expel" onclick="expelMember(this, 'Maria Garcia')">Expel</button>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-info">
+                            <strong>Alex Johnson</strong>
+                            <span>alexj@example.com</span>
+                        </div>
+                        <button class="btn-expel" onclick="expelMember(this, 'Alex Johnson')">Expel</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- TAB: Send Invitations -->
+        <div class="tab-panel" id="tab-members-invite">
+            <section class="admin-card">
+                <h2><i class="fas fa-envelope"></i> Send Invitations</h2>
+                <form id="inviteForm" class="admin-form">
+                    <div class="form-group">
+                        <label for="inviteEmail">Recipient Email Address</label>
+                        <input type="email" id="inviteEmail" required placeholder="newmember@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="inviteMessage">Custom Message (Optional)</label>
+                        <textarea id="inviteMessage" rows="3" placeholder="Welcome to Verba Vitae!"></textarea>
+                    </div>
+                    <button type="submit" class="admin-btn">Send Invitation</button>
+                </form>
+            </section>
+        </div>
+
+        <!-- TAB: News & Updates -->
+        <div class="tab-panel" id="tab-news">
+            <section class="admin-card">
+                <h2><i class="fas fa-bullhorn"></i> Update Global Banner</h2>
+                <form id="bannerForm" class="admin-form">
+                    <div class="form-group">
+                        <label for="bannerTitleInput">Banner Title</label>
+                        <input type="text" id="bannerTitleInput" required placeholder="Welcome to your new Dashboard!">
+                    </div>
+                    <div class="form-group">
+                        <label for="bannerTextInput">Banner Text</label>
+                        <textarea id="bannerTextInput" rows="3" required placeholder="Stay updated with the latest community events..."></textarea>
+                    </div>
+                    <button type="submit" class="admin-btn">Push Update to Users</button>
+                </form>
+            </section>
+        </div>
+
     </main>
 
     <!-- Global Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <script>
+        // --- Tab System ---
+        function switchTab(tabName) {
+            // Hide all panels
+            document.querySelectorAll('.tab-panel').forEach(panel => {
+                panel.classList.remove('active');
+            });
+            // Remove active from all nav links
+            document.querySelectorAll('.tab-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            // Also remove active from the Members dropdown button if a member sub-tab is not selected
+            document.querySelector('.dropbtn').classList.remove('active');
+
+            // Show selected panel
+            const target = document.getElementById('tab-' + tabName);
+            if (target) target.classList.add('active');
+
+            // Mark correct nav link as active
+            document.querySelectorAll('.tab-link[data-tab="' + tabName + '"]').forEach(link => {
+                link.classList.add('active');
+            });
+
+            // If a members sub-tab, also highlight the Members dropdown button
+            if (tabName === 'members-manage' || tabName === 'members-invite') {
+                document.querySelector('.dropbtn').classList.add('active');
+            }
+        }
+
+        // Attach click handlers to all tab links
+        document.querySelectorAll('.tab-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                switchTab(link.dataset.tab);
+            });
+        });
+
         // --- Core Functions ---
         function showToast(message) {
             const container = document.getElementById('toastContainer');
