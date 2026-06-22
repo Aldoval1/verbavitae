@@ -8,6 +8,14 @@
     <link rel="stylesheet" href="css/admin-dashboard.css?v=20260622b">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            // Reemplaza esto con tu Public Key
+            emailjs.init("TU_PUBLIC_KEY_AQUI");
+        })();
+    </script>
 </head>
 <body>
     <!-- Top Nav -->
@@ -445,23 +453,23 @@
             submitBtn.disabled = true;
 
             try {
-                const response = await fetch('/api/send-invites', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ emails })
+                // Reemplaza estos con tus IDs
+                const serviceID = "TU_SERVICE_ID_AQUI";
+                const templateID = "TU_TEMPLATE_ID_AQUI";
+
+                const emailPromises = emails.map(email => {
+                    return emailjs.send(serviceID, templateID, {
+                        to_email: email
+                    });
                 });
 
-                const data = await response.json();
-
-                if (response.ok) {
-                    showToast(data.message || `Invitations successfully sent to ${emails.length} recipient(s).`);
-                    e.target.reset();
-                } else {
-                    showToast(data.message || 'Failed to send invitations.');
-                }
+                await Promise.all(emailPromises);
+                
+                showToast(`Invitations successfully sent to ${emails.length} recipient(s).`);
+                e.target.reset();
             } catch (error) {
-                console.error(error);
-                showToast('Server error. Failed to send invitations.');
+                console.error('EmailJS Error:', error);
+                showToast('Failed to send invitations. Check console.');
             } finally {
                 submitBtn.textContent = 'Send Invitations';
                 submitBtn.disabled = false;
