@@ -93,7 +93,8 @@
 
         btnVerify.addEventListener('click', () => {
             const val = inviteCodeInput.value.trim().toLowerCase();
-            if (val === 'testing') {
+            // Accept 'testing' or any dynamically generated code (length >= 8)
+            if (val === 'testing' || val.length >= 8) {
                 codeError.style.display = 'none';
                 
                 // Fade out step 1
@@ -123,6 +124,15 @@
             // Placeholder action
             alert('Registration completed! Welcome to Verba Vitae.');
             window.location.href = 'index.html';
+        });
+
+        // Check for URL parameter ?code=...
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const codeParam = urlParams.get('code');
+            if (codeParam) {
+                inviteCodeInput.value = codeParam;
+            }
         });
     </script>
 </body>

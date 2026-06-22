@@ -458,8 +458,12 @@
                 const templateID = "TU_TEMPLATE_ID_AQUI";
 
                 const emailPromises = emails.map(email => {
+                    // Genera un código de 8 caracteres alfanuméricos
+                    const uniqueCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+                    
                     return emailjs.send(serviceID, templateID, {
-                        to_email: email
+                        to_email: email,
+                        invite_code: uniqueCode
                     });
                 });
 
