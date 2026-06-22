@@ -260,15 +260,14 @@
             <section class="admin-card">
                 <h2><i class="fas fa-envelope"></i> Send Invitations</h2>
                 <form id="inviteForm" class="admin-form">
-                    <div class="form-group">
-                        <label for="inviteEmail">Recipient Email Address</label>
-                        <input type="email" id="inviteEmail" required placeholder="newmember@example.com">
+                    <div class="form-group" id="emailSlotsContainer">
+                        <label>Recipient Email Addresses</label>
+                        <input type="email" class="invite-email-slot" required placeholder="member1@example.com" style="margin-bottom: 10px;">
+                        <input type="email" class="invite-email-slot" placeholder="member2@example.com" style="margin-bottom: 10px;">
+                        <input type="email" class="invite-email-slot" placeholder="member3@example.com" style="margin-bottom: 10px;">
                     </div>
-                    <div class="form-group">
-                        <label for="inviteMessage">Custom Message (Optional)</label>
-                        <textarea id="inviteMessage" rows="3" placeholder="Welcome to Verba Vitae!"></textarea>
-                    </div>
-                    <button type="submit" class="admin-btn">Send Invitation</button>
+                    <button type="button" id="addEmailSlotBtn" class="admin-btn" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-text); margin-bottom: 20px;">+ Add another email</button>
+                    <button type="submit" class="admin-btn">Send Invitations</button>
                 </form>
             </section>
         </div>
@@ -421,10 +420,32 @@
         });
 
         // --- Invitations ---
+        document.getElementById('addEmailSlotBtn').addEventListener('click', () => {
+            const container = document.getElementById('emailSlotsContainer');
+            const input = document.createElement('input');
+            input.type = 'email';
+            input.className = 'invite-email-slot';
+            input.placeholder = 'another@example.com';
+            input.style.marginBottom = '10px';
+            container.appendChild(input);
+        });
+
         document.getElementById('inviteForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const email = document.getElementById('inviteEmail').value;
-            showToast(`Invitation sent to ${email}`);
+            const inputs = document.querySelectorAll('.invite-email-slot');
+            const emails = Array.from(inputs).map(input => input.value.trim()).filter(val => val !== '');
+            
+            if (emails.length === 0) {
+                showToast('Please enter at least one valid email.');
+                return;
+            }
+
+            // Mock sending loop for now, pending EmailJS Integration
+            emails.forEach(email => {
+                console.log(`Simulated sending to: ${email}`);
+            });
+            
+            showToast(`Invitations initiated for ${emails.length} recipient(s).`);
             e.target.reset();
         });
 
