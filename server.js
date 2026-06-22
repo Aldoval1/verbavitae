@@ -1,6 +1,6 @@
+// Remove nodemailer, using EmailJS REST API instead
 const express = require('express');
 const cors = require('cors');
-const nodemailer = require('nodemailer');
 const path = require('path');
 require('dotenv').config();
 
@@ -14,22 +14,6 @@ app.use(express.json());
 // Serve static frontend files (HTML, CSS, JS, Images)
 app.use(express.static(path.join(__dirname, '')));
 
-// Create Nodemailer Transporter
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-        user: process.env.EMAIL_USER, // e.g., abacallao@theverbavitae.org
-        pass: process.env.EMAIL_PASS  // e.g., App Password
-    },
-    connectionTimeout: 10000, // 10 seconds
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-    tls: {
-        rejectUnauthorized: false
-    }
-});
 
 // Helper function to generate professional HTML email template
 const generateEmailTemplate = () => {
@@ -69,24 +53,43 @@ app.post('/api/send-invites', async (req, res) => {
             return res.status(400).json({ success: false, message: 'No valid emails provided.' });
         }
 
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-            console.error('Server email credentials are not configured.');
+        if (!process.env.EMAILJS_SERVICE_ID || !process.env.EMAILJS_TEMPLATE_ID || !process.env.EMAILJS_PUBLIC_KEY) {
+            console.error('Server EmailJS credentials are not configured.');
             return res.status(500).json({ success: false, message: 'Server is not configured to send emails. (Missing Env Vars)' });
         }
 
-        console.log(`Attempting to send ${emails.length} emails via ${process.env.EMAIL_USER}...`);
+        console.log(`Attempting to send ${emails.length} emails via EmailJS API...`);
 
-        const emailPromises = emails.map(email => {
-            return transporter.sendMail({
-                from: '"Verba Vitae" <donotreply@theverbavitae.org>', // Sender masking
-                to: email, // Receiver
-                subject: 'You are invited to join Verba Vitae',
-                html: generateEmailTemplate(),
+        const htmlDesign = generateEmailTemplate();
+
+        const emailPromises = emails.map(async (email) => {
+            const payload = {
+                service_id: process.env.EMAILJS_SERVICE_ID,
+                template_id: process.env.EMAILJS_TEMPLATE_ID,
+                user_id: process.env.EMAILJS_PUBLIC_KEY,
+                accessToken: process.env.EMAILJS_PRIVATE_KEY || "", // Optional but recommended
+                template_params: {
+                    to_email: email,
+                    html_message: htmlDesign
+                }
+            };
+
+            const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
             });
+
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`EmailJS API Error: ${response.status} ${text}`);
+            }
         });
 
         await Promise.all(emailPromises);
-        console.log('Emails successfully sent to SMTP server.');
+        console.log('Emails successfully sent via EmailJS API.');
 
         res.status(200).json({ success: true, message: `Successfully sent ${emails.length} invitations!` });
     } catch (error) {
