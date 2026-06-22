@@ -20,7 +20,10 @@ const transporter = nodemailer.createTransport({
     auth: {
         user: process.env.EMAIL_USER, // e.g., abacallao@theverbavitae.org
         pass: process.env.EMAIL_PASS  // e.g., App Password
-    }
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000
 });
 
 // Helper function to generate professional HTML email template
@@ -63,8 +66,10 @@ app.post('/api/send-invites', async (req, res) => {
 
         if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
             console.error('Server email credentials are not configured.');
-            return res.status(500).json({ success: false, message: 'Server is not configured to send emails.' });
+            return res.status(500).json({ success: false, message: 'Server is not configured to send emails. (Missing Env Vars)' });
         }
+
+        console.log(`Attempting to send ${emails.length} emails via ${process.env.EMAIL_USER}...`);
 
         const emailPromises = emails.map(email => {
             return transporter.sendMail({
@@ -76,6 +81,7 @@ app.post('/api/send-invites', async (req, res) => {
         });
 
         await Promise.all(emailPromises);
+        console.log('Emails successfully sent to SMTP server.');
 
         res.status(200).json({ success: true, message: `Successfully sent ${emails.length} invitations!` });
     } catch (error) {
