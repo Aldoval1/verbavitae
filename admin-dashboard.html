@@ -54,17 +54,14 @@
         <div class="tab-panel active" id="tab-store">
             <section class="admin-card">
                 <h2><i class="fas fa-cart-shopping"></i> Store Inventory Management</h2>
-                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Add new items or remove existing stock from the storefront.</p>
+                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 25px;">Add new items or remove existing stock from the storefront.</p>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
-                    <!-- Add Product -->
+                    <!-- Add Product Form -->
                     <div>
                         <h3 style="font-size: 1.1rem; color: var(--admin-text); margin-bottom: 15px;">Add New Product</h3>
                         <form id="productForm" class="admin-form">
-                            <div class="form-group">
-                                <label for="productName">Product Name</label>
-                                <input type="text" id="productName" required placeholder="e.g. Advanced Calculus Book">
-                            </div>
+                            <!-- Row: Category & Price -->
                             <div class="form-group" style="display: flex; gap: 15px;">
                                 <div style="flex: 1;">
                                     <label for="productCategory">Category</label>
@@ -80,20 +77,107 @@
                                     <input type="number" id="productPrice" step="0.01" required placeholder="25.00">
                                 </div>
                             </div>
+
+                            <!-- Product Name -->
+                            <div class="form-group">
+                                <label for="productName">Product / Book Title</label>
+                                <input type="text" id="productName" required placeholder="e.g. Advanced Calculus">
+                            </div>
+
+                            <!-- Book-Specific Fields (shown when category is Books) -->
+                            <div id="bookFields">
+                                <!-- Row: ISBN & Quantity -->
+                                <div class="form-group" style="display: flex; gap: 15px;">
+                                    <div style="flex: 1;">
+                                        <label for="bookIsbn">ISBN</label>
+                                        <input type="text" id="bookIsbn" placeholder="978-0-12345-678-9">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label for="bookQuantity">Quantity</label>
+                                        <input type="number" id="bookQuantity" min="1" value="1" placeholder="1">
+                                    </div>
+                                </div>
+
+                                <!-- Row: Quality & Language -->
+                                <div class="form-group" style="display: flex; gap: 15px;">
+                                    <div style="flex: 1;">
+                                        <label for="bookQuality">Quality / Condition</label>
+                                        <select id="bookQuality">
+                                            <option value="New">New</option>
+                                            <option value="Like New">Like New</option>
+                                            <option value="Good">Good</option>
+                                            <option value="Acceptable">Acceptable</option>
+                                        </select>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label for="bookLanguage">Language</label>
+                                        <select id="bookLanguage">
+                                            <option value="English">English</option>
+                                            <option value="Spanish">Spanish</option>
+                                            <option value="French">French</option>
+                                            <option value="German">German</option>
+                                            <option value="Portuguese">Portuguese</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Row: Publisher & Pages -->
+                                <div class="form-group" style="display: flex; gap: 15px;">
+                                    <div style="flex: 1;">
+                                        <label for="bookPublisher">Publisher</label>
+                                        <input type="text" id="bookPublisher" placeholder="e.g. Penguin Books">
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <label for="bookPages">Pages</label>
+                                        <input type="number" id="bookPages" min="1" placeholder="350">
+                                    </div>
+                                </div>
+
+                                <!-- Synopsis -->
+                                <div class="form-group">
+                                    <label for="bookSynopsis">Synopsis</label>
+                                    <textarea id="bookSynopsis" rows="4" placeholder="Write a brief description of the book..."></textarea>
+                                </div>
+
+                                <!-- Cover Image Upload (Drag & Drop) -->
+                                <div class="form-group">
+                                    <label>Book Cover</label>
+                                    <div class="drop-zone" id="dropZone">
+                                        <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; color: var(--admin-accent); margin-bottom: 10px;"></i>
+                                        <p style="margin: 0; color: var(--admin-text-muted); font-size: 0.9rem;">Drag & drop an image here</p>
+                                        <p style="margin: 5px 0 0; color: var(--admin-text-muted); font-size: 0.8rem;">or</p>
+                                        <button type="button" class="browse-btn" id="browseBtn">Browse Files</button>
+                                        <input type="file" id="coverInput" accept="image/*" style="display: none;">
+                                    </div>
+                                    <div id="coverPreview" style="display: none; margin-top: 10px; position: relative;">
+                                        <img id="coverPreviewImg" style="max-width: 120px; max-height: 160px; border: 1px solid var(--admin-border); object-fit: cover;">
+                                        <button type="button" id="removeCover" style="position: absolute; top: -8px; right: -8px; background: var(--admin-danger); color: white; border: none; width: 24px; height: 24px; cursor: pointer; font-size: 0.8rem; display: flex; align-items: center; justify-content: center;">&times;</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Non-book quantity (shown when not books) -->
+                            <div id="nonBookQuantity" style="display: none;">
+                                <div class="form-group">
+                                    <label for="itemQuantity">Quantity</label>
+                                    <input type="number" id="itemQuantity" min="1" value="1" placeholder="1">
+                                </div>
+                            </div>
+
                             <button type="submit" class="admin-btn">Add to Store</button>
                         </form>
                     </div>
 
                     <!-- Manage Inventory -->
                     <div>
-                        <h3 style="font-size: 1.1rem; color: var(--admin-text); margin-bottom: 15px;">Current Catalog (Added Items)</h3>
-                        <div class="member-list" id="inventoryList" style="max-height: 250px;">
+                        <h3 style="font-size: 1.1rem; color: var(--admin-text); margin-bottom: 15px;">Current Catalog</h3>
+                        <div class="member-list" id="inventoryList" style="max-height: 400px;">
                             <p class="empty-state" style="color: var(--admin-text-muted);">No custom items added yet.</p>
                         </div>
 
                         <h3 style="font-size: 1.1rem; color: var(--admin-text); margin-top: 20px; margin-bottom: 15px;">Static Storefront Books</h3>
                         <div class="member-list" id="staticInventoryList" style="max-height: 250px;">
-                            <!-- Static books hardcoded to match shop.html for hiding feature -->
                         </div>
                     </div>
                 </div>
@@ -209,33 +293,26 @@
     <script>
         // --- Tab System ---
         function switchTab(tabName) {
-            // Hide all panels
             document.querySelectorAll('.tab-panel').forEach(panel => {
                 panel.classList.remove('active');
             });
-            // Remove active from all nav links
             document.querySelectorAll('.tab-link').forEach(link => {
                 link.classList.remove('active');
             });
-            // Also remove active from the Members dropdown button if a member sub-tab is not selected
             document.querySelector('.dropbtn').classList.remove('active');
 
-            // Show selected panel
             const target = document.getElementById('tab-' + tabName);
             if (target) target.classList.add('active');
 
-            // Mark correct nav link as active
             document.querySelectorAll('.tab-link[data-tab="' + tabName + '"]').forEach(link => {
                 link.classList.add('active');
             });
 
-            // If a members sub-tab, also highlight the Members dropdown button
             if (tabName === 'members-manage' || tabName === 'members-invite') {
                 document.querySelector('.dropbtn').classList.add('active');
             }
         }
 
-        // Attach click handlers to all tab links
         document.querySelectorAll('.tab-link').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -261,6 +338,80 @@
             localStorage.removeItem('verba_logged_in');
             localStorage.removeItem('verba_user_email');
             window.location.href = 'login.html';
+        });
+
+        // --- Category Toggle (show/hide book fields) ---
+        const categorySelect = document.getElementById('productCategory');
+        const bookFields = document.getElementById('bookFields');
+        const nonBookQuantity = document.getElementById('nonBookQuantity');
+
+        function toggleBookFields() {
+            if (categorySelect.value === 'books') {
+                bookFields.style.display = 'block';
+                nonBookQuantity.style.display = 'none';
+            } else {
+                bookFields.style.display = 'none';
+                nonBookQuantity.style.display = 'block';
+            }
+        }
+        categorySelect.addEventListener('change', toggleBookFields);
+        toggleBookFields(); // init
+
+        // --- Cover Image Drag & Drop ---
+        let coverImageData = null;
+        const dropZone = document.getElementById('dropZone');
+        const coverInput = document.getElementById('coverInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const coverPreview = document.getElementById('coverPreview');
+        const coverPreviewImg = document.getElementById('coverPreviewImg');
+        const removeCover = document.getElementById('removeCover');
+
+        browseBtn.addEventListener('click', () => coverInput.click());
+
+        coverInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleCoverFile(e.target.files[0]);
+        });
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--admin-accent)';
+            dropZone.style.backgroundColor = 'rgba(49, 130, 206, 0.05)';
+        });
+
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--admin-border)';
+            dropZone.style.backgroundColor = 'transparent';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = 'var(--admin-border)';
+            dropZone.style.backgroundColor = 'transparent';
+            if (e.dataTransfer.files.length > 0) handleCoverFile(e.dataTransfer.files[0]);
+        });
+
+        function handleCoverFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showToast('Please upload an image file.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                coverImageData = e.target.result;
+                coverPreviewImg.src = coverImageData;
+                coverPreview.style.display = 'inline-block';
+                dropZone.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        removeCover.addEventListener('click', () => {
+            coverImageData = null;
+            coverPreviewImg.src = '';
+            coverPreview.style.display = 'none';
+            dropZone.style.display = 'flex';
+            coverInput.value = '';
         });
 
         // --- Invitations ---
@@ -323,10 +474,18 @@
             products.forEach(p => {
                 const item = document.createElement('div');
                 item.className = 'member-item';
+                const isBook = p.category === 'books';
+                const detail = isBook 
+                    ? `$${parseFloat(p.price).toFixed(2)} | ISBN: ${p.isbn || 'N/A'} | Qty: ${p.quantity || 1}`
+                    : `$${parseFloat(p.price).toFixed(2)} | ${p.category} | Qty: ${p.quantity || 1}`;
+                
                 item.innerHTML = `
-                    <div class="member-info">
-                        <strong>${p.name}</strong>
-                        <span>$${p.price} | ${p.category}</span>
+                    <div class="member-info" style="display: flex; align-items: center; gap: 12px;">
+                        ${p.image ? `<img src="${p.image}" style="width: 40px; height: 55px; object-fit: cover; border: 1px solid var(--admin-border);">` : ''}
+                        <div>
+                            <strong>${p.name}</strong>
+                            <span>${detail}</span>
+                        </div>
                     </div>
                     <button class="btn-expel" onclick="removeCustomProduct(${p.id})">Remove</button>
                 `;
@@ -348,12 +507,42 @@
             const category = document.getElementById('productCategory').value;
             const price = document.getElementById('productPrice').value;
             
+            const product = {
+                id: Date.now(),
+                name,
+                category,
+                price,
+                image: ''
+            };
+
+            if (category === 'books') {
+                product.isbn = document.getElementById('bookIsbn').value || '';
+                product.quantity = parseInt(document.getElementById('bookQuantity').value) || 1;
+                product.condition = document.getElementById('bookQuality').value;
+                product.language = document.getElementById('bookLanguage').value;
+                product.publisher = document.getElementById('bookPublisher').value || '';
+                product.pages = document.getElementById('bookPages').value || '';
+                product.synopsis = document.getElementById('bookSynopsis').value || '';
+                product.image = coverImageData || '';
+            } else {
+                product.quantity = parseInt(document.getElementById('itemQuantity').value) || 1;
+            }
+
             const products = JSON.parse(localStorage.getItem('verba_products')) || [];
-            products.push({ id: Date.now(), name, category, price, image: '' });
+            products.push(product);
             localStorage.setItem('verba_products', JSON.stringify(products));
             
-            showToast('Product added to store!');
+            showToast(`${category === 'books' ? 'Book' : 'Product'} added to store!`);
             e.target.reset();
+            
+            // Reset cover upload
+            coverImageData = null;
+            coverPreviewImg.src = '';
+            coverPreview.style.display = 'none';
+            dropZone.style.display = 'flex';
+            coverInput.value = '';
+            
+            toggleBookFields();
             loadCustomInventory();
         });
 

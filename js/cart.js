@@ -210,18 +210,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const grid = grids[0];
         products.forEach(p => {
             if (p.category === pageCategory) {
+                // Skip if out of stock
+                if (p.quantity !== undefined && p.quantity <= 0) return;
+
                 const card = document.createElement('div');
                 card.className = 'book-card';
-                card.setAttribute('data-category', 'custom-eboard');
+                card.setAttribute('data-category', 'custom-admin');
                 
-                let imageHtml = p.image ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:250px; object-fit:cover; margin-bottom:15px; border-radius: 0;">` : `<div class="placeholder-cover">NEW</div>`;
+                let imageHtml = p.image 
+                    ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:250px; object-fit:cover; margin-bottom:15px; border-radius: 0;">`
+                    : `<div class="placeholder-cover">NEW</div>`;
+                
+                const isbnDisplay = p.isbn || `CUST-${p.id}`;
                 
                 card.innerHTML = `
                     ${imageHtml}
                     <p class="book-title">${p.name}</p>
-                    <p class="book-author">By E-Board</p>
+                    <p class="book-author">By Admin</p>
                     <p class="book-price">$${parseFloat(p.price).toFixed(2)}</p>
-                    <p class="book-isbn" style="display:none;">ISBN: CUST-${p.id}</p>
+                    <p class="book-isbn" style="display:none;">ISBN: ${isbnDisplay}</p>
                 `;
                 
                 card.style.cursor = 'pointer';
@@ -232,24 +239,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (!modal) return;
                     
                     document.getElementById('modalTitle').textContent = p.name;
-                    document.getElementById('modalAuthor').textContent = "By E-Board";
-                    document.getElementById('modalPrice').textContent = "$" + parseFloat(p.price).toFixed(2);
+                    document.getElementById('modalAuthor').textContent = 'By Admin';
+                    document.getElementById('modalPrice').textContent = '$' + parseFloat(p.price).toFixed(2);
                     
                     const coverEl = document.getElementById('modalCover');
-                    if(p.image) {
+                    if (p.image) {
                         coverEl.innerHTML = `<img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">`;
                     } else {
-                        coverEl.textContent = p.category.toUpperCase();
+                        coverEl.innerHTML = '';
+                        coverEl.textContent = (p.category || 'NEW').toUpperCase();
                     }
 
                     const modalDetails = document.querySelector('.modal-details');
                     if (modalDetails && p.category === 'books') {
                         modalDetails.innerHTML = `
                             <p><strong>Condition:</strong> ${p.condition || 'New'}</p>
-                            <p><strong>ISBN:</strong> <span id="modalIsbn">CUST-${p.id}</span></p>
+                            <p><strong>ISBN:</strong> <span id="modalIsbn">${isbnDisplay}</span></p>
                             <p><strong>Pages:</strong> ${p.pages || 'N/A'}</p>
                             <p><strong>Publisher:</strong> ${p.publisher || 'N/A'}</p>
-                            <p><strong>Language:</strong> English</p>
+                            <p><strong>Language:</strong> ${p.language || 'English'}</p>
+                            <p><strong>In Stock:</strong> ${p.quantity || 1}</p>
                         `;
                     } else if (modalDetails) {
                         modalDetails.innerHTML = `<p><strong>Item ID:</strong> CUST-${p.id}</p>`;
@@ -267,13 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     const modalLinks = document.querySelector('.modal-links');
                     if (modalLinks) {
-                        if (p.rating && p.goodreadsLink && p.category === 'books') {
-                            modalLinks.innerHTML = `
-                                <a href="${p.goodreadsLink}" target="_blank" class="modal-link" style="color: #d69e2e; font-weight: bold; font-size: 1.1rem; text-decoration: none;">⭐ ${p.rating} on Goodreads</a>
-                            `;
-                        } else {
-                            modalLinks.innerHTML = '';
-                        }
+                        modalLinks.innerHTML = '';
                     }
 
                     modal.style.display = 'flex';
@@ -291,10 +294,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         newBtn.addEventListener('click', () => {
                             const added = window.addToCart({
                                 title: p.name,
-                                author: "E-Board",
-                                price: "$" + parseFloat(p.price).toFixed(2),
-                                isbn: "CUST-" + p.id,
-                                category: p.category.toUpperCase()
+                                author: 'Admin',
+                                price: '$' + parseFloat(p.price).toFixed(2),
+                                isbn: isbnDisplay,
+                                category: (p.category || 'NEW').toUpperCase()
                             });
                             if (added) {
                                 newBtn.textContent = 'Added to Cart!';
