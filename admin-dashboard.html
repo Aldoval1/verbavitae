@@ -485,6 +485,10 @@
                     ? `$${parseFloat(p.price).toFixed(2)} | ISBN: ${p.isbn || 'N/A'} | Qty: ${p.quantity || 1}`
                     : `$${parseFloat(p.price).toFixed(2)} | ${p.category} | Qty: ${p.quantity || 1}`;
                 
+                const isRecommended = p.isStaffPick;
+                const recStyle = isRecommended ? 'background: #d69e2e; color: white;' : 'background: transparent; color: var(--admin-text); border: 1px solid var(--admin-border);';
+                const recText = isRecommended ? '⭐ Recommended' : '☆ Recommend';
+
                 item.innerHTML = `
                     <div class="member-info" style="display: flex; align-items: center; gap: 12px;">
                         ${p.image ? `<img src="${p.image}" style="width: 40px; height: 55px; object-fit: cover; border: 1px solid var(--admin-border);">` : ''}
@@ -493,7 +497,10 @@
                             <span>${detail}</span>
                         </div>
                     </div>
-                    <button class="btn-expel" onclick="removeCustomProduct(${p.id})">Remove</button>
+                    <div style="display: flex; gap: 10px;">
+                        ${isBook ? `<button style="padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: 0.3s; ${recStyle}" onclick="toggleRecommend(${p.id})">${recText}</button>` : ''}
+                        <button class="btn-expel" onclick="removeCustomProduct(${p.id})">Remove</button>
+                    </div>
                 `;
                 list.appendChild(item);
             });
@@ -505,6 +512,29 @@
             localStorage.setItem('verba_products', JSON.stringify(products));
             loadCustomInventory();
             showToast('Product removed from store.');
+        };
+
+        window.toggleRecommend = function(id) {
+            let products = JSON.parse(localStorage.getItem('verba_products')) || [];
+            const product = products.find(p => p.id === id);
+            if (!product) return;
+
+            const currentRecommended = products.filter(p => p.isStaffPick).length;
+
+            if (product.isStaffPick) {
+                product.isStaffPick = false;
+                showToast('Removed from Staff Picks.');
+            } else {
+                if (currentRecommended >= 3) {
+                    showToast('You can only recommend up to 3 books at a time.');
+                    return;
+                }
+                product.isStaffPick = true;
+                showToast('Added to Staff Picks!');
+            }
+
+            localStorage.setItem('verba_products', JSON.stringify(products));
+            loadCustomInventory();
         };
 
         document.getElementById('productForm').addEventListener('submit', (e) => {
@@ -519,7 +549,8 @@
                 name,
                 category,
                 price,
-                image: ''
+                image: '',
+                isStaffPick: false
             };
 
             if (category === 'books') {

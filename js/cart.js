@@ -204,120 +204,151 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (path.includes('technology')) pageCategory = 'technology';
 
     const products = JSON.parse(localStorage.getItem('verba_products')) || [];
-    const grids = document.querySelectorAll('.results-grid');
     
+    // UI Containers
+    const grids = document.querySelectorAll('.results-grid');
+    const newSlider = document.getElementById('newAcquisitionsSlider');
+    const staffSlider = document.getElementById('staffPicksSlider');
+
+    // Helper to build a product card and attach its modal
+    function createProductCard(p) {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        card.setAttribute('data-category', 'custom-admin');
+        
+        let imageHtml = p.image 
+            ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:250px; object-fit:cover; margin-bottom:15px; border-radius: 0;">`
+            : `<div class="placeholder-cover">NEW</div>`;
+        
+        const isbnDisplay = p.isbn || `CUST-${p.id}`;
+        const authorDisplay = p.author ? `By ${p.author}` : (p.category === 'books' ? 'By Unknown Author' : 'Verba Vitae');
+        
+        card.innerHTML = `
+            ${imageHtml}
+            <p class="book-title">${p.name}</p>
+            <p class="book-author">${authorDisplay}</p>
+            <p class="book-price">$${parseFloat(p.price).toFixed(2)}</p>
+            <p class="book-isbn" style="display:none;">ISBN: ${isbnDisplay}</p>
+        `;
+        
+        card.style.cursor = 'pointer';
+        card.addEventListener('click', (e) => {
+            if (e.target.classList.contains('custom-cart-btn')) return;
+            
+            const modal = document.getElementById('bookModal');
+            if (!modal) return;
+            
+            document.getElementById('modalTitle').textContent = p.name;
+            document.getElementById('modalAuthor').textContent = authorDisplay;
+            document.getElementById('modalPrice').textContent = '$' + parseFloat(p.price).toFixed(2);
+            
+            const coverEl = document.getElementById('modalCover');
+            if (p.image) {
+                coverEl.innerHTML = `<img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">`;
+            } else {
+                coverEl.innerHTML = '';
+                coverEl.textContent = (p.category || 'NEW').toUpperCase();
+            }
+
+            const modalDetails = document.querySelector('.modal-details');
+            if (modalDetails && p.category === 'books') {
+                modalDetails.innerHTML = `
+                    <p><strong>Condition:</strong> ${p.condition || 'New'}</p>
+                    <p><strong>ISBN:</strong> <span id="modalIsbn">${isbnDisplay}</span></p>
+                    <p><strong>Pages:</strong> ${p.pages || 'N/A'}</p>
+                    <p><strong>Publisher:</strong> ${p.publisher || 'N/A'}</p>
+                    <p><strong>Language:</strong> ${p.language || 'English'}</p>
+                    <p><strong>In Stock:</strong> ${p.quantity || 1}</p>
+                `;
+            } else if (modalDetails) {
+                modalDetails.innerHTML = `<p><strong>Item ID:</strong> CUST-${p.id}</p>`;
+            }
+
+            const modalSynopsis = document.querySelector('.modal-synopsis');
+            if (modalSynopsis && p.category === 'books') {
+                modalSynopsis.innerHTML = `
+                    <h3>Synopsis</h3>
+                    <p>${p.synopsis || 'No synopsis provided.'}</p>
+                `;
+            } else if (modalSynopsis) {
+                modalSynopsis.innerHTML = '';
+            }
+
+            const modalLinks = document.querySelector('.modal-links');
+            if (modalLinks) {
+                modalLinks.innerHTML = '';
+            }
+
+            modal.style.display = 'flex';
+            
+            const addToCartBtn = modal.querySelector('.add-to-cart-btn');
+            if (addToCartBtn) {
+                const newBtn = addToCartBtn.cloneNode(true);
+                addToCartBtn.parentNode.replaceChild(newBtn, addToCartBtn);
+                
+                newBtn.textContent = 'Add to Cart';
+                newBtn.disabled = false;
+                newBtn.style.backgroundColor = 'var(--color-accent-blue)';
+                newBtn.style.cursor = 'pointer';
+
+                newBtn.addEventListener('click', () => {
+                    const added = window.addToCart({
+                        title: p.name,
+                        author: p.author || (p.category === 'books' ? 'Unknown Author' : 'Verba Vitae'),
+                        price: '$' + parseFloat(p.price).toFixed(2),
+                        isbn: isbnDisplay,
+                        category: (p.category || 'NEW').toUpperCase()
+                    });
+                    if (added) {
+                        newBtn.textContent = 'Added to Cart!';
+                        newBtn.style.backgroundColor = '#48bb78';
+                        if (typeof window.showToast === 'function') window.showToast('Item reserved in your cart for 30 minutes.');
+                        setTimeout(() => { modal.style.display = 'none'; }, 1000);
+                    } else {
+                        newBtn.textContent = 'Already in Cart';
+                        newBtn.disabled = true;
+                        newBtn.style.cursor = 'not-allowed';
+                    }
+                });
+            }
+        });
+
+        return card;
+    }
+
+    // 1. Populate Main Grid
     if (grids.length > 0) {
         const grid = grids[0];
         products.forEach(p => {
             if (p.category === pageCategory) {
-                // Skip if out of stock
                 if (p.quantity !== undefined && p.quantity <= 0) return;
-
-                const card = document.createElement('div');
-                card.className = 'book-card';
-                card.setAttribute('data-category', 'custom-admin');
-                
-                let imageHtml = p.image 
-                    ? `<img src="${p.image}" alt="${p.name}" style="width:100%; height:250px; object-fit:cover; margin-bottom:15px; border-radius: 0;">`
-                    : `<div class="placeholder-cover">NEW</div>`;
-                
-                const isbnDisplay = p.isbn || `CUST-${p.id}`;
-                const authorDisplay = p.author ? `By ${p.author}` : (p.category === 'books' ? 'By Unknown Author' : 'Verba Vitae');
-                
-                card.innerHTML = `
-                    ${imageHtml}
-                    <p class="book-title">${p.name}</p>
-                    <p class="book-author">${authorDisplay}</p>
-                    <p class="book-price">$${parseFloat(p.price).toFixed(2)}</p>
-                    <p class="book-isbn" style="display:none;">ISBN: ${isbnDisplay}</p>
-                `;
-                
-                card.style.cursor = 'pointer';
-                card.addEventListener('click', (e) => {
-                    if (e.target.classList.contains('custom-cart-btn')) return;
-                    
-                    const modal = document.getElementById('bookModal');
-                    if (!modal) return;
-                    
-                    const authorDisplay = p.author ? `By ${p.author}` : (p.category === 'books' ? 'By Unknown Author' : 'Verba Vitae');
-
-                    document.getElementById('modalTitle').textContent = p.name;
-                    document.getElementById('modalAuthor').textContent = authorDisplay;
-                    document.getElementById('modalPrice').textContent = '$' + parseFloat(p.price).toFixed(2);
-                    
-                    const coverEl = document.getElementById('modalCover');
-                    if (p.image) {
-                        coverEl.innerHTML = `<img src="${p.image}" style="width:100%; height:100%; object-fit:cover;">`;
-                    } else {
-                        coverEl.innerHTML = '';
-                        coverEl.textContent = (p.category || 'NEW').toUpperCase();
-                    }
-
-                    const modalDetails = document.querySelector('.modal-details');
-                    if (modalDetails && p.category === 'books') {
-                        modalDetails.innerHTML = `
-                            <p><strong>Condition:</strong> ${p.condition || 'New'}</p>
-                            <p><strong>ISBN:</strong> <span id="modalIsbn">${isbnDisplay}</span></p>
-                            <p><strong>Pages:</strong> ${p.pages || 'N/A'}</p>
-                            <p><strong>Publisher:</strong> ${p.publisher || 'N/A'}</p>
-                            <p><strong>Language:</strong> ${p.language || 'English'}</p>
-                            <p><strong>In Stock:</strong> ${p.quantity || 1}</p>
-                        `;
-                    } else if (modalDetails) {
-                        modalDetails.innerHTML = `<p><strong>Item ID:</strong> CUST-${p.id}</p>`;
-                    }
-
-                    const modalSynopsis = document.querySelector('.modal-synopsis');
-                    if (modalSynopsis && p.category === 'books') {
-                        modalSynopsis.innerHTML = `
-                            <h3>Synopsis</h3>
-                            <p>${p.synopsis || 'No synopsis provided.'}</p>
-                        `;
-                    } else if (modalSynopsis) {
-                        modalSynopsis.innerHTML = '';
-                    }
-
-                    const modalLinks = document.querySelector('.modal-links');
-                    if (modalLinks) {
-                        modalLinks.innerHTML = '';
-                    }
-
-                    modal.style.display = 'flex';
-                    
-                    const addToCartBtn = modal.querySelector('.add-to-cart-btn');
-                    if (addToCartBtn) {
-                        const newBtn = addToCartBtn.cloneNode(true);
-                        addToCartBtn.parentNode.replaceChild(newBtn, addToCartBtn);
-                        
-                        newBtn.textContent = 'Add to Cart';
-                        newBtn.disabled = false;
-                        newBtn.style.backgroundColor = 'var(--color-accent-blue)';
-                        newBtn.style.cursor = 'pointer';
-
-                        newBtn.addEventListener('click', () => {
-                            const added = window.addToCart({
-                                title: p.name,
-                                author: p.author || (p.category === 'books' ? 'Unknown Author' : 'Verba Vitae'),
-                                price: '$' + parseFloat(p.price).toFixed(2),
-                                isbn: isbnDisplay,
-                                category: (p.category || 'NEW').toUpperCase()
-                            });
-                            if (added) {
-                                newBtn.textContent = 'Added to Cart!';
-                                newBtn.style.backgroundColor = '#48bb78';
-                                if (typeof window.showToast === 'function') window.showToast('Item reserved in your cart for 30 minutes.');
-                                setTimeout(() => { modal.style.display = 'none'; }, 1000);
-                            } else {
-                                newBtn.textContent = 'Already in Cart';
-                                newBtn.disabled = true;
-                                newBtn.style.cursor = 'not-allowed';
-                            }
-                        });
-                    }
-                });
-
+                const card = createProductCard(p);
                 grid.prepend(card);
             }
         });
+    }
+
+    // Only do sliders if we are on a page that has them
+    if (newSlider && staffSlider) {
+        // Books only, in stock only
+        const availableBooks = products.filter(p => p.category === 'books' && (p.quantity === undefined || p.quantity > 0));
+
+        // 2. Populate New Acquisitions (top 4 latest by id)
+        const newAcqs = [...availableBooks].sort((a, b) => b.id - a.id).slice(0, 4);
+        if (newAcqs.length > 0) {
+            newSlider.innerHTML = '';
+            newAcqs.forEach(p => {
+                newSlider.appendChild(createProductCard(p));
+            });
+        }
+
+        // 3. Populate Staff Picks
+        const staffPicks = availableBooks.filter(p => p.isStaffPick);
+        if (staffPicks.length > 0) {
+            staffSlider.innerHTML = '';
+            staffPicks.forEach(p => {
+                staffSlider.appendChild(createProductCard(p));
+            });
+        }
     }
 });
