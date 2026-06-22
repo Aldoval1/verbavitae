@@ -73,7 +73,11 @@
             const errorEl = document.getElementById('loginError');
 
             // Simulated Authentication Routing
-            if (user && pass) {
+            if (user === 'abacallao@theverbavitae.org' && pass === 'Lemon1429!') {
+                localStorage.setItem('verba_logged_in', 'true');
+                localStorage.setItem('verba_user_email', user);
+                window.location.href = 'admin-dashboard.html';
+            } else if (user && pass) {
                 localStorage.setItem('verba_logged_in', 'true');
                 localStorage.setItem('verba_user_email', user);
                 

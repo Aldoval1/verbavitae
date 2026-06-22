@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verba Vitae - Executive Admin</title>
+    <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
+    <link rel="stylesheet" href="css/admin-dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Nav -->
+    <header class="dash-header">
+        <div class="dash-logo">
+            <img src="images/verbavitaelogoblue.png" alt="Verba Vitae">
+            <span>EXECUTIVE CONSOLE</span>
+        </div>
+        <div class="dash-profile">
+            <div class="profile-pic">
+                <img src="images/cover1.png" alt="Profile" id="navProfilePic">
+            </div>
+            <a href="login.html" class="config-link" title="Log Out" id="logoutBtn" style="display: flex; align-items: center; padding: 5px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </a>
+        </div>
+    </header>
+
+    <main class="dash-main">
+        <div class="admin-header">
+            <h1>Welcome, Aaron</h1>
+            <p>Manage community operations, members, and resources from your executive dashboard.</p>
+        </div>
+
+        <div class="admin-grid">
+            
+            <!-- Send Invitations -->
+            <section class="admin-card">
+                <h2>ðŸ“§ Send Invitations</h2>
+                <form id="inviteForm" class="admin-form">
+                    <div class="form-group">
+                        <label for="inviteEmail">Recipient Email Address</label>
+                        <input type="email" id="inviteEmail" required placeholder="newmember@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label for="inviteMessage">Custom Message (Optional)</label>
+                        <textarea id="inviteMessage" rows="3" placeholder="Welcome to Verba Vitae!"></textarea>
+                    </div>
+                    <button type="submit" class="admin-btn">Send Invitation</button>
+                </form>
+            </section>
+
+            <!-- Member Management -->
+            <section class="admin-card">
+                <h2>ðŸ‘¥ Member Management</h2>
+                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Review and manage active community members.</p>
+                <div class="member-list" id="memberList">
+                    <!-- Mock Members -->
+                    <div class="member-item">
+                        <div class="member-info">
+                            <strong>Jane Doe</strong>
+                            <span>janedoe@example.com</span>
+                        </div>
+                        <button class="btn-expel" onclick="expelMember(this, 'Jane Doe')">Expel</button>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-info">
+                            <strong>John Smith</strong>
+                            <span>jsmith23@example.com</span>
+                        </div>
+                        <button class="btn-expel" onclick="expelMember(this, 'John Smith')">Expel</button>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-info">
+                            <strong>Maria Garcia</strong>
+                            <span>mgarcia@example.com</span>
+                        </div>
+                        <button class="btn-expel" onclick="expelMember(this, 'Maria Garcia')">Expel</button>
+                    </div>
+                    <div class="member-item">
+                        <div class="member-info">
+                            <strong>Alex Johnson</strong>
+                            <span>alexj@example.com</span>
+                        </div>
+                        <button class="btn-expel" onclick="expelMember(this, 'Alex Johnson')">Expel</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Update Dashboard Banner -->
+            <section class="admin-card">
+                <h2>ðŸ“¢ Update Global Banner</h2>
+                <form id="bannerForm" class="admin-form">
+                    <div class="form-group">
+                        <label for="bannerTitleInput">Banner Title</label>
+                        <input type="text" id="bannerTitleInput" required placeholder="Welcome to your new Dashboard!">
+                    </div>
+                    <div class="form-group">
+                        <label for="bannerTextInput">Banner Text</label>
+                        <textarea id="bannerTextInput" rows="3" required placeholder="Stay updated with the latest community events..."></textarea>
+                    </div>
+                    <button type="submit" class="admin-btn">Push Update to Users</button>
+                </form>
+            </section>
+
+            <!-- Event Manager Section -->
+            <section class="admin-card">
+                <h2>ðŸ“… Add Calendar Event</h2>
+                <form id="eventForm" class="admin-form">
+                    <div class="form-group">
+                        <label for="eventTitle">Event Title</label>
+                        <input type="text" id="eventTitle" required placeholder="e.g. Monthly Meeting">
+                    </div>
+                    <div class="form-group">
+                        <label for="eventDate">Date</label>
+                        <input type="date" id="eventDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="eventColor">Category Color</label>
+                        <select id="eventColor" required>
+                            <option value="blue">Blue (General)</option>
+                            <option value="green">Green (Important)</option>
+                            <option value="purple">Purple (Study Group)</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="admin-btn">Publish Event</button>
+                </form>
+            </section>
+
+            <!-- Store Inventory Manager -->
+            <section class="admin-card" style="grid-column: 1 / -1;">
+                <h2>ðŸ›’ Store Inventory Management</h2>
+                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Add new items or remove existing stock from the storefront.</p>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+                    <!-- Add Product -->
+                    <div>
+                        <h3 style="font-size: 1.1rem; color: var(--admin-text); margin-bottom: 15px;">Add New Product</h3>
+                        <form id="productForm" class="admin-form">
+                            <div class="form-group">
+                                <label for="productName">Product Name</label>
+                                <input type="text" id="productName" required placeholder="e.g. Advanced Calculus Book">
+                            </div>
+                            <div class="form-group" style="display: flex; gap: 15px;">
+                                <div style="flex: 1;">
+                                    <label for="productCategory">Category</label>
+                                    <select id="productCategory" required>
+                                        <option value="books">Books</option>
+                                        <option value="accessories">Accessories</option>
+                                        <option value="snacks">Snacks</option>
+                                        <option value="technology">Technology</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="productPrice">Price ($)</label>
+                                    <input type="number" id="productPrice" step="0.01" required placeholder="25.00">
+                                </div>
+                            </div>
+                            <button type="submit" class="admin-btn">Add to Store</button>
+                        </form>
+                    </div>
+
+                    <!-- Manage Inventory -->
+                    <div>
+                        <h3 style="font-size: 1.1rem; color: var(--admin-text); margin-bottom: 15px;">Current Catalog (Added Items)</h3>
+                        <div class="member-list" id="inventoryList" style="max-height: 250px;">
+                            <p class="empty-state" style="color: var(--admin-text-muted);">No custom items added yet.</p>
+                        </div>
+
+                        <h3 style="font-size: 1.1rem; color: var(--admin-text); margin-top: 20px; margin-bottom: 15px;">Static Storefront Books</h3>
+                        <div class="member-list" id="staticInventoryList" style="max-height: 250px;">
+                            <!-- Static books hardcoded to match shop.html for hiding feature -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Global Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <script>
+        // --- Core Functions ---
+        function showToast(message) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            localStorage.removeItem('verba_logged_in');
+            localStorage.removeItem('verba_user_email');
+            window.location.href = 'login.html';
+        });
+
+        // --- Invitations ---
+        document.getElementById('inviteForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('inviteEmail').value;
+            showToast(`Invitation sent to ${email}`);
+            e.target.reset();
+        });
+
+        // --- Members ---
+        function expelMember(btn, name) {
+            if (confirm(`Are you sure you want to expel ${name} from Verba Vitae?`)) {
+                btn.parentElement.remove();
+                showToast(`${name} has been expelled.`);
+            }
+        }
+
+        // --- Banner Updater ---
+        const savedTitle = localStorage.getItem('verba_banner_title') || 'Welcome to your new Dashboard!';
+        const savedText = localStorage.getItem('verba_banner_text') || 'Stay updated with the latest community events, new book arrivals, and exclusive study group sessions starting this week.';
+        document.getElementById('bannerTitleInput').value = savedTitle;
+        document.getElementById('bannerTextInput').value = savedText;
+
+        document.getElementById('bannerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('bannerTitleInput').value;
+            const text = document.getElementById('bannerTextInput').value;
+            localStorage.setItem('verba_banner_title', title);
+            localStorage.setItem('verba_banner_text', text);
+            showToast('Global banner updated successfully!');
+        });
+
+        // --- Event Manager ---
+        document.getElementById('eventForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const title = document.getElementById('eventTitle').value;
+            const date = document.getElementById('eventDate').value;
+            const color = document.getElementById('eventColor').value;
+            
+            const events = JSON.parse(localStorage.getItem('verba_events')) || [];
+            events.push({ title, date, color });
+            localStorage.setItem('verba_events', JSON.stringify(events));
+            
+            showToast('Event added to the calendar!');
+            e.target.reset();
+        });
+
+        // --- Store Inventory ---
+        function loadCustomInventory() {
+            const list = document.getElementById('inventoryList');
+            const products = JSON.parse(localStorage.getItem('verba_products')) || [];
+            
+            if (products.length === 0) {
+                list.innerHTML = '<p style="color: var(--admin-text-muted);">No custom items added.</p>';
+                return;
+            }
+
+            list.innerHTML = '';
+            products.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'member-item';
+                item.innerHTML = `
+                    <div class="member-info">
+                        <strong>${p.name}</strong>
+                        <span>$${p.price} | ${p.category}</span>
+                    </div>
+                    <button class="btn-expel" onclick="removeCustomProduct(${p.id})">Remove</button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        window.removeCustomProduct = function(id) {
+            let products = JSON.parse(localStorage.getItem('verba_products')) || [];
+            products = products.filter(p => p.id !== id);
+            localStorage.setItem('verba_products', JSON.stringify(products));
+            loadCustomInventory();
+            showToast('Product removed from store.');
+        };
+
+        document.getElementById('productForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('productName').value;
+            const category = document.getElementById('productCategory').value;
+            const price = document.getElementById('productPrice').value;
+            
+            const products = JSON.parse(localStorage.getItem('verba_products')) || [];
+            products.push({ id: Date.now(), name, category, price, image: '' });
+            localStorage.setItem('verba_products', JSON.stringify(products));
+            
+            showToast('Product added to store!');
+            e.target.reset();
+            loadCustomInventory();
+        });
+
+        // --- Static Inventory Hider ---
+        const staticBooks = [
+            { title: "Dragon's Breath", isbn: "978-0-12345-678-9" },
+            { title: "Summer in Paris", isbn: "978-1-23456-789-0" },
+            { title: "Lead from the Front", isbn: "978-2-34567-890-1" },
+            { title: "The Fall of Rome", isbn: "978-3-45678-901-2" },
+            { title: "Calculus Vol. 1", isbn: "978-4-56789-012-3" },
+            { title: "The Hungry Little Bear", isbn: "978-5-67890-123-4" },
+            { title: "Mindfulness Daily", isbn: "978-6-78901-234-5" },
+            { title: "Neon Horizons", isbn: "978-7-89012-345-6" }
+        ];
+
+        function loadStaticInventory() {
+            const list = document.getElementById('staticInventoryList');
+            const hidden = JSON.parse(localStorage.getItem('verba_hidden_products')) || [];
+            list.innerHTML = '';
+
+            staticBooks.forEach(book => {
+                const isHidden = hidden.includes(book.isbn);
+                const item = document.createElement('div');
+                item.className = 'member-item';
+                item.innerHTML = `
+                    <div class="member-info">
+                        <strong style="${isHidden ? 'text-decoration: line-through; color: var(--admin-text-muted);' : ''}">${book.title}</strong>
+                        <span>ISBN: ${book.isbn}</span>
+                    </div>
+                    <button class="${isHidden ? 'btn-hide' : 'btn-expel'}" onclick="toggleStaticProduct('${book.isbn}')">
+                        ${isHidden ? 'Restore' : 'Hide from Shop'}
+                    </button>
+                `;
+                list.appendChild(item);
+            });
+        }
+
+        window.toggleStaticProduct = function(isbn) {
+            let hidden = JSON.parse(localStorage.getItem('verba_hidden_products')) || [];
+            if (hidden.includes(isbn)) {
+                hidden = hidden.filter(i => i !== isbn);
+                showToast('Product restored to storefront.');
+            } else {
+                hidden.push(isbn);
+                showToast('Product hidden from storefront.');
+            }
+            localStorage.setItem('verba_hidden_products', JSON.stringify(hidden));
+            loadStaticInventory();
+        };
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            const isLoggedIn = localStorage.getItem('verba_logged_in');
+            const userEmail = localStorage.getItem('verba_user_email');
+            
+            if (isLoggedIn !== 'true' || userEmail !== 'abacallao@theverbavitae.org') {
+                window.location.href = 'login.html';
+            }
+
+            loadCustomInventory();
+            loadStaticInventory();
+        });
+    </script>
+</body>
+</html>

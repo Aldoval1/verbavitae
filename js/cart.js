@@ -63,6 +63,9 @@ function updateCartUI() {
 
     const purchasedStr = localStorage.getItem('verba_purchased');
     const purchased = purchasedStr ? JSON.parse(purchasedStr) : [];
+    
+    const hiddenStr = localStorage.getItem('verba_hidden_products');
+    const hidden = hiddenStr ? JSON.parse(hiddenStr) : [];
 
     const bookCards = document.querySelectorAll('.results-grid .book-card');
     if (bookCards.length > 0) {
@@ -71,8 +74,8 @@ function updateCartUI() {
             if (isbnEl) {
                 const isbn = isbnEl.textContent.replace('ISBN: ', '').trim();
                 
-                // If purchased, hide completely
-                if (purchased.includes(isbn)) {
+                // If purchased or hidden, hide completely
+                if (purchased.includes(isbn) || hidden.includes(isbn)) {
                     card.classList.add('purchased');
                     card.classList.remove('in-cart');
                     card.style.display = 'none';

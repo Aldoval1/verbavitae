@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verba Vitae - Dashboard</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
-    <link rel="stylesheet" href="dashboard.css?v=2">
+    <link rel="stylesheet" href="css/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -33,8 +33,8 @@
         <section class="news-banner">
             <div class="news-content">
                 <span class="news-badge">LATEST NEWS</span>
-                <h1>Welcome to your new Dashboard!</h1>
-                <p>Stay updated with the latest community events, new book arrivals, and exclusive study group sessions starting this week.</p>
+                <h1 id="bannerTitle">Welcome to your new Dashboard!</h1>
+                <p id="bannerText">Stay updated with the latest community events, new book arrivals, and exclusive study group sessions starting this week.</p>
                 <button class="news-btn">Read More</button>
             </div>
             <div class="news-image"></div>
@@ -154,6 +154,16 @@
             const savedPic = localStorage.getItem('verba_profile_pic');
             if (savedPic) {
                 document.getElementById('navProfilePic').src = savedPic;
+            }
+
+            // Load saved banner
+            const savedBannerTitle = localStorage.getItem('verba_banner_title');
+            const savedBannerText = localStorage.getItem('verba_banner_text');
+            if (savedBannerTitle) {
+                document.getElementById('bannerTitle').textContent = savedBannerTitle;
+            }
+            if (savedBannerText) {
+                document.getElementById('bannerText').textContent = savedBannerText;
             }
 
             // Modal Logic
