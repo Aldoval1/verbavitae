@@ -78,10 +78,16 @@
                                 </div>
                             </div>
 
-                            <!-- Product Name -->
-                            <div class="form-group">
-                                <label for="productName">Product / Book Title</label>
-                                <input type="text" id="productName" required placeholder="e.g. Advanced Calculus">
+                            <!-- Product Name & Author -->
+                            <div class="form-group" style="display: flex; gap: 15px;">
+                                <div style="flex: 1;">
+                                    <label for="productName">Product / Book Title</label>
+                                    <input type="text" id="productName" required placeholder="e.g. Advanced Calculus">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="productAuthor">Author (if Book)</label>
+                                    <input type="text" id="productAuthor" placeholder="e.g. Jane Doe">
+                                </div>
                             </div>
 
                             <!-- Book-Specific Fields (shown when category is Books) -->
@@ -504,6 +510,7 @@
         document.getElementById('productForm').addEventListener('submit', (e) => {
             e.preventDefault();
             const name = document.getElementById('productName').value;
+            const authorInput = document.getElementById('productAuthor').value;
             const category = document.getElementById('productCategory').value;
             const price = document.getElementById('productPrice').value;
             
@@ -516,6 +523,7 @@
             };
 
             if (category === 'books') {
+                product.author = authorInput || 'Unknown Author';
                 product.isbn = document.getElementById('bookIsbn').value || '';
                 product.quantity = parseInt(document.getElementById('bookQuantity').value) || 1;
                 product.condition = document.getElementById('bookQuality').value;

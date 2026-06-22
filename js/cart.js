@@ -222,11 +222,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     : `<div class="placeholder-cover">NEW</div>`;
                 
                 const isbnDisplay = p.isbn || `CUST-${p.id}`;
+                const authorDisplay = p.author ? `By ${p.author}` : (p.category === 'books' ? 'By Unknown Author' : 'Verba Vitae');
                 
                 card.innerHTML = `
                     ${imageHtml}
                     <p class="book-title">${p.name}</p>
-                    <p class="book-author">By Admin</p>
+                    <p class="book-author">${authorDisplay}</p>
                     <p class="book-price">$${parseFloat(p.price).toFixed(2)}</p>
                     <p class="book-isbn" style="display:none;">ISBN: ${isbnDisplay}</p>
                 `;
@@ -238,8 +239,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const modal = document.getElementById('bookModal');
                     if (!modal) return;
                     
+                    const authorDisplay = p.author ? `By ${p.author}` : (p.category === 'books' ? 'By Unknown Author' : 'Verba Vitae');
+
                     document.getElementById('modalTitle').textContent = p.name;
-                    document.getElementById('modalAuthor').textContent = 'By Admin';
+                    document.getElementById('modalAuthor').textContent = authorDisplay;
                     document.getElementById('modalPrice').textContent = '$' + parseFloat(p.price).toFixed(2);
                     
                     const coverEl = document.getElementById('modalCover');
@@ -294,7 +297,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         newBtn.addEventListener('click', () => {
                             const added = window.addToCart({
                                 title: p.name,
-                                author: 'Admin',
+                                author: p.author || (p.category === 'books' ? 'Unknown Author' : 'Verba Vitae'),
                                 price: '$' + parseFloat(p.price).toFixed(2),
                                 isbn: isbnDisplay,
                                 category: (p.category || 'NEW').toUpperCase()
