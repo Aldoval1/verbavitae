@@ -430,23 +430,42 @@
             container.appendChild(input);
         });
 
-        document.getElementById('inviteForm').addEventListener('submit', (e) => {
+        document.getElementById('inviteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const inputs = document.querySelectorAll('.invite-email-slot');
             const emails = Array.from(inputs).map(input => input.value.trim()).filter(val => val !== '');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
             
             if (emails.length === 0) {
                 showToast('Please enter at least one valid email.');
                 return;
             }
 
-            // Mock sending loop for now, pending EmailJS Integration
-            emails.forEach(email => {
-                console.log(`Simulated sending to: ${email}`);
-            });
-            
-            showToast(`Invitations initiated for ${emails.length} recipient(s).`);
-            e.target.reset();
+            submitBtn.textContent = 'Sending...';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/send-invites', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ emails })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showToast(data.message || `Invitations successfully sent to ${emails.length} recipient(s).`);
+                    e.target.reset();
+                } else {
+                    showToast(data.message || 'Failed to send invitations.');
+                }
+            } catch (error) {
+                console.error(error);
+                showToast('Server error. Failed to send invitations.');
+            } finally {
+                submitBtn.textContent = 'Send Invitations';
+                submitBtn.disabled = false;
+            }
         });
 
         // --- Members ---
