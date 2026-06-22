@@ -73,10 +73,15 @@
             const errorEl = document.getElementById('loginError');
 
             // Simulated Authentication Routing
-            if (user === 'abacallao@theverbavitae.org' && pass === 'Lemon1429!') {
-                localStorage.setItem('verba_logged_in', 'true');
-                localStorage.setItem('verba_user_email', user);
-                window.location.href = 'admin-dashboard.html';
+            if (user === 'abacallao@theverbavitae.org') {
+                if (pass === 'Lemon1429!') {
+                    localStorage.setItem('verba_logged_in', 'true');
+                    localStorage.setItem('verba_user_email', user);
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    errorEl.textContent = 'Invalid credentials. Please use the correct password.';
+                    errorEl.style.display = 'block';
+                }
             } else if (user && pass) {
                 localStorage.setItem('verba_logged_in', 'true');
                 localStorage.setItem('verba_user_email', user);
@@ -87,6 +92,7 @@
                     window.location.href = 'dashboard.html';
                 }
             } else {
+                errorEl.textContent = 'Invalid credentials. Please use the test account.';
                 errorEl.style.display = 'block';
             }
         });
