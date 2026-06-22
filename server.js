@@ -16,14 +16,19 @@ app.use(express.static(path.join(__dirname, '')));
 
 // Create Nodemailer Transporter
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for 465, false for other ports
     auth: {
         user: process.env.EMAIL_USER, // e.g., abacallao@theverbavitae.org
         pass: process.env.EMAIL_PASS  // e.g., App Password
     },
     connectionTimeout: 10000, // 10 seconds
     greetingTimeout: 10000,
-    socketTimeout: 10000
+    socketTimeout: 10000,
+    tls: {
+        rejectUnauthorized: false
+    }
 });
 
 // Helper function to generate professional HTML email template
