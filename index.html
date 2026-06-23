@@ -7,9 +7,15 @@
     <title>Verba Vitae - Welcome</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome for Social Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <!-- Note: We only need firestore to read public albums, no auth/storage needed for viewing -->
+    <script src="js/firebase-init.js"></script>
 </head>
 <body>
     <header class="main-header">
@@ -127,6 +133,14 @@
         </div>
     </section>
 
+    <!-- Dynamic Gallery Section -->
+    <section class="gallery-section" id="gallery-section">
+        <h2 class="about-title">ALBUM GALLERY</h2>
+        <div class="gallery-grid" id="publicGalleryGrid">
+            <!-- Albums will be dynamically injected here -->
+        </div>
+    </section>
+
     <footer class="main-footer">
         <div class="footer-container">
             <div class="footer-left">
@@ -177,6 +191,39 @@
             document.getElementById('weekDisplay').innerText = weekStr;
         }
         updateWeek();
+
+        // Fetch Public Albums
+        async function fetchAlbums() {
+            const grid = document.getElementById('publicGalleryGrid');
+            if (!grid) return;
+            
+            try {
+                const snapshot = await db.collection('albums').orderBy('createdAt', 'desc').get();
+                if (snapshot.empty) {
+                    grid.innerHTML = '<p class="no-events" style="grid-column: 1 / -1;">No albums available at the moment.</p>';
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    html += `
+                        <div class="gallery-album-card">
+                            <img src="${data.coverUrl}" alt="${data.title}" class="album-cover">
+                            <div class="album-overlay">
+                                <h3 class="album-title">${data.title}</h3>
+                            </div>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
+            } catch (error) {
+                console.error("Error fetching albums:", error);
+                grid.innerHTML = '<p style="color:red; grid-column: 1 / -1;">Failed to load gallery.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchAlbums);
     </script>
 </body>
 </html>

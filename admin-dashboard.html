@@ -48,6 +48,7 @@
                 <a href="#" class="tab-link" data-tab="members-invite">Send Invitations</a>
             </div>
         </div>
+        <a href="#" class="tab-link" data-tab="gallery">Gallery</a>
         <a href="#" class="tab-link" data-tab="news">News &amp; Updates</a>
     </nav>
 
@@ -294,6 +295,31 @@
                     </div>
                     <button type="submit" class="admin-btn">Push Update to Users</button>
                 </form>
+            </section>
+        </div>
+
+        <!-- TAB: Gallery -->
+        <div class="tab-panel" id="tab-gallery">
+            <section class="admin-card">
+                <h2><i class="fas fa-images"></i> Manage Gallery Albums</h2>
+                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Create and manage photo albums displayed on the homepage.</p>
+                
+                <form id="albumForm" class="admin-form" style="margin-bottom: 30px; border-bottom: 1px solid var(--admin-border); padding-bottom: 20px;">
+                    <div class="form-group">
+                        <label for="albumTitle">Album Title</label>
+                        <input type="text" id="albumTitle" required placeholder="e.g. Spring Gala 2026">
+                    </div>
+                    <div class="form-group">
+                        <label for="albumCoverInput">Cover Image</label>
+                        <input type="file" id="albumCoverInput" accept="image/*" required>
+                    </div>
+                    <button type="submit" class="admin-btn">Create Album</button>
+                </form>
+
+                <h3>Current Albums</h3>
+                <div class="member-list" id="albumList">
+                    <!-- Dynamic Albums -->
+                </div>
             </section>
         </div>
 
@@ -682,6 +708,96 @@
             loadStaticInventory();
         };
 
+        // --- Gallery Management ---
+        const albumForm = document.getElementById('albumForm');
+        const albumList = document.getElementById('albumList');
+        const albumCoverInput = document.getElementById('albumCoverInput');
+
+        if (albumForm) {
+            albumForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const title = document.getElementById('albumTitle').value.trim();
+                const file = albumCoverInput.files[0];
+                const btn = e.target.querySelector('button[type="submit"]');
+
+                if (!title || !file) {
+                    showToast('Please provide a title and an image.');
+                    return;
+                }
+
+                btn.textContent = 'Uploading...';
+                btn.disabled = true;
+
+                try {
+                    // Upload to Firebase Storage
+                    const storageRef = storage.ref();
+                    const fileRef = storageRef.child(`albums/${Date.now()}_${file.name}`);
+                    await fileRef.put(file);
+                    const downloadURL = await fileRef.getDownloadURL();
+
+                    // Save to Firestore
+                    await db.collection('albums').add({
+                        title: title,
+                        coverUrl: downloadURL,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    showToast('Album created successfully!');
+                    albumForm.reset();
+                    loadAlbums();
+                } catch (error) {
+                    console.error("Error creating album:", error);
+                    showToast('Failed to create album. Check your Firebase Storage rules.');
+                } finally {
+                    btn.textContent = 'Create Album';
+                    btn.disabled = false;
+                }
+            });
+        }
+
+        async function loadAlbums() {
+            if (!albumList) return;
+            albumList.innerHTML = '<p style="padding: 10px; color: var(--admin-text-muted);">Loading albums...</p>';
+            try {
+                const snapshot = await db.collection('albums').orderBy('createdAt', 'desc').get();
+                albumList.innerHTML = '';
+                if (snapshot.empty) {
+                    albumList.innerHTML = '<p class="no-events" style="padding: 10px; color: var(--admin-text-muted);">No albums created yet.</p>';
+                    return;
+                }
+                
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const item = document.createElement('div');
+                    item.className = 'member-item';
+                    item.innerHTML = `
+                        <div class="member-info" style="display:flex; align-items:center; gap: 15px;">
+                            <img src="${data.coverUrl}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                            <strong>${data.title}</strong>
+                        </div>
+                        <button class="btn-expel" onclick="deleteAlbum('${doc.id}')">Delete</button>
+                    `;
+                    albumList.appendChild(item);
+                });
+            } catch(error) {
+                console.error("Error loading albums:", error);
+                albumList.innerHTML = '<p style="color:#e53e3e; padding: 10px;">Error loading albums.</p>';
+            }
+        }
+
+        window.deleteAlbum = async function(id) {
+            if (confirm('Are you sure you want to delete this album?')) {
+                try {
+                    await db.collection('albums').doc(id).delete();
+                    showToast('Album deleted.');
+                    loadAlbums();
+                } catch(error) {
+                    console.error("Error deleting album:", error);
+                    showToast('Failed to delete album.');
+                }
+            }
+        };
+
         // Init
         document.addEventListener('DOMContentLoaded', () => {
             const isLoggedIn = localStorage.getItem('verba_logged_in');
@@ -693,6 +809,7 @@
 
             loadCustomInventory();
             loadStaticInventory();
+            loadAlbums();
         });
     </script>
 </body>

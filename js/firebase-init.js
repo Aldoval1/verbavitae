@@ -17,3 +17,4 @@ if (!firebase.apps.length) {
 // Global instances
 const auth = firebase.auth();
 const db = firebase.firestore();
+const storage = firebase.storage();
