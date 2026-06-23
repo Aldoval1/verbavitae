@@ -8,6 +8,12 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/login.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-init.js"></script>
 </head>
 <body class="login-page-body">
     <div class="login-wrapper">
@@ -66,34 +72,53 @@
     </div>
 
     <script>
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const user = document.getElementById('username').value.trim().toLowerCase();
+            const email = document.getElementById('username').value.trim().toLowerCase();
             const pass = document.getElementById('password').value;
             const errorEl = document.getElementById('loginError');
+            const submitBtn = e.target.querySelector('.btn-signin');
 
-            // Simulated Authentication Routing
-            if (user === 'abacallao@theverbavitae.org') {
-                if (pass === 'Lemon1429!') {
-                    localStorage.setItem('verba_logged_in', 'true');
-                    localStorage.setItem('verba_user_email', user);
-                    window.location.href = 'admin-dashboard.html';
-                } else {
-                    errorEl.textContent = 'Invalid credentials. Please use the correct password.';
-                    errorEl.style.display = 'block';
-                }
-            } else if (user && pass) {
-                localStorage.setItem('verba_logged_in', 'true');
-                localStorage.setItem('verba_user_email', user);
+            if (!email || !pass) {
+                errorEl.textContent = 'Please enter both email and password.';
+                errorEl.style.display = 'block';
+                return;
+            }
+
+            submitBtn.textContent = 'Signing in...';
+            submitBtn.disabled = true;
+
+            try {
+                // 1. Authenticate with Firebase
+                const userCredential = await auth.signInWithEmailAndPassword(email, pass);
+                const user = userCredential.user;
+
+                // 2. Fetch User Role from Firestore
+                const userDoc = await db.collection('users').doc(user.uid).get();
                 
-                if (user.includes('@verbavitae')) {
-                    window.location.href = 'eboard-dashboard.html';
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    const role = userData.role;
+
+                    // 3. Redirect based on role
+                    if (role === 'admin') {
+                        window.location.href = 'admin-dashboard.html';
+                    } else if (role === 'eboard') {
+                        window.location.href = 'eboard-dashboard.html';
+                    } else {
+                        window.location.href = 'dashboard.html';
+                    }
                 } else {
+                    // Fallback if user doesn't have a Firestore document
                     window.location.href = 'dashboard.html';
                 }
-            } else {
-                errorEl.textContent = 'Invalid credentials. Please use the test account.';
+
+            } catch (error) {
+                console.error("Login error:", error);
+                errorEl.textContent = 'Invalid email or password.';
                 errorEl.style.display = 'block';
+                submitBtn.textContent = 'Sign In';
+                submitBtn.disabled = false;
             }
         });
     </script>

@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-init.js"></script>
 </head>
 <body class="join-page">
 
@@ -56,6 +62,11 @@
                         </div>
                     </div>
                     
+                    <div class="input-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" class="input-new" placeholder="">
+                    </div>
+
                     <div class="input-group">
                         <label for="phone">Phone Number</label>
                         <input type="tel" id="phone" class="input-new" placeholder="">
@@ -120,10 +131,48 @@
             }
         });
 
-        btnRegister.addEventListener('click', () => {
-            // Placeholder action
-            alert('Registration completed! Welcome to Verba Vitae.');
-            window.location.href = 'index.html';
+        btnRegister.addEventListener('click', async () => {
+            const firstName = document.getElementById('first-name').value.trim();
+            const lastName = document.getElementById('last-name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const major = document.getElementById('major').value.trim();
+            const password = document.getElementById('password').value;
+            const code = inviteCodeInput.value.trim();
+
+            if (!firstName || !lastName || !email || !password) {
+                alert('Please fill out all required fields (First Name, Last Name, Email, Password).');
+                return;
+            }
+
+            btnRegister.textContent = 'Registering...';
+            btnRegister.disabled = true;
+
+            try {
+                // 1. Create User in Firebase Auth
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+
+                // 2. Save User Data in Firestore
+                await db.collection('users').doc(user.uid).set({
+                    firstName: firstName,
+                    lastName: lastName,
+                    email: email,
+                    phone: phone,
+                    major: major,
+                    invitationCode: code,
+                    role: 'member', // Default role
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+
+                alert('Registration completed! Welcome to Verba Vitae.');
+                window.location.href = 'index.html';
+            } catch (error) {
+                console.error("Error registering user:", error);
+                alert('Error: ' + error.message);
+                btnRegister.textContent = 'Complete Registration';
+                btnRegister.disabled = false;
+            }
         });
 
         // Check for URL parameter ?code=...
