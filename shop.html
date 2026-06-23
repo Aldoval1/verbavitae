@@ -301,12 +301,10 @@
     </div>
 
     <script>
-        // Auth Protection Check
+        // Store current user state
+        let currentUser = null;
         auth.onAuthStateChanged(user => {
-            if (!user) {
-                alert("You must be registered and logged in to access the store.");
-                window.location.href = 'login.html';
-            }
+            currentUser = user;
         });
 
         // Initialize Carousel
@@ -417,6 +415,12 @@
                     newBtn.style.cursor = 'pointer';
 
                     newBtn.addEventListener('click', () => {
+                        if (!currentUser) {
+                            alert("You need to log in or register before adding items to your cart.");
+                            window.location.href = 'login.html';
+                            return;
+                        }
+
                         const bookObj = {
                             title: title,
                             author: author,
