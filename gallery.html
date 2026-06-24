@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Welcome to Verba Vitae">
-    <title>Verba Vitae - Welcome</title>
+    <title>Verba Vitae - Gallery</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -71,69 +71,15 @@
         </div>
     </header>
 
-    <div class="floating-logo-box">
-        <img src="images/verbavitaelogofill.jpg" alt="Verba Vitae Logo" class="logo-img">
-        <h1 class="logo-title">VERBA VITAE</h1>
-        <p class="logo-subtitle">Organization</p>
-    </div>
 
-    <main class="hero-section">
-        <div class="hero-slider">
-            <div class="slide" style="background-image: url('images/slide1.jpg');"></div>
-            <div class="slide" style="background-image: url('images/slide2.jpg');"></div>
-            <div class="slide" style="background-image: url('images/slide3.jpg');"></div>
-            <div class="slide" style="background-image: url('images/slide4.jpg');"></div>
-            <div class="slider-overlay"></div>
-        </div>
-        <div class="hero-content">
-            <a href="join.html" class="btn-hero">JOIN NOW!</a>
-        </div>
-    </main>
 
-    <section class="about-section">
-        <div class="about-card">
-            <h2 class="about-title">ABOUT VERBA VITAE</h2>
-            <p class="about-content">
-                Verba Vitae is an organization dedicated to connecting students with amazing opportunities. 
-                Our mission is to foster a strong community where members can discover resources, develop their skills, 
-                and achieve their academic and professional goals. Join us and be part of something bigger!
-            </p>
+    <!-- Dynamic Gallery Section -->
+    <section class="gallery-section" id="gallery-section">
+        <h2 class="about-title">ALBUM GALLERY</h2>
+        <div class="gallery-grid" id="publicGalleryGrid">
+            <!-- Albums will be dynamically injected here -->
         </div>
     </section>
-
-    <section class="features-section">
-        <div class="features-container">
-            <a href="#" class="feature-card">
-                <img src="images/slide1.jpg" alt="Opportunities" class="feature-img">
-                <hr class="feature-line">
-                <h3 class="feature-title">OPPORTUNITIES</h3>
-                <p class="feature-desc">Discover exclusive scholarships, internships, and networking events designed to boost your career and academic journey.</p>
-            </a>
-            <a href="gallery.html" class="feature-card">
-                <img src="images/slide3.jpg" alt="Gallery" class="feature-img">
-                <hr class="feature-line">
-                <h3 class="feature-title">GALLERY</h3>
-                <p class="feature-desc">Explore moments from our past events, community gatherings, and see the impact of our collective efforts.</p>
-            </a>
-            <a href="#" class="feature-card">
-                <img src="images/slide4.jpg" alt="News" class="feature-img">
-                <hr class="feature-line">
-                <h3 class="feature-title">NEWS</h3>
-                <p class="feature-desc">Stay updated with the latest announcements, success stories, and important updates from our organization.</p>
-            </a>
-        </div>
-    </section>
-
-    <section class="events-section">
-        <h2 class="about-title">EVENTS</h2>
-        <p class="week-display" id="weekDisplay"></p>
-
-        <div class="events-board">
-            <p class="no-events">Currently, there are no events scheduled for this week.</p>
-        </div>
-    </section>
-
-
 
     <footer class="main-footer">
         <div class="footer-container">
@@ -169,24 +115,40 @@
             mobileNav.classList.toggle('active');
         });
 
-        // Weekly events logic
-        function updateWeek() {
-            const now = new Date();
-            const dayOfWeek = now.getDay() === 0 ? 7 : now.getDay();
-            const startOfWeek = new Date(now);
-            startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
+
+
+        // Fetch Public Albums
+        async function fetchAlbums() {
+            const grid = document.getElementById('publicGalleryGrid');
+            if (!grid) return;
             
-            const endOfWeek = new Date(startOfWeek);
-            endOfWeek.setDate(startOfWeek.getDate() + 6);
-            
-            const options = { month: 'short', day: 'numeric' };
-            const weekStr = `Week of ${startOfWeek.toLocaleDateString('en-US', options)} to ${endOfWeek.toLocaleDateString('en-US', options)}`;
-            
-            document.getElementById('weekDisplay').innerText = weekStr;
+            try {
+                const snapshot = await db.collection('albums').orderBy('createdAt', 'desc').get();
+                if (snapshot.empty) {
+                    grid.innerHTML = '<p class="no-events" style="grid-column: 1 / -1;">No albums available at the moment.</p>';
+                    return;
+                }
+                
+                let html = '';
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    html += `
+                        <div class="gallery-album-card">
+                            <img src="${data.coverUrl}" alt="${data.title}" class="album-cover">
+                            <div class="album-overlay">
+                                <h3 class="album-title">${data.title}</h3>
+                            </div>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
+            } catch (error) {
+                console.error("Error fetching albums:", error);
+                grid.innerHTML = '<p style="color:red; grid-column: 1 / -1;">Failed to load gallery.</p>';
+            }
         }
-        updateWeek();
 
-
+        document.addEventListener('DOMContentLoaded', fetchAlbums);
     </script>
 </body>
 </html>
