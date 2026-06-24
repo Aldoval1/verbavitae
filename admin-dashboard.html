@@ -18,6 +18,7 @@
     
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
     <script src="js/firebase-init.js"></script>
@@ -785,7 +786,10 @@
                             <img src="${data.coverUrl}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
                             <strong>${data.title}</strong>
                         </div>
-                        <button class="btn-expel" onclick="deleteAlbum('${doc.id}')">Delete</button>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn-hide" onclick="openPhotoManager('${doc.id}', '${data.title.replace(/'/g, "\\'")}')">Manage Photos</button>
+                            <button class="btn-expel" onclick="deleteAlbum('${doc.id}')">Delete</button>
+                        </div>
                     `;
                     albumList.appendChild(item);
                 });
@@ -805,6 +809,125 @@
                     console.error("Error deleting album:", error);
                     showToast('Failed to delete album.');
                 }
+            }
+        };
+
+    <!-- Photo Management Modal -->
+    <div id="photoManagerModal" class="modal-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:9999; justify-content:center; align-items:center;">
+        <div class="admin-card" style="width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; background:#fff; position:relative;">
+            <button onclick="closePhotoManager()" style="position:absolute; top:20px; right:20px; background:none; border:none; font-size:1.5rem; cursor:pointer;">&times;</button>
+            <h2 id="photoManagerTitle"><i class="fas fa-images"></i> Manage Photos</h2>
+            
+            <form id="uploadPhotosForm" class="admin-form" style="margin-bottom: 20px;">
+                <div class="form-group">
+                    <label for="albumPhotosInput">Add Photos</label>
+                    <input type="file" id="albumPhotosInput" multiple accept="image/*" required>
+                </div>
+                <button type="submit" class="admin-btn">Upload Photos</button>
+            </form>
+
+            <div id="albumPhotosGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px;">
+                <!-- Photos will appear here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Album Photos Logic ---
+        let currentManageAlbumId = null;
+
+        window.openPhotoManager = function(albumId, albumTitle) {
+            currentManageAlbumId = albumId;
+            document.getElementById('photoManagerTitle').innerHTML = `<i class="fas fa-images"></i> Manage Photos: ${albumTitle}`;
+            document.getElementById('photoManagerModal').style.display = 'flex';
+            loadAlbumPhotos(albumId);
+        };
+
+        window.closePhotoManager = function() {
+            document.getElementById('photoManagerModal').style.display = 'none';
+            currentManageAlbumId = null;
+        };
+
+        const uploadPhotosForm = document.getElementById('uploadPhotosForm');
+        uploadPhotosForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentManageAlbumId) return;
+
+            const files = document.getElementById('albumPhotosInput').files;
+            if (files.length === 0) return;
+
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.textContent = 'Uploading...';
+            btn.disabled = true;
+
+            try {
+                const albumRef = db.collection('albums').doc(currentManageAlbumId);
+                const albumDoc = await albumRef.get();
+                let photos = albumDoc.data().photos || [];
+
+                for (let i = 0; i < files.length; i++) {
+                    const file = files[i];
+                    const storageRef = storage.ref();
+                    const fileRef = storageRef.child(`albums/${currentManageAlbumId}/${Date.now()}_${file.name}`);
+                    await fileRef.put(file);
+                    const url = await fileRef.getDownloadURL();
+                    photos.push(url);
+                }
+
+                await albumRef.update({ photos: photos });
+                showToast('Photos uploaded successfully!');
+                uploadPhotosForm.reset();
+                loadAlbumPhotos(currentManageAlbumId);
+            } catch (error) {
+                console.error("Error uploading photos:", error);
+                showToast('Failed to upload photos.');
+            } finally {
+                btn.textContent = 'Upload Photos';
+                btn.disabled = false;
+            }
+        });
+
+        async function loadAlbumPhotos(albumId) {
+            const grid = document.getElementById('albumPhotosGrid');
+            grid.innerHTML = '<p>Loading photos...</p>';
+            try {
+                const doc = await db.collection('albums').doc(albumId).get();
+                const photos = doc.data().photos || [];
+                
+                if (photos.length === 0) {
+                    grid.innerHTML = '<p>No photos in this album.</p>';
+                    return;
+                }
+
+                let html = '';
+                photos.forEach((url, index) => {
+                    html += `
+                        <div style="position:relative; width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden;">
+                            <img src="${url}" style="width:100%; height:100%; object-fit:cover;">
+                            <button onclick="deleteAlbumPhoto('${albumId}', ${index})" style="position:absolute; top:5px; right:5px; background:red; color:white; border:none; border-radius:50%; width:25px; height:25px; cursor:pointer;">&times;</button>
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
+            } catch (error) {
+                console.error("Error loading photos:", error);
+                grid.innerHTML = '<p style="color:red;">Error loading photos.</p>';
+            }
+        }
+
+        window.deleteAlbumPhoto = async function(albumId, index) {
+            if (!confirm('Delete this photo?')) return;
+            try {
+                const albumRef = db.collection('albums').doc(albumId);
+                const doc = await albumRef.get();
+                let photos = doc.data().photos || [];
+                photos.splice(index, 1);
+                await albumRef.update({ photos: photos });
+                showToast('Photo deleted.');
+                loadAlbumPhotos(albumId);
+            } catch(error) {
+                console.error("Error deleting photo:", error);
+                showToast('Failed to delete photo.');
             }
         };
 

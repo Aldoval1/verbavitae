@@ -133,7 +133,7 @@
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     html += `
-                        <div class="gallery-album-card">
+                        <div class="gallery-album-card" onclick="openPhotoViewer('${doc.id}', '${data.title.replace(/'/g, "\\'")}')" style="cursor:pointer;">
                             <img src="${data.coverUrl}" alt="${data.title}" class="album-cover">
                             <div class="album-overlay">
                                 <h3 class="album-title">${data.title}</h3>
@@ -149,6 +149,53 @@
         }
 
         document.addEventListener('DOMContentLoaded', fetchAlbums);
+
+        // --- Photo Viewer Modal ---
+        window.openPhotoViewer = async function(albumId, title) {
+            const modal = document.getElementById('photoViewerModal');
+            const titleEl = document.getElementById('photoViewerTitle');
+            const grid = document.getElementById('photoViewerGrid');
+            
+            titleEl.textContent = title;
+            grid.innerHTML = '<p style="color:white; text-align:center; grid-column:1/-1;">Loading photos...</p>';
+            modal.style.display = 'flex';
+
+            try {
+                const doc = await db.collection('albums').doc(albumId).get();
+                const photos = doc.data().photos || [];
+
+                if (photos.length === 0) {
+                    grid.innerHTML = '<p style="color:white; text-align:center; grid-column:1/-1;">No photos in this album yet.</p>';
+                    return;
+                }
+
+                let html = '';
+                photos.forEach(url => {
+                    html += `
+                        <div style="width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+                            <img src="${url}" style="width:100%; height:100%; object-fit:cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        </div>
+                    `;
+                });
+                grid.innerHTML = html;
+            } catch (error) {
+                console.error("Error loading photos:", error);
+                grid.innerHTML = '<p style="color:red; text-align:center; grid-column:1/-1;">Failed to load photos.</p>';
+            }
+        };
+
+        window.closePhotoViewer = function() {
+            document.getElementById('photoViewerModal').style.display = 'none';
+        };
     </script>
+
+    <!-- Photo Viewer Modal HTML -->
+    <div id="photoViewerModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:99999; flex-direction:column; padding:20px; overflow-y:auto;">
+        <button onclick="closePhotoViewer()" style="position:fixed; top:20px; right:30px; background:none; border:none; color:white; font-size:3rem; cursor:pointer; z-index:100000;">&times;</button>
+        <h2 id="photoViewerTitle" style="color:white; text-align:center; margin-top:20px; margin-bottom:40px; font-size:2rem; letter-spacing:2px; font-weight:700;"></h2>
+        <div id="photoViewerGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px; max-width:1200px; width:100%; margin:0 auto; padding-bottom:50px;">
+            <!-- Photos go here -->
+        </div>
+    </div>
 </body>
 </html>
