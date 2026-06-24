@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Welcome to Verba Vitae">
-    <title>Verba Vitae - Gallery</title>
+    <title>Verba Vitae - View Album</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -74,10 +74,13 @@
 
 
     <!-- Dynamic Gallery Section -->
-    <section class="gallery-section" id="gallery-section">
-        <h2 class="about-title">ALBUM GALLERY</h2>
-        <div class="gallery-grid" id="publicGalleryGrid">
-            <!-- Albums will be dynamically injected here -->
+    <section class="gallery-section" id="album-section">
+        <div style="text-align:center; margin-bottom: 30px;">
+            <a href="gallery.html" style="color:var(--color-dark-blue); text-decoration:none; font-weight:600;"><i class="fas fa-arrow-left"></i> Back to Gallery</a>
+        </div>
+        <h2 class="about-title" id="albumTitle">LOADING ALBUM...</h2>
+        <div id="albumGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px; max-width:1200px; margin:0 auto; padding:0 20px;">
+            <!-- Photos will be dynamically injected here -->
         </div>
     </section>
 
@@ -117,38 +120,52 @@
 
 
 
-        // Fetch Public Albums
-        async function fetchAlbums() {
-            const grid = document.getElementById('publicGalleryGrid');
-            if (!grid) return;
+        async function loadAlbumPhotos() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const albumId = urlParams.get('id');
+            const grid = document.getElementById('albumGrid');
+            const titleEl = document.getElementById('albumTitle');
+
+            if (!albumId) {
+                titleEl.textContent = 'ALBUM NOT FOUND';
+                grid.innerHTML = '<p style="text-align:center; grid-column:1/-1;">Invalid album ID.</p>';
+                return;
+            }
             
             try {
-                const snapshot = await db.collection('albums').orderBy('createdAt', 'desc').get();
-                if (snapshot.empty) {
-                    grid.innerHTML = '<p class="no-events" style="grid-column: 1 / -1;">No albums available at the moment.</p>';
+                const doc = await db.collection('albums').doc(albumId).get();
+                if (!doc.exists) {
+                    titleEl.textContent = 'ALBUM NOT FOUND';
+                    grid.innerHTML = '<p style="text-align:center; grid-column:1/-1;">This album does not exist.</p>';
+                    return;
+                }
+
+                const data = doc.data();
+                titleEl.textContent = data.title.toUpperCase();
+                const photos = data.photos || [];
+
+                if (photos.length === 0) {
+                    grid.innerHTML = '<p style="text-align:center; grid-column:1/-1;">No photos in this album yet.</p>';
                     return;
                 }
                 
                 let html = '';
-                snapshot.forEach(doc => {
-                    const data = doc.data();
+                photos.forEach(url => {
                     html += `
-                        <a href="album.html?id=${doc.id}" class="gallery-album-card" style="text-decoration:none; color:inherit; display:block; cursor:pointer;">
-                            <img src="${data.coverUrl}" alt="${data.title}" class="album-cover">
-                            <div class="album-overlay">
-                                <h3 class="album-title">${data.title}</h3>
-                            </div>
-                        </a>
+                        <div style="width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                            <img src="${url}" style="width:100%; height:100%; object-fit:cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        </div>
                     `;
                 });
                 grid.innerHTML = html;
             } catch (error) {
-                console.error("Error fetching albums:", error);
-                grid.innerHTML = '<p style="color:red; grid-column: 1 / -1;">Failed to load gallery.</p>';
+                console.error("Error fetching album:", error);
+                titleEl.textContent = 'ERROR';
+                grid.innerHTML = '<p style="color:red; text-align:center; grid-column: 1 / -1;">Failed to load photos.</p>';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', fetchAlbums);
+        document.addEventListener('DOMContentLoaded', loadAlbumPhotos);
     </script>
 </body>
 </html>
