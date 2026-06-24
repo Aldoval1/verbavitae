@@ -8,6 +8,18 @@
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        #albumGrid {
+            column-count: 3;
+            column-gap: 15px;
+        }
+        @media (max-width: 900px) {
+            #albumGrid { column-count: 2; }
+        }
+        @media (max-width: 600px) {
+            #albumGrid { column-count: 1; }
+        }
+    </style>
     <!-- FontAwesome for Social Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -79,7 +91,7 @@
             <a href="gallery.html" style="color:var(--color-dark-blue); text-decoration:none; font-weight:600;"><i class="fas fa-arrow-left"></i> Back to Gallery</a>
         </div>
         <h2 class="about-title" id="albumTitle">LOADING ALBUM...</h2>
-        <div id="albumGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:20px; max-width:1200px; margin:0 auto; padding:0 20px;">
+        <div id="albumGrid" style="max-width:1200px; margin:0 auto; padding:0 20px;">
             <!-- Photos will be dynamically injected here -->
         </div>
     </section>
@@ -152,8 +164,8 @@
                 let html = '';
                 photos.forEach(url => {
                     html += `
-                        <div style="width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                            <img src="${url}" style="width:100%; height:100%; object-fit:cover; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        <div style="break-inside:avoid; margin-bottom:15px; border-radius:8px; overflow:hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display:inline-block; width:100%;">
+                            <img src="${url}" onclick="openLightbox('${url}')" style="width:100%; height:auto; display:block; cursor:pointer; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
                         </div>
                     `;
                 });
@@ -166,6 +178,30 @@
         }
 
         document.addEventListener('DOMContentLoaded', loadAlbumPhotos);
+
+        // Lightbox Functions
+        window.openLightbox = function(url) {
+            const modal = document.getElementById('lightboxModal');
+            const img = document.getElementById('lightboxImg');
+            const downloadBtn = document.getElementById('lightboxDownload');
+            
+            img.src = url;
+            downloadBtn.href = url;
+            downloadBtn.download = url.substring(url.lastIndexOf('/') + 1) || 'download';
+            
+            modal.style.display = 'flex';
+        };
+
+        window.closeLightbox = function() {
+            document.getElementById('lightboxModal').style.display = 'none';
+        };
     </script>
+
+    <!-- Lightbox Modal HTML -->
+    <div id="lightboxModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:99999; flex-direction:column; justify-content:center; align-items:center;">
+        <button onclick="closeLightbox()" style="position:absolute; top:20px; right:30px; background:none; border:none; color:white; font-size:3rem; cursor:pointer; z-index:100000;">&times;</button>
+        <img id="lightboxImg" src="" style="max-width:90%; max-height:80vh; object-fit:contain; border-radius:4px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+        <a id="lightboxDownload" href="" download class="admin-btn" style="margin-top:20px; text-decoration:none; display:inline-block; border-radius:4px;"><i class="fas fa-download"></i> Download Image</a>
+    </div>
 </body>
 </html>
