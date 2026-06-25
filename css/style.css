@@ -130,6 +130,11 @@ body {
     z-index: 20;
     box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     text-align: center;
+    pointer-events: none;
+}
+
+.floating-logo-box a {
+    pointer-events: auto;
 }
 
 .logo-img {
