@@ -174,7 +174,14 @@
                 window.location.href = 'index.html';
             } catch (error) {
                 console.error("Error registering user:", error);
-                alert('Error: ' + error.message);
+                if (error.code === 'auth/email-already-in-use') {
+                    if (confirm('This email is already registered! Would you like to go to the Login page now?')) {
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                } else {
+                    alert('Registration Error: ' + error.message);
+                }
                 btnRegister.textContent = 'Complete Registration';
                 btnRegister.disabled = false;
             }
