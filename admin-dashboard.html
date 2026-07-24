@@ -49,6 +49,7 @@
     <nav class="admin-top-nav">
         <a href="#" class="tab-link active" data-tab="store">Store</a>
         <a href="#" class="tab-link" data-tab="events">Add Events</a>
+        <a href="#" class="tab-link" data-tab="services">Verba Services</a>
         <div class="nav-dropdown">
             <button class="dropbtn">Members <i class="fas fa-caret-down"></i></button>
             <div class="dropdown-content">
@@ -243,6 +244,55 @@
                             </div>
                             <button type="submit" class="admin-btn" style="width: 100%;"><i class="fas fa-check-circle"></i> Log & Confirm Pick-Up</button>
                         </form>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- TAB: Verba Services (Printing & Pick-Up Windows) -->
+        <div class="tab-panel" id="tab-services">
+            <section class="admin-card">
+                <h2><i class="fas fa-print" style="color: #3182ce;"></i> Verba Services - Printing Management</h2>
+                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 25px;">Set up available printing pick-up dates/windows for students and review incoming document print requests.</p>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px;">
+                    <!-- Add Pick-Up Window Form -->
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border: 1px solid var(--admin-border);">
+                        <h3 style="font-size: 1.05rem; color: var(--admin-primary); margin-top: 0; margin-bottom: 15px;"><i class="fas fa-calendar-plus"></i> Add Pick-Up Date Window</h3>
+                        <form id="printWindowForm">
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label for="windowDate" style="font-size: 0.85rem;">Pick-Up Date</label>
+                                <input type="date" id="windowDate" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label for="windowTime" style="font-size: 0.85rem;">Time Window</label>
+                                <input type="text" id="windowTime" required placeholder="e.g. 10:00 AM - 2:00 PM">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label for="windowLocation" style="font-size: 0.85rem;">Pick-Up Location</label>
+                                <input type="text" id="windowLocation" placeholder="e.g. Student Center Room 102">
+                            </div>
+                            <button type="submit" class="admin-btn" style="width: 100%;"><i class="fas fa-plus"></i> Add Available Window</button>
+                        </form>
+
+                        <h4 style="font-size: 0.95rem; color: var(--admin-primary); margin-top: 25px; margin-bottom: 10px;">Active Pick-Up Windows</h4>
+                        <div id="printWindowsList" style="max-height: 200px; overflow-y: auto;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Incoming Print Requests Queue -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; gap: 10px;">
+                                <button id="btnFilterPendingPrint" onclick="filterPrintRequests('pending')" class="admin-btn" style="padding: 6px 14px; font-size: 0.85rem; background: var(--admin-accent);">Pending Prints</button>
+                                <button id="btnFilterReadyPrint" onclick="filterPrintRequests('ready')" class="admin-btn" style="padding: 6px 14px; font-size: 0.85rem; background: #718096;">Ready for Pick-Up</button>
+                            </div>
+                            <span id="pendingPrintCount" style="background: #feebc8; color: #744210; padding: 4px 12px; border-radius: 12px; font-weight: 700; font-size: 0.85rem;">0 Pending</span>
+                        </div>
+                        <div id="printRequestsList" class="member-list" style="max-height: 480px; overflow-y: auto;">
+                            <!-- Populated by JS -->
+                        </div>
                     </div>
                 </div>
             </section>
@@ -1145,6 +1195,222 @@
             loadBookPickups();
         };
 
+        // --- Verba Services: Printing & Pick-Up Windows Management ---
+        const printWindowForm = document.getElementById('printWindowForm');
+        const printWindowsList = document.getElementById('printWindowsList');
+        const printRequestsList = document.getElementById('printRequestsList');
+        const pendingPrintCount = document.getElementById('pendingPrintCount');
+        let currentPrintFilter = 'pending';
+
+        if (printWindowForm) {
+            printWindowForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const date = document.getElementById('windowDate').value;
+                const time = document.getElementById('windowTime').value.trim();
+                const location = document.getElementById('windowLocation').value.trim() || 'Verba Vitae Office';
+
+                const winData = {
+                    id: 'win_' + Date.now(),
+                    date,
+                    time,
+                    location,
+                    createdAt: new Date().toISOString()
+                };
+
+                try {
+                    if (db) {
+                        await db.collection('print_windows').add(winData);
+                    }
+                } catch(err) { console.warn(err); }
+
+                const windows = JSON.parse(localStorage.getItem('verba_print_windows')) || [];
+                windows.unshift(winData);
+                localStorage.setItem('verba_print_windows', JSON.stringify(windows));
+
+                showToast('Printing pick-up window added!');
+                printWindowForm.reset();
+                loadPrintWindows();
+            });
+        }
+
+        async function loadPrintWindows() {
+            if (!printWindowsList) return;
+            let windows = [];
+
+            try {
+                if (db) {
+                    const snapshot = await db.collection('print_windows').get();
+                    snapshot.forEach(doc => {
+                        windows.push({ docId: doc.id, ...doc.data() });
+                    });
+                }
+            } catch(e) { console.warn(e); }
+
+            const local = JSON.parse(localStorage.getItem('verba_print_windows')) || [];
+            local.forEach(loc => {
+                if (!windows.some(w => w.id === loc.id || w.docId === loc.id)) {
+                    windows.push(loc);
+                }
+            });
+
+            printWindowsList.innerHTML = '';
+            if (windows.length === 0) {
+                printWindowsList.innerHTML = '<p style="font-size:0.85rem; color:var(--admin-text-muted);">No active pick-up windows yet.</p>';
+                return;
+            }
+
+            windows.forEach(win => {
+                const div = document.createElement('div');
+                div.style.display = 'flex';
+                div.style.justifyContent = 'space-between';
+                div.style.alignItems = 'center';
+                div.style.background = '#ffffff';
+                div.style.padding = '8px 12px';
+                div.style.marginBottom = '6px';
+                div.style.borderRadius = '4px';
+                div.style.border = '1px solid #e2e8f0';
+                div.style.fontSize = '0.85rem';
+
+                div.innerHTML = `
+                    <div>
+                        <strong>${win.date}</strong> | ${win.time}
+                        <div style="font-size:0.78rem; color:#718096;">📍 ${win.location}</div>
+                    </div>
+                    <button class="btn-expel" style="padding:2px 8px; font-size:0.75rem;" onclick="deletePrintWindow('${win.docId || win.id}')">Delete</button>
+                `;
+                printWindowsList.appendChild(div);
+            });
+        }
+
+        window.deletePrintWindow = async function(id) {
+            if (confirm('Delete this pick-up window?')) {
+                try {
+                    if (db && !id.startsWith('win_')) {
+                        await db.collection('print_windows').doc(id).delete();
+                    }
+                } catch(e) { console.warn(e); }
+
+                let local = JSON.parse(localStorage.getItem('verba_print_windows')) || [];
+                local = local.filter(w => w.id !== id && w.docId !== id);
+                localStorage.setItem('verba_print_windows', JSON.stringify(local));
+
+                showToast('Pick-up window deleted.');
+                loadPrintWindows();
+            }
+        };
+
+        window.filterPrintRequests = function(status) {
+            currentPrintFilter = status;
+            const btnPending = document.getElementById('btnFilterPendingPrint');
+            const btnReady = document.getElementById('btnFilterReadyPrint');
+            if (status === 'pending') {
+                btnPending.style.background = 'var(--admin-accent)';
+                btnReady.style.background = '#718096';
+            } else {
+                btnPending.style.background = '#718096';
+                btnReady.style.background = '#38a169';
+            }
+            loadPrintRequests();
+        };
+
+        async function loadPrintRequests() {
+            if (!printRequestsList) return;
+            printRequestsList.innerHTML = '<p style="padding: 10px; color: var(--admin-text-muted);">Loading print requests...</p>';
+            let requests = [];
+
+            try {
+                if (db) {
+                    const snapshot = await db.collection('print_requests').get();
+                    snapshot.forEach(doc => {
+                        requests.push({ docId: doc.id, ...doc.data() });
+                    });
+                }
+            } catch(e) { console.warn(e); }
+
+            const local = JSON.parse(localStorage.getItem('verba_print_requests')) || [];
+            local.forEach(loc => {
+                if (!requests.some(r => r.id === loc.id || r.docId === loc.id)) {
+                    requests.push(loc);
+                }
+            });
+
+            // Count pending
+            const pendingCount = requests.filter(r => r.status !== 'Ready for Pick-Up' && r.status !== 'Completed').length;
+            if (pendingPrintCount) {
+                pendingPrintCount.textContent = `${pendingCount} Pending`;
+            }
+
+            // Filter
+            const filtered = requests.filter(r => {
+                const isReady = (r.status === 'Ready for Pick-Up' || r.status === 'Completed');
+                return currentPrintFilter === 'ready' ? isReady : !isReady;
+            });
+
+            printRequestsList.innerHTML = '';
+            if (filtered.length === 0) {
+                printRequestsList.innerHTML = `<p style="padding: 15px; color: var(--admin-text-muted);">No ${currentPrintFilter} print requests found.</p>`;
+                return;
+            }
+
+            filtered.forEach(r => {
+                const item = document.createElement('div');
+                item.className = 'member-item';
+                item.style.flexDirection = 'column';
+                item.style.alignItems = 'flex-start';
+                item.style.gap = '8px';
+                item.style.marginBottom = '12px';
+
+                const isReady = (r.status === 'Ready for Pick-Up' || r.status === 'Completed');
+                const badgeColor = isReady ? '#c6f6d5' : '#feebc8';
+                const badgeTextColor = isReady ? '#22543d' : '#744210';
+                
+                const dateDisplay = r.timestamp ? new Date(r.timestamp).toLocaleDateString() + ' ' + new Date(r.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Recent';
+
+                item.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <strong style="font-size:1.05rem; color:var(--admin-primary);">${r.userName || 'Student'} <span style="font-weight:400; font-size:0.85rem; color:var(--admin-text-muted);">(${r.userEmail || ''})</span></strong>
+                        <span style="background:${badgeColor}; color:${badgeTextColor}; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:700;">${isReady ? '✓ Ready for Pick-Up' : '🖨️ Pending Print'}</span>
+                    </div>
+                    <div style="font-size:0.9rem; color:var(--admin-text); display:flex; gap:10px; align-items:center; flex-wrap:wrap; width:100%;">
+                        <span><i class="fas fa-file-pdf" style="color:#e53e3e;"></i> <strong>${r.fileName || 'document.pdf'}</strong></span>
+                        <span style="background:#edf2f7; padding:2px 8px; border-radius:4px; font-size:0.8rem;">${r.copies || 1} Copy (${r.color || 'B&W'}, ${r.sides || 'Single-sided'})</span>
+                    </div>
+                    <div style="font-size:0.82rem; color:#2b6cb0; background:#ebf8ff; padding:6px 10px; border-radius:4px; width:100%; box-sizing:border-box;">
+                        <strong>Requested Pick-Up Window:</strong> ${r.pickupWindow || 'Anytime'}
+                    </div>
+                    ${r.notes ? `<div style="font-size:0.8rem; color:#4a5568;"><em>Notes: ${r.notes}</em></div>` : ''}
+                    <div style="font-size:0.78rem; color:var(--admin-text-muted); display:flex; gap:15px; flex-wrap:wrap; width:100%; justify-content:space-between; align-items:center; margin-top:4px;">
+                        <span><i class="far fa-clock"></i> ${dateDisplay}</span>
+                        <div style="display:flex; gap:8px;">
+                            ${r.fileData ? `<a href="${r.fileData}" download="${r.fileName || 'document.pdf'}" class="admin-btn" style="padding:4px 10px; font-size:0.78rem; background:#3182ce; text-decoration:none;"><i class="fas fa-download"></i> Download PDF</a>` : ''}
+                            ${!isReady ? `<button class="admin-btn" style="padding:4px 10px; font-size:0.78rem; background:#38a169;" onclick="markPrintReady('${r.docId || r.id}')"><i class="fas fa-check"></i> Mark Printed & Ready</button>` : ''}
+                        </div>
+                    </div>
+                `;
+                printRequestsList.appendChild(item);
+            });
+        }
+
+        window.markPrintReady = async function(reqId) {
+            try {
+                if (db && !reqId.startsWith('prt_')) {
+                    await db.collection('print_requests').doc(reqId).update({ status: 'Ready for Pick-Up' });
+                }
+            } catch(e) { console.warn(e); }
+
+            let requests = JSON.parse(localStorage.getItem('verba_print_requests')) || [];
+            requests = requests.map(r => {
+                if (r.id === reqId || r.docId === reqId) {
+                    return { ...r, status: 'Ready for Pick-Up' };
+                }
+                return r;
+            });
+            localStorage.setItem('verba_print_requests', JSON.stringify(requests));
+
+            showToast('Print request marked as printed & ready for pick-up!');
+            loadPrintRequests();
+        };
+
         // Init
         document.addEventListener('DOMContentLoaded', () => {
             // Protect page with Firebase Auth
@@ -1157,6 +1423,8 @@
                         loadAlbums();
                         loadAdminEvents();
                         loadBookPickups();
+                        loadPrintWindows();
+                        loadPrintRequests();
                     } catch (e) {
                         console.warn("Error loading admin data:", e);
                     }

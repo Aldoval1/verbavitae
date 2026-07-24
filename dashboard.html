@@ -97,7 +97,7 @@
                         </div>
                         <h3>Learning</h3>
                     </a>
-                    <a href="#" class="service-card">
+                    <a href="javascript:void(0)" onclick="openServicesModal()" class="service-card">
                         <div class="service-icon">
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
                         </div>
@@ -414,6 +414,94 @@
         </div>
     </div>
 
+    <!-- Verba Services Pop-Up Modal -->
+    <div id="verbaServicesModal" class="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,27,42,0.7); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+        <div class="preview-modal-content" style="max-width: 950px; width: 92%; padding: 25px; border-radius: 12px; background: #ffffff;">
+            <div class="preview-modal-header" style="margin-bottom: 20px; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px;">
+                <h2 style="font-size: 1.3rem; color: #0d1b2a; margin: 0;"><i class="fas fa-concierge-bell" style="color: #3182ce;"></i> Verba Services & Student Benefits</h2>
+                <button class="preview-close" onclick="closeServicesModal()">&times;</button>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 220px 1fr; gap: 25px; min-height: 420px;">
+                <!-- Vertical Side Menu -->
+                <div style="background: #f7fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                    <h4 style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; color: #718096; margin-top: 0; margin-bottom: 15px;">Available Services</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
+                        <li>
+                            <button id="btnSvcPrinting" onclick="switchServiceTab('printing')" style="width: 100%; text-align: left; padding: 10px 14px; border: none; border-radius: 6px; background: #3182ce; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem;">
+                                <span><i class="fas fa-print"></i> Printing</span>
+                                <span style="background: #ffffff; color: #3182ce; font-size: 0.7rem; padding: 2px 6px; border-radius: 10px; font-weight: 700;">FREE</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button onclick="alert('Book Reservations service is coming soon!')" style="width: 100%; text-align: left; padding: 10px 14px; border: none; border-radius: 6px; background: transparent; color: #4a5568; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem;">
+                                <span><i class="fas fa-book"></i> Book Reserve</span>
+                                <span style="font-size: 0.75rem; color: #a0aec0;">Soon</span>
+                            </button>
+                        </li>
+                        <li>
+                            <button onclick="alert('Peer Tutoring service is coming soon!')" style="width: 100%; text-align: left; padding: 10px 14px; border: none; border-radius: 6px; background: transparent; color: #4a5568; font-weight: 500; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 0.9rem;">
+                                <span><i class="fas fa-user-graduate"></i> Peer Tutoring</span>
+                                <span style="font-size: 0.75rem; color: #a0aec0;">Soon</span>
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Right Service Panel: Printing (FREE) -->
+                <div id="svcTabPrinting" style="background: #ffffff;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <h3 style="font-size: 1.2rem; color: #0d1b2a; margin: 0;"><i class="fas fa-file-pdf" style="color: #e53e3e;"></i> Printing Service (FREE)</h3>
+                        <span style="background: #c6f6d5; color: #22543d; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 12px;">100% Free for Members</span>
+                    </div>
+                    <p style="color: #4a5568; font-size: 0.9rem; line-height: 1.5; margin-bottom: 20px;">Upload your PDF document below, choose your print settings, and select an available pick-up date window set by Verba Vitae admins!</p>
+
+                    <form id="userPrintForm">
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; color: #2d3748;">Select PDF File</label>
+                            <input type="file" id="printPdfInput" accept=".pdf,application/pdf" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box;">
+                        </div>
+
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; color: #2d3748;">Select Admin Pick-Up Date Window</label>
+                            <select id="printPickupWindowSelect" required style="width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; background: white;">
+                                <option value="">Loading available pick-up windows...</option>
+                            </select>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                            <div>
+                                <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 5px; color: #2d3748;">Copies</label>
+                                <input type="number" id="printCopies" min="1" max="20" value="1" required style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box;">
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 5px; color: #2d3748;">Color Mode</label>
+                                <select id="printColor" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; background: white;">
+                                    <option value="B&W">Black & White (B&W)</option>
+                                    <option value="Color">Full Color</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 5px; color: #2d3748;">Sides</label>
+                                <select id="printSides" style="width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; background: white;">
+                                    <option value="Single-sided">Single-sided</option>
+                                    <option value="Double-sided">Double-sided</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom: 20px;">
+                            <label style="display: block; font-weight: 600; font-size: 0.88rem; margin-bottom: 6px; color: #2d3748;">Special Instructions (Optional)</label>
+                            <input type="text" id="printNotes" placeholder="e.g. Please staple top left corner" style="width: 100%; padding: 9px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box;">
+                        </div>
+
+                        <button type="submit" style="width: 100%; padding: 12px; background: #3182ce; color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: background 0.2s;"><i class="fas fa-paper-plane"></i> Submit PDF for Printing</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         function openEventsModal() {
             const iframe = document.getElementById('eventsIframe');
@@ -435,13 +523,126 @@
         function closeGalleryModal() {
             document.getElementById('galleryPreviewModal').style.display = 'none';
         }
+        function openServicesModal() {
+            populatePrintPickupWindows();
+            document.getElementById('verbaServicesModal').style.display = 'flex';
+        }
+        function closeServicesModal() {
+            document.getElementById('verbaServicesModal').style.display = 'none';
+        }
+
+        async function populatePrintPickupWindows() {
+            const select = document.getElementById('printPickupWindowSelect');
+            if (!select) return;
+            select.innerHTML = '<option value="">Loading active pick-up windows...</option>';
+
+            let windows = [];
+            try {
+                if (typeof db !== 'undefined' && db) {
+                    const snapshot = await db.collection('print_windows').get();
+                    snapshot.forEach(doc => {
+                        windows.push(doc.data());
+                    });
+                }
+            } catch(e) { console.warn(e); }
+
+            const local = JSON.parse(localStorage.getItem('verba_print_windows')) || [];
+            local.forEach(loc => {
+                if (!windows.some(w => w.id === loc.id || (w.date === loc.date && w.time === loc.time))) {
+                    windows.push(loc);
+                }
+            });
+
+            select.innerHTML = '';
+            if (windows.length === 0) {
+                select.innerHTML = '<option value="Next Business Day (10:00 AM - 2:00 PM)">Next Business Day (10:00 AM - 2:00 PM)</option>';
+                return;
+            }
+
+            windows.forEach(win => {
+                const opt = document.createElement('option');
+                opt.value = `${win.date} (${win.time}) - ${win.location || 'Office'}`;
+                opt.textContent = `${win.date} | ${win.time} (${win.location || 'Office'})`;
+                select.appendChild(opt);
+            });
+        }
+
+        // Handle PDF Submit
+        const userPrintForm = document.getElementById('userPrintForm');
+        if (userPrintForm) {
+            userPrintForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const fileInput = document.getElementById('printPdfInput');
+                const pickupWindow = document.getElementById('printPickupWindowSelect').value;
+                const copies = parseInt(document.getElementById('printCopies').value, 10) || 1;
+                const color = document.getElementById('printColor').value;
+                const sides = document.getElementById('printSides').value;
+                const notes = document.getElementById('printNotes').value.trim();
+
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    alert('Please select a PDF file.');
+                    return;
+                }
+
+                const file = fileInput.files[0];
+                if (!file.type.includes('pdf')) {
+                    alert('Please upload a valid PDF document.');
+                    return;
+                }
+
+                const submitBtn = e.target.querySelector('button[type="submit"]');
+                submitBtn.textContent = 'Uploading PDF...';
+                submitBtn.disabled = true;
+
+                const reader = new FileReader();
+                reader.onload = async (event) => {
+                    const base64Data = event.target.result;
+                    const userName = localStorage.getItem('verba_user_name') || 'Student Member';
+                    const userEmail = localStorage.getItem('verba_user_email') || 'student@verba.org';
+
+                    const printJob = {
+                        id: 'prt_' + Date.now(),
+                        userName: userName,
+                        userEmail: userEmail,
+                        fileName: file.name,
+                        fileData: base64Data,
+                        pickupWindow: pickupWindow,
+                        copies: copies,
+                        color: color,
+                        sides: sides,
+                        notes: notes,
+                        status: 'Pending Print',
+                        timestamp: new Date().toISOString()
+                    };
+
+                    try {
+                        if (typeof db !== 'undefined' && db) {
+                            await db.collection('print_requests').add(printJob);
+                        }
+                    } catch(err) { console.warn(err); }
+
+                    const localRequests = JSON.parse(localStorage.getItem('verba_print_requests')) || [];
+                    localRequests.unshift(printJob);
+                    localStorage.setItem('verba_print_requests', JSON.stringify(localRequests));
+
+                    alert(`PDF "${file.name}" successfully submitted for printing! You can pick it up on ${pickupWindow}.`);
+                    userPrintForm.reset();
+                    submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit PDF for Printing';
+                    submitBtn.disabled = false;
+                    closeServicesModal();
+                };
+                reader.readAsDataURL(file);
+            });
+        }
 
         // Close modals on outside click
         window.addEventListener('click', (e) => {
             const evModal = document.getElementById('eventsPreviewModal');
             const galModal = document.getElementById('galleryPreviewModal');
+            const svcModal = document.getElementById('verbaServicesModal');
             if (e.target === evModal) closeEventsModal();
             if (e.target === galModal) closeGalleryModal();
+            if (e.target === svcModal) closeServicesModal();
         });
     </script>
 </body>
