@@ -90,108 +90,13 @@
                 <button class="opp-filter-btn active" onclick="setCategory('all', this)">All Types</button>
                 <button class="opp-filter-btn" onclick="setCategory('scholarship', this)">Scholarships</button>
                 <button class="opp-filter-btn" onclick="setCategory('internship', this)">Internships</button>
-                <button class="opp-filter-btn" onclick="setCategory('research', this)">Research</button>
                 <button class="opp-filter-btn" onclick="setCategory('leadership', this)">Leadership</button>
             </div>
         </div>
 
         <!-- Opportunities Grid -->
         <div class="opp-grid" id="oppGrid">
-            <!-- Card 1 -->
-            <div class="opp-card" data-category="scholarship">
-                <div class="opp-top-row">
-                    <span class="opp-tag">Scholarship</span>
-                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Aug 30, 2026</span>
-                </div>
-                <h2 class="opp-title">2026 Verba Vitae Academic Excellence Grant</h2>
-                <div class="opp-org"><i class="fas fa-building"></i> Verba Vitae Foundation</div>
-                <p class="opp-desc">Financial awards up to $1,000 to assist active members with tuition, books, research materials, or academic conference travel.</p>
-                <div class="opp-meta-info">
-                    <span><i class="fas fa-user-graduate"></i> Eligibility: Active Verba Vitae Members</span>
-                    <span><i class="fas fa-dollar-sign"></i> Award: $250 – $1,000</span>
-                </div>
-                <a href="join.html" class="btn-apply">Apply Now</a>
-            </div>
-
-            <!-- Card 2 -->
-            <div class="opp-card" data-category="internship">
-                <div class="opp-top-row">
-                    <span class="opp-tag" style="background:#e3f2fd; color:#1976d2;">Internship</span>
-                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Aug 15, 2026</span>
-                </div>
-                <h2 class="opp-title">Software & Web Development Intern</h2>
-                <div class="opp-org"><i class="fas fa-building"></i> Tech Partner Labs</div>
-                <p class="opp-desc">Gain hands-on experience building modern web applications, working with JavaScript, APIs, and cloud services in a collaborative team.</p>
-                <div class="opp-meta-info">
-                    <span><i class="fas fa-user-graduate"></i> Eligibility: Computer Science / Engineering Majors</span>
-                    <span><i class="fas fa-map-marker-alt"></i> Location: Hybrid / Remote</span>
-                </div>
-                <a href="join.html" class="btn-apply">Apply Now</a>
-            </div>
-
-            <!-- Card 3 -->
-            <div class="opp-card" data-category="research">
-                <div class="opp-top-row">
-                    <span class="opp-tag" style="background:#f3e5f5; color:#7b1fa2;">Research</span>
-                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Sept 10, 2026</span>
-                </div>
-                <h2 class="opp-title">Undergraduate Research Fellowship</h2>
-                <div class="opp-org"><i class="fas fa-building"></i> Academic Research Council</div>
-                <p class="opp-desc">Conduct faculty-guided research in humanities, science, or technology. Stipend and presentation opportunities included.</p>
-                <div class="opp-meta-info">
-                    <span><i class="fas fa-user-graduate"></i> Eligibility: Sophomores, Juniors & Seniors</span>
-                    <span><i class="fas fa-dollar-sign"></i> Stipend: $1,500 per semester</span>
-                </div>
-                <a href="join.html" class="btn-apply">Apply Now</a>
-            </div>
-
-            <!-- Card 4 -->
-            <div class="opp-card" data-category="leadership">
-                <div class="opp-top-row">
-                    <span class="opp-tag" style="background:#e8f5e9; color:#388e3c;">Leadership</span>
-                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Aug 05, 2026</span>
-                </div>
-                <h2 class="opp-title">Verba Vitae Committee Chair Lead</h2>
-                <div class="opp-org"><i class="fas fa-building"></i> Verba Vitae Executive Board</div>
-                <p class="opp-desc">Lead student committees for event planning, digital media, or community outreach while building executive management skills.</p>
-                <div class="opp-meta-info">
-                    <span><i class="fas fa-user-graduate"></i> Eligibility: Active Members with 1+ Semester</span>
-                    <span><i class="fas fa-award"></i> Role: Executive Leadership Experience</span>
-                </div>
-                <a href="join.html" class="btn-apply">Apply Now</a>
-            </div>
-
-            <!-- Card 5 -->
-            <div class="opp-card" data-category="scholarship">
-                <div class="opp-top-row">
-                    <span class="opp-tag">Scholarship</span>
-                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Sept 25, 2026</span>
-                </div>
-                <h2 class="opp-title">Community Service & Leadership Award</h2>
-                <div class="opp-org"><i class="fas fa-building"></i> Regional Student Fund</div>
-                <p class="opp-desc">Recognizing students who demonstrate exceptional dedication to civic engagement and community improvement initiatives.</p>
-                <div class="opp-meta-info">
-                    <span><i class="fas fa-user-graduate"></i> Eligibility: Minimum 25 Community Service Hours</span>
-                    <span><i class="fas fa-dollar-sign"></i> Award: $750</span>
-                </div>
-                <a href="join.html" class="btn-apply">Apply Now</a>
-            </div>
-
-            <!-- Card 6 -->
-            <div class="opp-card" data-category="internship">
-                <div class="opp-top-row">
-                    <span class="opp-tag" style="background:#e3f2fd; color:#1976d2;">Internship</span>
-                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Aug 20, 2026</span>
-                </div>
-                <h2 class="opp-title">Digital Media & Marketing Coordinator</h2>
-                <div class="opp-org"><i class="fas fa-building"></i> Creative Communications Group</div>
-                <p class="opp-desc">Manage social media strategy, content creation, and graphic design for community initiatives and brand campaigns.</p>
-                <div class="opp-meta-info">
-                    <span><i class="fas fa-user-graduate"></i> Eligibility: Open to all majors</span>
-                    <span><i class="fas fa-map-marker-alt"></i> Location: Flexible / Remote</span>
-                </div>
-                <a href="join.html" class="btn-apply">Apply Now</a>
-            </div>
+            <p style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #666; font-size: 1.1rem;">No opportunities available at the moment. Check back soon!</p>
         </div>
     </main>
 
