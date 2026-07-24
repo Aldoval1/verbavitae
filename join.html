@@ -154,17 +154,21 @@
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
                 const user = userCredential.user;
 
-                // 2. Save User Data in Firestore
-                await db.collection('users').doc(user.uid).set({
-                    firstName: firstName,
-                    lastName: lastName,
-                    email: email,
-                    phone: phone,
-                    major: major,
-                    invitationCode: code,
-                    role: 'member', // Default role
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                // 2. Save User Data in Firestore (with fallback if rules restrict writing)
+                try {
+                    await db.collection('users').doc(user.uid).set({
+                        firstName: firstName,
+                        lastName: lastName,
+                        email: email,
+                        phone: phone,
+                        major: major,
+                        invitationCode: code,
+                        role: 'member', // Default role
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                } catch (dbErr) {
+                    console.warn("Could not save user profile to Firestore (permissions issue):", dbErr);
+                }
 
                 alert('Registration completed! Welcome to Verba Vitae.');
                 window.location.href = 'index.html';
