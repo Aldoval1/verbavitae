@@ -17,6 +17,7 @@
     <script src="js/firebase-init.js"></script>
 </head>
 <body>
+    <div style="background-color: #ff9800; color: #fff; text-align: center; padding: 10px; font-weight: bold; z-index: 10000; position: relative; width: 100%;">This page is currently under development and will be ready by August 6, 2026.</div>
     <header class="main-header">
         
         <!-- Mobile Header (Visible only on mobile) -->
@@ -142,52 +143,7 @@
         });
 
         // Sample Event Data
-        const eventsData = [
-            {
-                id: 1,
-                day: "15",
-                month: "OCT",
-                title: "Tech Networking Night",
-                brief: "Join us for an evening of connections and tech talks.",
-                location: "Student Union Building, Room 204",
-                time: "6:00 PM - 8:30 PM",
-                desc: "<p>Connect with industry professionals and peers who are passionate about technology. We will have guest speakers from top tech companies sharing their journey and offering insights on landing your dream job.</p><p>Don't miss out on this opportunity to expand your network, enjoy free refreshments, and discover the possibilities waiting for you in the tech industry.</p>",
-                link: "#rsvp-tech"
-            },
-            {
-                id: 2,
-                day: "22",
-                month: "OCT",
-                title: "Leadership Workshop",
-                brief: "Develop your management skills with expert coaches.",
-                location: "Main Library Auditorium",
-                time: "2:00 PM - 5:00 PM",
-                desc: "<p>Ready to take your leadership skills to the next level? Join our interactive workshop designed to help you communicate effectively, resolve conflicts, and inspire those around you.</p><p>This session includes hands-on activities and group discussions led by experienced organizational leaders. Certificates of completion will be provided.</p>",
-                link: "#rsvp-leadership"
-            },
-            {
-                id: 3,
-                day: "05",
-                month: "NOV",
-                title: "Annual Charity Gala",
-                brief: "A night to give back to the community.",
-                location: "Grand Hotel Ballroom",
-                time: "7:30 PM - 11:30 PM",
-                desc: "<p>Dress to impress for our most anticipated event of the year! The Annual Charity Gala brings together students, alumni, and local leaders for an unforgettable night.</p><p>Enjoy a three-course dinner, live music, and a silent auction. All proceeds go directly to our partner charities supporting education initiatives in our local community.</p>",
-                link: "#rsvp-gala"
-            },
-            {
-                id: 4,
-                day: "18",
-                month: "NOV",
-                title: "Resume Review Session",
-                brief: "Get your resume polished by recruiters.",
-                location: "Career Center, Room 101",
-                time: "10:00 AM - 3:00 PM",
-                desc: "<p>Bring a printed copy of your resume and get one-on-one feedback from professional recruiters and career advisors.</p><p>Whether you're looking for your first internship or a full-time position, a strong resume is your key to getting an interview. Sessions are drop-in, but arrive early to ensure you get a spot!</p>",
-                link: "#rsvp-resume"
-            }
-        ];
+        const eventsData = [];
 
         let currentIndex = 0;
 
@@ -195,6 +151,11 @@
             const listContainer = document.getElementById('events-list');
             listContainer.innerHTML = '';
             
+            if (eventsData.length === 0) {
+                listContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">No upcoming events at this time.</div>';
+                return;
+            }
+
             eventsData.forEach((ev, index) => {
                 const item = document.createElement('div');
                 item.className = `event-item ${index === currentIndex ? 'active' : ''}`;
@@ -215,6 +176,16 @@
         }
 
         function selectEvent(index) {
+            if (eventsData.length === 0) {
+                const panel = document.getElementById('event-details-panel');
+                document.getElementById('e-location').innerText = '';
+                document.getElementById('e-title').innerText = 'No Upcoming Events';
+                document.getElementById('e-desc').innerHTML = '<p>Check back later for new events.</p>';
+                document.getElementById('e-time').innerText = '--:--';
+                document.getElementById('e-link').style.display = 'none';
+                return;
+            }
+
             if (index === currentIndex && document.getElementById('e-title').innerText !== 'Loading Event...') return;
             currentIndex = index;
             

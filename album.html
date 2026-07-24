@@ -30,6 +30,7 @@
     <script src="js/firebase-init.js"></script>
 </head>
 <body>
+    <div style="background-color: #ff9800; color: #fff; text-align: center; padding: 10px; font-weight: bold; z-index: 10000; position: relative; width: 100%;">This page is currently under development and will be ready by August 6, 2026.</div>
     <header class="main-header">
         
         <!-- Mobile Header (Visible only on mobile) -->
@@ -83,7 +84,13 @@
         </div>
     </header>
 
-
+    <div class="floating-logo-box">
+        <a href="index.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center;">
+            <img src="images/verbavitaelogofill.jpg" alt="Verba Vitae Logo" class="logo-img">
+            <h1 class="logo-title">VERBA VITAE</h1>
+            <p class="logo-subtitle">Organization</p>
+        </a>
+    </div>
 
     <!-- Dynamic Gallery Section -->
     <section class="gallery-section" id="album-section">
@@ -140,24 +147,36 @@
 
             if (!albumId) {
                 titleEl.textContent = 'ALBUM NOT FOUND';
-                grid.innerHTML = '<p style="text-align:center; grid-column:1/-1;">Invalid album ID.</p>';
+                grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding: 40px; color: #666;">Invalid album ID.</p>';
                 return;
             }
             
             try {
+                if (typeof db === 'undefined' || !db) {
+                    throw new Error("Firestore instance not initialized");
+                }
+
                 const doc = await db.collection('albums').doc(albumId).get();
                 if (!doc.exists) {
                     titleEl.textContent = 'ALBUM NOT FOUND';
-                    grid.innerHTML = '<p style="text-align:center; grid-column:1/-1;">This album does not exist.</p>';
+                    grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding: 40px; color: #666;">This album does not exist.</p>';
                     return;
                 }
 
                 const data = doc.data();
-                titleEl.textContent = data.title.toUpperCase();
+                titleEl.textContent = (data.title || 'ALBUM').toUpperCase();
                 const photos = data.photos || [];
 
                 if (photos.length === 0) {
-                    grid.innerHTML = '<p style="text-align:center; grid-column:1/-1;">No photos in this album yet.</p>';
+                    if (data.coverUrl) {
+                        grid.innerHTML = `
+                            <div style="break-inside:avoid; margin-bottom:15px; border-radius:8px; overflow:hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display:inline-block; width:100%;">
+                                <img src="${data.coverUrl}" onclick="openLightbox('${data.coverUrl}')" style="width:100%; height:auto; display:block; cursor:pointer; transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
+                            </div>
+                        `;
+                    } else {
+                        grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding: 40px; color: #666;">No photos in this album yet.</p>';
+                    }
                     return;
                 }
                 
@@ -172,8 +191,8 @@
                 grid.innerHTML = html;
             } catch (error) {
                 console.error("Error fetching album:", error);
-                titleEl.textContent = 'ERROR';
-                grid.innerHTML = '<p style="color:red; text-align:center; grid-column: 1 / -1;">Failed to load photos.</p>';
+                titleEl.textContent = 'ALBUM';
+                grid.innerHTML = '<p style="color:#666; text-align:center; grid-column: 1 / -1; padding: 40px;">Unable to load photos at this time.</p>';
             }
         }
 
