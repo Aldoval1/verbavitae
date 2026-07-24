@@ -94,23 +94,23 @@
                 const userCredential = await auth.signInWithEmailAndPassword(email, pass);
                 const user = userCredential.user;
 
-                // 2. Fetch User Role from Firestore
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    const role = userData.role;
-
-                    // 3. Redirect based on role
-                    if (role === 'admin') {
-                        window.location.href = 'admin-dashboard.html';
-                    } else if (role === 'eboard') {
-                        window.location.href = 'eboard-dashboard.html';
-                    } else {
-                        window.location.href = 'dashboard.html';
+                // 2. Fetch User Role from Firestore (with fallback if rules restrict reading)
+                let role = 'member';
+                try {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (userDoc.exists && userDoc.data().role) {
+                        role = userDoc.data().role;
                     }
+                } catch (roleErr) {
+                    console.warn("Could not fetch user role, defaulting to member dashboard:", roleErr);
+                }
+
+                // 3. Redirect based on role
+                if (role === 'admin') {
+                    window.location.href = 'admin-dashboard.html';
+                } else if (role === 'eboard') {
+                    window.location.href = 'eboard-dashboard.html';
                 } else {
-                    // Fallback if user doesn't have a Firestore document
                     window.location.href = 'dashboard.html';
                 }
 
