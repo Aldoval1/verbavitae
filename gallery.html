@@ -124,28 +124,21 @@
             });
         }
 
-        // Sample Fallback Albums
-        const defaultAlbums = [
-            {
-                id: 'sample-1',
-                title: 'Community Workshop',
-                coverUrl: 'images/slide1.jpg'
-            },
-            {
-                id: 'sample-2',
-                title: 'Annual Leadership Summit',
-                coverUrl: 'images/slide2.jpg'
-            },
-            {
-                id: 'sample-3',
-                title: 'Campus Welcome Event',
-                coverUrl: 'images/slide3.jpg'
+        function showEmptyState() {
+            const grid = document.getElementById('publicGalleryGrid');
+            if (grid) {
+                grid.innerHTML = '<p class="no-events" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666; font-size: 1.1rem;">No albums available at the moment.</p>';
             }
-        ];
+        }
 
         function renderAlbumCards(albums) {
             const grid = document.getElementById('publicGalleryGrid');
             if (!grid) return;
+
+            if (!albums || albums.length === 0) {
+                showEmptyState();
+                return;
+            }
 
             let html = '';
             albums.forEach(data => {
@@ -170,7 +163,7 @@
             
             try {
                 if (typeof db === 'undefined' || !db) {
-                    renderAlbumCards(defaultAlbums);
+                    showEmptyState();
                     return;
                 }
 
@@ -183,7 +176,7 @@
                 }
 
                 if (!snapshot || snapshot.empty) {
-                    renderAlbumCards(defaultAlbums);
+                    showEmptyState();
                     return;
                 }
                 
@@ -199,10 +192,10 @@
                     return tB - tA;
                 });
 
-                renderAlbumCards(albums.length > 0 ? albums : defaultAlbums);
+                renderAlbumCards(albums);
             } catch (error) {
                 console.error("Error fetching albums:", error);
-                renderAlbumCards(defaultAlbums);
+                showEmptyState();
             }
         }
 
