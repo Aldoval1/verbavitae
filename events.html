@@ -161,17 +161,68 @@
             mobileNav.classList.toggle('active');
         });
 
-        // Sample Event Data
-        const eventsData = [];
-
+        let eventsData = [];
         let currentIndex = 0;
+
+        const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+        async function fetchEvents() {
+            let fetched = [];
+            try {
+                if (typeof db !== 'undefined' && db) {
+                    const snapshot = await db.collection('events').get();
+                    snapshot.forEach(doc => {
+                        fetched.push({ id: doc.id, ...doc.data() });
+                    });
+                }
+            } catch (err) {
+                console.warn("Firestore fetch events warning:", err);
+            }
+
+            const local = JSON.parse(localStorage.getItem('verba_events')) || [];
+            local.forEach(loc => {
+                if (!fetched.some(e => e.id === loc.id || e.title === loc.title)) {
+                    fetched.push(loc);
+                }
+            });
+
+            eventsData = fetched.map(ev => {
+                let day = "12";
+                let month = "AUG";
+                if (ev.date) {
+                    const parts = ev.date.split('-');
+                    if (parts.length === 3) {
+                        day = parseInt(parts[2], 10).toString();
+                        month = monthNames[parseInt(parts[1], 10) - 1] || "AUG";
+                    }
+                }
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location || 'Miami, FL')}`;
+                return {
+                    id: ev.id || ('evt_' + Math.random()),
+                    title: ev.title || 'Community Event',
+                    day: day,
+                    month: month,
+                    dateStr: ev.date || '',
+                    brief: (ev.description || '').slice(0, 70) + ((ev.description || '').length > 70 ? '...' : ''),
+                    location: ev.location || 'Location TBD',
+                    mapsUrl: mapsUrl,
+                    time: ev.time || 'TBD',
+                    serviceHours: ev.serviceHours || 0,
+                    desc: `<p>${ev.description || 'Join us for this exciting event!'}</p><p style="margin-top: 15px; font-weight: 600; color: #1976d2;"><i class="fas fa-award"></i> Volunteer Service Hours Granted: ${ev.serviceHours || 0} Hours</p>`
+                };
+            });
+
+            renderEventList();
+            if (eventsData.length > 0) selectEvent(0);
+            else selectEvent(-1);
+        }
 
         function renderEventList() {
             const listContainer = document.getElementById('events-list');
             listContainer.innerHTML = '';
             
             if (eventsData.length === 0) {
-                listContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">No upcoming events at this time.</div>';
+                listContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">No upcoming events at this time. Check back soon!</div>';
                 return;
             }
 
@@ -194,10 +245,36 @@
             });
         }
 
+        function isEventRegistered(eventId) {
+            const registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+            return registered.some(r => r.id === eventId);
+        }
+
+        function registerForEvent(eventId) {
+            const ev = eventsData.find(e => e.id === eventId);
+            if (!ev) return;
+
+            let registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+            if (!registered.some(r => r.id === eventId)) {
+                registered.push({
+                    id: ev.id,
+                    title: ev.title,
+                    date: ev.dateStr,
+                    time: ev.time,
+                    location: ev.location,
+                    serviceHours: ev.serviceHours,
+                    registeredAt: new Date().toISOString()
+                });
+                localStorage.setItem('verba_registered_events', JSON.stringify(registered));
+            }
+
+            alert(`Successfully registered for "${ev.title}"! You will earn ${ev.serviceHours} volunteer service hours upon completion.`);
+            selectEvent(currentIndex);
+        }
+
         function selectEvent(index) {
-            if (eventsData.length === 0) {
-                const panel = document.getElementById('event-details-panel');
-                document.getElementById('e-location').innerText = '';
+            if (eventsData.length === 0 || index === -1) {
+                document.getElementById('e-location').innerText = 'N/A';
                 document.getElementById('e-title').innerText = 'No Upcoming Events';
                 document.getElementById('e-desc').innerHTML = '<p>Check back later for new events.</p>';
                 document.getElementById('e-time').innerText = '--:--';
@@ -205,10 +282,8 @@
                 return;
             }
 
-            if (index === currentIndex && document.getElementById('e-title').innerText !== 'Loading Event...') return;
             currentIndex = index;
             
-            // Update list active state
             const items = document.querySelectorAll('.event-item');
             items.forEach((item, i) => {
                 if(i === index) item.classList.add('active');
@@ -218,23 +293,35 @@
             const event = eventsData[index];
             const panel = document.getElementById('event-details-panel');
             
-            // Animation
             panel.classList.add('fade');
             
             setTimeout(() => {
-                document.getElementById('e-location').innerText = event.location;
+                document.getElementById('e-location').innerHTML = `<a href="${event.mapsUrl}" target="_blank" style="color: inherit; text-decoration: underline;" title="Open in Google Maps">${event.location} <i class="fas fa-external-link-alt" style="font-size:0.75rem;"></i></a>`;
                 document.getElementById('e-title').innerText = event.title;
                 document.getElementById('e-desc').innerHTML = event.desc;
                 document.getElementById('e-time').innerText = event.time;
-                document.getElementById('e-link').href = event.link;
+                
+                const btn = document.getElementById('e-link');
+                btn.style.display = 'inline-block';
+                
+                if (isEventRegistered(event.id)) {
+                    btn.innerText = '✓ REGISTERED';
+                    btn.style.backgroundColor = '#38a169';
+                    btn.onclick = (e) => { e.preventDefault(); alert('You are already registered for this event!'); };
+                } else {
+                    btn.innerText = `REGISTER NOW (${event.serviceHours} HOURS)`;
+                    btn.style.backgroundColor = '#1d0c8d';
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        registerForEvent(event.id);
+                    };
+                }
                 
                 panel.classList.remove('fade');
             }, 300);
         }
 
-        // Initialize
-        renderEventList();
-        selectEvent(0);
+        document.addEventListener('DOMContentLoaded', fetchEvents);
 
     </script>
 </body>

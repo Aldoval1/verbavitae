@@ -62,12 +62,22 @@
                         <!-- Populated by JS -->
                     </div>
                     <div class="upcoming-events">
-                        <h4>Upcoming events</h4>
+                        <h4>Upcoming Published Events</h4>
                         <ul id="upcomingEventsList">
                             <!-- Populated by JS -->
                         </ul>
                     </div>
-                    <button id="exportCalendarBtn" style="width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 0; font-weight: 600; cursor: pointer; margin-top: 20px; transition: background-color 0.2s;">Add to my Calendar</button>
+
+                    <div style="margin-top: 20px; padding: 15px; background: #ebf8ff; border: 1px solid #bee3f8; border-radius: 8px;">
+                        <h4 style="margin: 0 0 10px 0; color: #2b6cb0; font-size: 0.95rem; display: flex; align-items: center; justify-content: space-between;">
+                            <span><i class="fas fa-award" style="color: #3182ce;"></i> My Registered Events</span>
+                            <span id="totalHoursBadge" style="background: #3182ce; color: #fff; padding: 3px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;">0 Hours Earned</span>
+                        </h4>
+                        <div id="userRegisteredEventsList" style="font-size: 0.85rem; color: #4a5568;">
+                            <p style="margin: 0; color: #718096;">You haven't registered for any events yet.</p>
+                        </div>
+                    </div>
+                    <button id="exportCalendarBtn" style="width: 100%; padding: 12px; background-color: var(--primary-color); color: white; border: none; border-radius: 0; font-weight: 600; cursor: pointer; margin-top: 15px; transition: background-color 0.2s;">Add to my Calendar</button>
                 </div>
             </div>
 
@@ -208,15 +218,78 @@
                 window.location.href = 'login.html';
             });
 
-            // --- Dynamic Calendar Logic ---
+            // --- Dynamic Calendar & Registered Events Logic ---
             const calendarGrid = document.getElementById('calendarGrid');
             const currentMonthYear = document.getElementById('currentMonthYear');
             const upcomingEventsList = document.getElementById('upcomingEventsList');
             const prevMonthBtn = document.getElementById('prevMonthBtn');
             const nextMonthBtn = document.getElementById('nextMonthBtn');
+            const userRegisteredEventsList = document.getElementById('userRegisteredEventsList');
+            const totalHoursBadge = document.getElementById('totalHoursBadge');
             
             let currentDate = new Date();
-            let events = JSON.parse(localStorage.getItem('verba_events')) || [];
+            let events = [];
+
+            async function fetchDashboardEvents() {
+                let fetched = [];
+                try {
+                    if (typeof db !== 'undefined' && db) {
+                        const snapshot = await db.collection('events').get();
+                        snapshot.forEach(doc => {
+                            fetched.push({ id: doc.id, ...doc.data() });
+                        });
+                    }
+                } catch (e) { console.warn(e); }
+
+                const local = JSON.parse(localStorage.getItem('verba_events')) || [];
+                local.forEach(loc => {
+                    if (!fetched.some(f => f.id === loc.id || f.title === loc.title)) {
+                        fetched.push(loc);
+                    }
+                });
+
+                events = fetched;
+                renderCalendar();
+                renderRegisteredEvents();
+            }
+
+            function renderRegisteredEvents() {
+                const registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+                if (!userRegisteredEventsList) return;
+
+                if (registered.length === 0) {
+                    userRegisteredEventsList.innerHTML = '<p style="margin: 0; color: #718096;">You haven\'t registered for any events yet. Check out Volunteer Possibilities to register!</p>';
+                    if (totalHoursBadge) totalHoursBadge.textContent = '0 Hours Earned';
+                    return;
+                }
+
+                let totalHours = 0;
+                let html = '<ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">';
+
+                registered.forEach(r => {
+                    const hours = parseFloat(r.serviceHours) || 0;
+                    totalHours += hours;
+                    const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(r.location || 'Miami FL')}`;
+                    
+                    html += `
+                        <li style="background: #ffffff; padding: 10px 12px; border-radius: 6px; border-left: 3px solid #3182ce; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                            <div style="display:flex; justify-content:space-between; font-weight:600; color:#2d3748;">
+                                <span>${r.title}</span>
+                                <span style="color:#2b6cb0;">+${hours} hrs</span>
+                            </div>
+                            <div style="font-size:0.78rem; color:#718096; margin-top:3px; display:flex; gap:10px; flex-wrap:wrap;">
+                                <span><i class="far fa-calendar"></i> ${r.date || 'Upcoming'}</span>
+                                <span><i class="far fa-clock"></i> ${r.time || 'TBD'}</span>
+                                <span><i class="fas fa-map-marker-alt"></i> <a href="${mapsUrl}" target="_blank" style="color:#3182ce; text-decoration:underline;">Map</a></span>
+                            </div>
+                        </li>
+                    `;
+                });
+
+                html += '</ul>';
+                userRegisteredEventsList.innerHTML = html;
+                if (totalHoursBadge) totalHoursBadge.textContent = `${totalHours} Hours Earned`;
+            }
 
             function renderCalendar() {
                 const year = currentDate.getFullYear();
@@ -240,7 +313,7 @@
                     
                     let classes = 'day';
                     if (eventForDay) {
-                        classes += ` event-${eventForDay.color}`;
+                        classes += ' event-blue';
                     }
                     
                     const today = new Date();
@@ -255,15 +328,16 @@
                 
                 // Update upcoming
                 upcomingEventsList.innerHTML = '';
-                const upcoming = events.filter(e => new Date(e.date) >= new Date(year, month, 1) && new Date(e.date) <= new Date(year, month + 1, 0)).sort((a,b) => new Date(a.date) - new Date(b.date));
-                if (upcoming.length === 0) {
-                    upcomingEventsList.innerHTML = '<li>No events this month</li>';
+                if (events.length === 0) {
+                    upcomingEventsList.innerHTML = '<li>No published events yet</li>';
                 } else {
-                    upcoming.forEach(e => {
-                        upcomingEventsList.innerHTML += `<li><span class="dot ${e.color}"></span> <strong>${e.date}:</strong> ${e.title}</li>`;
+                    events.slice(0, 5).forEach(e => {
+                        upcomingEventsList.innerHTML += `<li><span class="dot blue"></span> <strong>${e.date || 'Upcoming'}:</strong> ${e.title} (${e.serviceHours || 0} hrs)</li>`;
                     });
                 }
             }
+
+            fetchDashboardEvents();
 
             prevMonthBtn.addEventListener('click', () => {
                 currentDate.setMonth(currentDate.getMonth() - 1);

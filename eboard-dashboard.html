@@ -38,19 +38,31 @@
                 <form id="eventForm" class="admin-form">
                     <div class="form-group">
                         <label for="eventTitle">Event Title</label>
-                        <input type="text" id="eventTitle" required placeholder="e.g. Monthly Meeting">
+                        <input type="text" id="eventTitle" required placeholder="e.g. Community Service Outreach">
+                    </div>
+                    <div class="form-group" style="display: flex; gap: 15px;">
+                        <div style="flex: 1;">
+                            <label for="eventDate">Date</label>
+                            <input type="date" id="eventDate" required>
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="eventTime">Hours of Event (Time)</label>
+                            <input type="text" id="eventTime" required placeholder="e.g. 10:00 AM - 2:00 PM">
+                        </div>
+                    </div>
+                    <div class="form-group" style="display: flex; gap: 15px;">
+                        <div style="flex: 1;">
+                            <label for="eventLocation">Location / Google Maps Place</label>
+                            <input type="text" id="eventLocation" required placeholder="e.g. FIU Campus Quad, Miami FL">
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="eventServiceHours">Service Hours Provided</label>
+                            <input type="number" id="eventServiceHours" required placeholder="e.g. 4" min="0" step="0.5">
+                        </div>
                     </div>
                     <div class="form-group">
-                        <label for="eventDate">Date</label>
-                        <input type="date" id="eventDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="eventColor">Category Color</label>
-                        <select id="eventColor" required>
-                            <option value="blue">Blue (General)</option>
-                            <option value="green">Green (Important)</option>
-                            <option value="purple">Purple (Study Group)</option>
-                        </select>
+                        <label for="eventDescription">Event Description</label>
+                        <textarea id="eventDescription" rows="3" required placeholder="Description of the event and volunteer goals..." style="width: 100%; padding: 10px; font-family: inherit; border: 1px solid var(--border-color);"></textarea>
                     </div>
                     <button type="submit" class="admin-btn">Add Event</button>
                 </form>
@@ -168,19 +180,40 @@
 
             // --- Event Manager Logic ---
             const eventForm = document.getElementById('eventForm');
-            eventForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const title = document.getElementById('eventTitle').value;
-                const date = document.getElementById('eventDate').value;
-                const color = document.getElementById('eventColor').value;
-                
-                const events = JSON.parse(localStorage.getItem('verba_events')) || [];
-                events.push({ title, date, color });
-                localStorage.setItem('verba_events', JSON.stringify(events));
-                
-                showToast('Event added successfully!');
-                eventForm.reset();
-            });
+            if (eventForm) {
+                eventForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const title = document.getElementById('eventTitle').value.trim();
+                    const date = document.getElementById('eventDate').value;
+                    const time = document.getElementById('eventTime').value.trim();
+                    const location = document.getElementById('eventLocation').value.trim();
+                    const serviceHours = parseFloat(document.getElementById('eventServiceHours').value) || 0;
+                    const description = document.getElementById('eventDescription').value.trim();
+
+                    const eventData = {
+                        title,
+                        date,
+                        time,
+                        location,
+                        serviceHours,
+                        description,
+                        createdAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+                    };
+
+                    try {
+                        if (typeof db !== 'undefined' && db) {
+                            await db.collection('events').add(eventData);
+                        }
+                    } catch(err) { console.warn(err); }
+
+                    const events = JSON.parse(localStorage.getItem('verba_events')) || [];
+                    events.unshift({ id: 'evt_' + Date.now(), ...eventData });
+                    localStorage.setItem('verba_events', JSON.stringify(events));
+                    
+                    showToast('Event added successfully!');
+                    eventForm.reset();
+                });
+            }
 
             // --- Shop Manager Logic ---
             const productForm = document.getElementById('productForm');
