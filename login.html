@@ -116,7 +116,11 @@
 
             } catch (error) {
                 console.error("Login error:", error);
-                errorEl.textContent = error.message ? error.message : 'Invalid email or password.';
+                if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                    errorEl.innerHTML = 'Incorrect email or password. Don\'t have an account yet? <a href="join.html" style="color: #3182ce; font-weight: bold; text-decoration: underline;">Register here</a>';
+                } else {
+                    errorEl.textContent = error.message ? error.message : 'Invalid email or password.';
+                }
                 errorEl.style.display = 'block';
                 submitBtn.textContent = 'Sign In';
                 submitBtn.disabled = false;
