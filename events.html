@@ -198,7 +198,11 @@
                         month = monthNames[parseInt(parts[1], 10) - 1] || "AUG";
                     }
                 }
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location || 'Miami, FL')}`;
+                const allRegs = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+                const regCount = allRegs.filter(r => r.id === ev.id || r.title === ev.title).length;
+                const maxSlots = parseInt(ev.maxSlots, 10) || 20;
+                const slotsLeft = Math.max(0, maxSlots - regCount);
+
                 return {
                     id: ev.id || ('evt_' + Math.random()),
                     title: ev.title || 'Community Event',
@@ -210,7 +214,10 @@
                     mapsUrl: mapsUrl,
                     time: ev.time || 'TBD',
                     serviceHours: ev.serviceHours || 0,
-                    desc: `<p>${ev.description || 'Join us for this exciting event!'}</p><p style="margin-top: 15px; font-weight: 600; color: #1976d2;"><i class="fas fa-award"></i> Volunteer Service Hours Granted: ${ev.serviceHours || 0} Hours</p>`
+                    maxSlots: maxSlots,
+                    regCount: regCount,
+                    slotsLeft: slotsLeft,
+                    desc: `<p>${ev.description || 'Join us for this exciting event!'}</p><p style="margin-top: 15px; font-weight: 600; color: #1976d2;"><i class="fas fa-award"></i> Volunteer Service Hours Granted: ${ev.serviceHours || 0} Hours</p><p style="margin-top: 5px; font-weight: 600; color: ${slotsLeft > 0 ? '#2b6cb0' : '#e53e3e'};"><i class="fas fa-users"></i> Volunteer Capacity: ${slotsLeft} / ${maxSlots} Slots Remaining</p>`
                 };
             });
 
@@ -312,6 +319,10 @@
                     btn.innerText = '✓ REGISTERED';
                     btn.style.backgroundColor = '#38a169';
                     btn.onclick = (e) => { e.preventDefault(); alert('You are already registered for this event!'); };
+                } else if (event.slotsLeft <= 0) {
+                    btn.innerText = 'FULL (NO SLOTS LEFT)';
+                    btn.style.backgroundColor = '#a0aec0';
+                    btn.onclick = (e) => { e.preventDefault(); alert('Sorry, this event has reached maximum volunteer capacity!'); };
                 } else {
                     btn.innerText = `REGISTER NOW (${event.serviceHours} HOURS)`;
                     btn.style.backgroundColor = '#1d0c8d';

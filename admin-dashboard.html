@@ -318,13 +318,17 @@
                         </div>
                     </div>
                     <div class="form-group" style="display: flex; gap: 15px;">
-                        <div style="flex: 1;">
+                        <div style="flex: 1.5;">
                             <label for="eventLocation">Location / Google Maps Place</label>
                             <input type="text" id="eventLocation" required placeholder="e.g. FIU Modesto Maidique Campus, Miami FL">
                         </div>
                         <div style="flex: 1;">
                             <label for="eventServiceHours">Service Hours Provided</label>
                             <input type="number" id="eventServiceHours" required placeholder="e.g. 4" min="0" step="0.5">
+                        </div>
+                        <div style="flex: 1;">
+                            <label for="eventMaxSlots">Volunteer Slots Limit</label>
+                            <input type="number" id="eventMaxSlots" required placeholder="e.g. 20" min="1" value="20">
                         </div>
                     </div>
                     <div class="form-group">
@@ -936,6 +940,7 @@
                 const time = document.getElementById('eventTime').value.trim();
                 const location = document.getElementById('eventLocation').value.trim();
                 const serviceHours = parseFloat(document.getElementById('eventServiceHours').value) || 0;
+                const maxSlots = parseInt(document.getElementById('eventMaxSlots').value, 10) || 20;
                 const description = document.getElementById('eventDescription').value.trim();
                 const btn = e.target.querySelector('button[type="submit"]');
 
@@ -948,6 +953,7 @@
                     time,
                     location,
                     serviceHours,
+                    maxSlots,
                     description,
                     createdAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
                 };
@@ -1002,6 +1008,9 @@
                 return;
             }
 
+            // Get registrations
+            let allRegistrations = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+
             events.forEach(ev => {
                 const item = document.createElement('div');
                 item.className = 'member-item';
@@ -1011,11 +1020,17 @@
                 item.style.marginBottom = '15px';
                 
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}`;
+                const registeredForThis = allRegistrations.filter(r => r.id === ev.id || r.title === ev.title);
+                const regCount = registeredForThis.length;
+                const maxSlots = parseInt(ev.maxSlots, 10) || 20;
 
                 item.innerHTML = `
                     <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
                         <strong style="font-size:1.1rem; color:var(--admin-primary);">${ev.title}</strong>
-                        <span style="background:#e3f2fd; color:#1976d2; padding:3px 10px; border-radius:12px; font-size:0.85rem; font-weight:600;"><i class="fas fa-award"></i> ${ev.serviceHours || 0} Hours</span>
+                        <div style="display:flex; gap:8px;">
+                            <span style="background:#feebc8; color:#744210; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:700;"><i class="fas fa-users"></i> ${regCount} / ${maxSlots} Slots Filled</span>
+                            <span style="background:#e3f2fd; color:#1976d2; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:600;"><i class="fas fa-award"></i> ${ev.serviceHours || 0} Hours</span>
+                        </div>
                     </div>
                     <div style="font-size:0.9rem; color:var(--admin-text-muted); display:flex; gap:15px; flex-wrap:wrap;">
                         <span><i class="far fa-calendar"></i> ${ev.date}</span>
@@ -1023,13 +1038,50 @@
                         <span><i class="fas fa-map-marker-alt"></i> <a href="${mapsUrl}" target="_blank" style="color:var(--admin-accent); text-decoration:underline;">${ev.location}</a></span>
                     </div>
                     <p style="font-size:0.9rem; color:var(--admin-text); margin:5px 0 0 0; line-height:1.4;">${ev.description || ''}</p>
-                    <div style="margin-top:8px; align-self:flex-end;">
+                    <div style="margin-top:8px; align-self:flex-end; display:flex; gap:10px;">
+                        <button class="admin-btn" style="padding:4px 12px; font-size:0.8rem; background:#3182ce;" onclick="viewEventAttendees('${ev.id}', '${ev.title.replace(/'/g, "\\'")}')"><i class="fas fa-users"></i> View Attendees (${regCount})</button>
                         <button class="btn-expel" onclick="deleteEvent('${ev.id}')">Delete Event</button>
                     </div>
                 `;
                 adminEventsList.appendChild(item);
             });
         }
+
+        window.viewEventAttendees = function(eventId, eventTitle) {
+            document.getElementById('attendeesEventTitle').textContent = eventTitle;
+            const modal = document.getElementById('attendeesModal');
+            const list = document.getElementById('attendeesModalList');
+            
+            const allRegistrations = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+            const eventRegs = allRegistrations.filter(r => r.id === eventId || r.title === eventTitle);
+
+            list.innerHTML = '';
+            if (eventRegs.length === 0) {
+                list.innerHTML = '<p style="padding: 15px; color: var(--admin-text-muted);">No members have registered for this event yet.</p>';
+            } else {
+                eventRegs.forEach((r, idx) => {
+                    const div = document.createElement('div');
+                    div.className = 'member-item';
+                    div.style.padding = '10px 12px';
+                    div.style.marginBottom = '8px';
+                    const dateDisplay = r.registeredAt ? new Date(r.registeredAt).toLocaleDateString() + ' ' + new Date(r.registeredAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Registered Member';
+                    
+                    div.innerHTML = `
+                        <div class="member-info">
+                            <strong>${r.userName || r.userEmail || ('Member #' + (idx + 1))}</strong>
+                            <span>${r.userEmail || 'registered student'}</span>
+                        </div>
+                        <span style="font-size:0.78rem; color:var(--admin-text-muted);"><i class="far fa-clock"></i> ${dateDisplay}</span>
+                    `;
+                    list.appendChild(div);
+                });
+            }
+            modal.style.display = 'flex';
+        };
+
+        window.closeAttendeesModal = function() {
+            document.getElementById('attendeesModal').style.display = 'none';
+        };
 
         window.deleteEvent = async function(id) {
             if (confirm('Are you sure you want to delete this event?')) {
@@ -1556,5 +1608,18 @@
         };
 
     </script>
+
+    <!-- Registered Event Attendees Modal -->
+    <div id="attendeesModal" class="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,27,42,0.7); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+        <div class="preview-modal-content" style="max-width: 650px; width: 92%; padding: 25px; border-radius: 12px; background: #ffffff;">
+            <div class="preview-modal-header" style="margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                <h2 style="font-size: 1.2rem; color: #0d1b2a; margin: 0;"><i class="fas fa-users" style="color: #3182ce;"></i> Registered Members: <span id="attendeesEventTitle" style="color: #3182ce;"></span></h2>
+                <button class="preview-close" onclick="closeAttendeesModal()">&times;</button>
+            </div>
+            <div id="attendeesModalList" class="member-list" style="max-height: 380px; overflow-y: auto;">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </div>
 </body>
 </html>
