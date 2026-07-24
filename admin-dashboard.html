@@ -204,6 +204,48 @@
                     </div>
                 </div>
             </section>
+
+            <!-- Book Pick-Up & Pending Orders Window -->
+            <section class="admin-card" style="margin-top: 25px;">
+                <h2><i class="fas fa-boxes-packing" style="color: #d68b2d;"></i> Book Pick-Up & Pending Orders Window</h2>
+                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 20px;">Review students waiting to pick up their books, confirm pick-ups, or log manual campus pick-ups.</p>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 25px;">
+                    <!-- Left: Pending & Completed Pick-ups -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; gap: 10px;">
+                                <button id="btnFilterPendingPickups" onclick="filterPickups('pending')" class="admin-btn" style="padding: 6px 14px; font-size: 0.85rem; background: var(--admin-accent);">Pending Pick-Ups</button>
+                                <button id="btnFilterCompletedPickups" onclick="filterPickups('completed')" class="admin-btn" style="padding: 6px 14px; font-size: 0.85rem; background: #718096;">Completed Pick-Ups</button>
+                            </div>
+                            <span id="pendingPickupCount" style="background: #feebc8; color: #744210; padding: 4px 12px; border-radius: 12px; font-weight: 700; font-size: 0.85rem;">0 Pending</span>
+                        </div>
+                        <div id="pendingPickupsList" class="member-list" style="max-height: 420px; overflow-y: auto;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Right: Log Manual Campus Pick-Up -->
+                    <div style="background: #f7fafc; padding: 20px; border-radius: 8px; border: 1px solid var(--admin-border);">
+                        <h3 style="font-size: 1.05rem; color: var(--admin-primary); margin-top: 0; margin-bottom: 15px;"><i class="fas fa-hand-holding-hand"></i> Log Manual Pick-Up</h3>
+                        <form id="manualPickupForm">
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label for="pickupUser" style="font-size: 0.85rem;">Student Name / Email</label>
+                                <input type="text" id="pickupUser" required placeholder="e.g. Jane Doe (jdoe@fiu.edu)">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 12px;">
+                                <label for="pickupBook" style="font-size: 0.85rem;">Book Title / ISBN</label>
+                                <input type="text" id="pickupBook" required placeholder="e.g. Calculus Vol. 1">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label for="pickupNotes" style="font-size: 0.85rem;">Pick-Up Location / Notes</label>
+                                <input type="text" id="pickupNotes" placeholder="e.g. Campus Student Center Room 102">
+                            </div>
+                            <button type="submit" class="admin-btn" style="width: 100%;"><i class="fas fa-check-circle"></i> Log & Confirm Pick-Up</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <!-- TAB: Add Events -->
@@ -956,6 +998,153 @@
             }
         };
 
+        // --- Book Pick-Up & Pending Orders Management ---
+        let currentPickupFilter = 'pending';
+        const pendingPickupsList = document.getElementById('pendingPickupsList');
+        const pendingPickupCount = document.getElementById('pendingPickupCount');
+        const manualPickupForm = document.getElementById('manualPickupForm');
+
+        if (manualPickupForm) {
+            manualPickupForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const user = document.getElementById('pickupUser').value.trim();
+                const book = document.getElementById('pickupBook').value.trim();
+                const notes = document.getElementById('pickupNotes').value.trim();
+
+                const pickupRecord = {
+                    id: 'PU-' + Math.floor(Math.random() * 1000000),
+                    customerName: user,
+                    customerEmail: user.includes('@') ? user : 'Walk-In Student',
+                    items: [{ title: book, quantity: 1 }],
+                    total: '0.00',
+                    status: 'Picked Up / Completed',
+                    notes: notes || 'Logged manually at Admin Window',
+                    timestamp: new Date().toISOString()
+                };
+
+                try {
+                    if (db) {
+                        await db.collection('orders').add(pickupRecord);
+                    }
+                } catch(err) { console.warn(err); }
+
+                const orders = JSON.parse(localStorage.getItem('verba_orders')) || [];
+                orders.unshift(pickupRecord);
+                localStorage.setItem('verba_orders', JSON.stringify(orders));
+
+                showToast(`Confirmed & logged pick-up for ${user}!`);
+                manualPickupForm.reset();
+                loadBookPickups();
+            });
+        }
+
+        window.filterPickups = function(status) {
+            currentPickupFilter = status;
+            const btnPending = document.getElementById('btnFilterPendingPickups');
+            const btnCompleted = document.getElementById('btnFilterCompletedPickups');
+            if (status === 'pending') {
+                btnPending.style.background = 'var(--admin-accent)';
+                btnCompleted.style.background = '#718096';
+            } else {
+                btnPending.style.background = '#718096';
+                btnCompleted.style.background = '#38a169';
+            }
+            loadBookPickups();
+        };
+
+        async function loadBookPickups() {
+            if (!pendingPickupsList) return;
+            pendingPickupsList.innerHTML = '<p style="padding: 10px; color: var(--admin-text-muted);">Loading pick-up queue...</p>';
+            let orders = [];
+
+            try {
+                if (db) {
+                    const snapshot = await db.collection('orders').get();
+                    snapshot.forEach(doc => {
+                        orders.push({ docId: doc.id, ...doc.data() });
+                    });
+                }
+            } catch (err) {
+                console.warn("Firestore load orders warning:", err);
+            }
+
+            const local = JSON.parse(localStorage.getItem('verba_orders')) || [];
+            local.forEach(loc => {
+                if (!orders.some(o => o.id === loc.id || o.docId === loc.id)) {
+                    orders.push(loc);
+                }
+            });
+
+            // Count pending
+            const pendingCount = orders.filter(o => o.status !== 'Picked Up / Completed' && o.status !== 'Completed').length;
+            if (pendingPickupCount) {
+                pendingPickupCount.textContent = `${pendingCount} Pending`;
+            }
+
+            // Filter
+            const filtered = orders.filter(o => {
+                const isCompleted = (o.status === 'Picked Up / Completed' || o.status === 'Completed');
+                return currentPickupFilter === 'completed' ? isCompleted : !isCompleted;
+            });
+
+            pendingPickupsList.innerHTML = '';
+            if (filtered.length === 0) {
+                pendingPickupsList.innerHTML = `<p style="padding: 15px; color: var(--admin-text-muted);">No ${currentPickupFilter} book pick-ups found.</p>`;
+                return;
+            }
+
+            filtered.forEach(o => {
+                const item = document.createElement('div');
+                item.className = 'member-item';
+                item.style.flexDirection = 'column';
+                item.style.alignItems = 'flex-start';
+                item.style.gap = '8px';
+                item.style.marginBottom = '12px';
+
+                const isCompleted = (o.status === 'Picked Up / Completed' || o.status === 'Completed');
+                const badgeColor = isCompleted ? '#c6f6d5' : '#feebc8';
+                const badgeTextColor = isCompleted ? '#22543d' : '#744210';
+                
+                const itemNames = (o.items || []).map(i => `${i.title || i.name || 'Book'} (${i.quantity || 1})`).join(', ') || '1x Campus Book';
+                const dateDisplay = o.timestamp ? new Date(o.timestamp).toLocaleDateString() + ' ' + new Date(o.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Recent Order';
+
+                item.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
+                        <strong style="font-size:1.05rem; color:var(--admin-primary);">${o.customerName || 'Student'} <span style="font-weight:400; font-size:0.85rem; color:var(--admin-text-muted);">(${o.customerEmail || ''})</span></strong>
+                        <span style="background:${badgeColor}; color:${badgeTextColor}; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:700;">${isCompleted ? '✓ Picked Up' : '⏳ Pending Pick-Up'}</span>
+                    </div>
+                    <div style="font-size:0.9rem; color:var(--admin-text); font-weight:600;">
+                        <i class="fas fa-book" style="color:var(--admin-accent);"></i> ${itemNames}
+                    </div>
+                    <div style="font-size:0.8rem; color:var(--admin-text-muted); display:flex; gap:15px; flex-wrap:wrap; width:100%; justify-content:space-between; align-items:center; margin-top:4px;">
+                        <span><i class="far fa-clock"></i> ${dateDisplay} ${o.id ? '| ID: ' + o.id : ''}</span>
+                        ${!isCompleted ? `<button class="admin-btn" style="padding:4px 12px; font-size:0.8rem; background:#38a169;" onclick="confirmPickup('${o.docId || o.id}')"><i class="fas fa-check"></i> Mark as Picked Up</button>` : ''}
+                    </div>
+                `;
+                pendingPickupsList.appendChild(item);
+            });
+        }
+
+        window.confirmPickup = async function(orderId) {
+            try {
+                if (db && !orderId.startsWith('ORD-') && !orderId.startsWith('PU-')) {
+                    await db.collection('orders').doc(orderId).update({ status: 'Picked Up / Completed' });
+                }
+            } catch(e) { console.warn(e); }
+
+            let orders = JSON.parse(localStorage.getItem('verba_orders')) || [];
+            orders = orders.map(o => {
+                if (o.id === orderId || o.docId === orderId) {
+                    return { ...o, status: 'Picked Up / Completed' };
+                }
+                return o;
+            });
+            localStorage.setItem('verba_orders', JSON.stringify(orders));
+
+            showToast('Book pick-up confirmed and completed!');
+            loadBookPickups();
+        };
+
         // Init
         document.addEventListener('DOMContentLoaded', () => {
             // Protect page with Firebase Auth
@@ -967,6 +1156,7 @@
                         loadStaticInventory();
                         loadAlbums();
                         loadAdminEvents();
+                        loadBookPickups();
                     } catch (e) {
                         console.warn("Error loading admin data:", e);
                     }
