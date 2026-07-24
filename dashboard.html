@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -74,7 +75,7 @@
             <div class="dash-services-section">
                 <h2>Your Services</h2>
                 <div class="services-grid">
-                    <a href="#" class="service-card">
+                    <a href="javascript:void(0)" onclick="openEventsModal()" class="service-card">
                         <div class="service-icon">
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
                         </div>
@@ -102,14 +103,14 @@
                         <h3>Verba Voice</h3>
                         <p>Community discussions</p>
                     </a>
-                    <a href="#" class="service-card">
+                    <a href="opportunities.html" class="service-card">
                         <div class="service-icon">
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                         </div>
                         <h3>Opportunities</h3>
                         <p>Register for events</p>
                     </a>
-                    <a href="#" class="service-card">
+                    <a href="javascript:void(0)" onclick="openGalleryModal()" class="service-card">
                         <div class="service-icon">
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
                         </div>
@@ -309,6 +310,73 @@
                 document.body.removeChild(a);
                 window.URL.revokeObjectURL(url);
             });
+        });
+    </script>
+    <!-- Volunteer / Events Preview Modal -->
+    <div id="eventsPreviewModal" class="preview-modal">
+        <div class="preview-modal-content">
+            <div class="preview-modal-header">
+                <h2><i class="far fa-calendar-alt" style="color: #3182ce;"></i> Volunteer Possibilities & Events</h2>
+                <button class="preview-close" onclick="closeEventsModal()">&times;</button>
+            </div>
+            <p style="color: #4a5568; line-height: 1.5; font-size: 0.95rem; margin-bottom: 20px;">Explore upcoming volunteer opportunities, community outreach, and group sessions hosted by Verba Vitae.</p>
+            <div id="eventsPreviewList" style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="background: #f7fafc; border-left: 4px solid #3182ce; padding: 12px 15px; border-radius: 4px;">
+                    <strong style="color: #0d1b2a; font-size: 1rem;">Community Service & Outreach Day</strong>
+                    <div style="color: #718096; font-size: 0.85rem; margin-top: 4px;"><i class="far fa-clock"></i> Aug 12, 2026 | Campus Quad</div>
+                </div>
+                <div style="background: #f7fafc; border-left: 4px solid #38a169; padding: 12px 15px; border-radius: 4px;">
+                    <strong style="color: #0d1b2a; font-size: 1rem;">Academic Peer Mentorship Workshop</strong>
+                    <div style="color: #718096; font-size: 0.85rem; margin-top: 4px;"><i class="far fa-clock"></i> Aug 20, 2026 | Student Center</div>
+                </div>
+            </div>
+            <a href="events.html" class="preview-action-btn">View All Events Page <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <!-- Gallery & Past Events Preview Modal -->
+    <div id="galleryPreviewModal" class="preview-modal">
+        <div class="preview-modal-content">
+            <div class="preview-modal-header">
+                <h2><i class="far fa-images" style="color: #d68b2d;"></i> Gallery & Past Events</h2>
+                <button class="preview-close" onclick="closeGalleryModal()">&times;</button>
+            </div>
+            <p style="color: #4a5568; line-height: 1.5; font-size: 0.95rem; margin-bottom: 20px;">Relive key moments, photos, and highlights from our past community events and gatherings.</p>
+            <div id="galleryPreviewGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-bottom: 15px;">
+                <div style="border-radius: 8px; overflow: hidden; height: 90px; background: #edf2f7;">
+                    <img src="images/slide1.jpg" alt="Event Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="border-radius: 8px; overflow: hidden; height: 90px; background: #edf2f7;">
+                    <img src="images/slide2.jpg" alt="Event Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+                <div style="border-radius: 8px; overflow: hidden; height: 90px; background: #edf2f7;">
+                    <img src="images/slide3.jpg" alt="Event Photo" style="width: 100%; height: 100%; object-fit: cover;">
+                </div>
+            </div>
+            <a href="gallery.html" class="preview-action-btn">Explore Full Gallery Page <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <script>
+        function openEventsModal() {
+            document.getElementById('eventsPreviewModal').style.display = 'flex';
+        }
+        function closeEventsModal() {
+            document.getElementById('eventsPreviewModal').style.display = 'none';
+        }
+        function openGalleryModal() {
+            document.getElementById('galleryPreviewModal').style.display = 'flex';
+        }
+        function closeGalleryModal() {
+            document.getElementById('galleryPreviewModal').style.display = 'none';
+        }
+
+        // Close modals on outside click
+        window.addEventListener('click', (e) => {
+            const evModal = document.getElementById('eventsPreviewModal');
+            const galModal = document.getElementById('galleryPreviewModal');
+            if (e.target === evModal) evModal.style.display = 'none';
+            if (e.target === galModal) galModal.style.display = 'none';
         });
     </script>
 </body>
