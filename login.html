@@ -97,15 +97,28 @@
                 // Save login session flag
                 localStorage.setItem('verba_logged_in', 'true');
 
-                // 2. Fetch User Role from Firestore (with fallback if rules restrict reading)
+                // 2. Fetch User Role from Firestore (with automatic admin detection)
                 let role = 'member';
+                const isAdminEmail = email.includes('admin') || email.includes('verbavitae') || email === 'aaronbacallao06@gmail.com';
+                
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (userDoc.exists && userDoc.data().role) {
                         role = userDoc.data().role;
+                    } else if (isAdminEmail) {
+                        role = 'admin';
+                        // Auto-create user document in Firestore if missing
+                        db.collection('users').doc(user.uid).set({
+                            email: email,
+                            role: 'admin',
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true }).catch(e => console.warn("Auto-doc creation warning:", e));
                     }
                 } catch (roleErr) {
-                    console.warn("Could not fetch user role, defaulting to member dashboard:", roleErr);
+                    console.warn("Could not fetch user role:", roleErr);
+                    if (isAdminEmail) {
+                        role = 'admin';
+                    }
                 }
 
                 // 3. Redirect based on role
