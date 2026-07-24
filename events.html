@@ -15,6 +15,25 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="js/firebase-init.js"></script>
+    <style>
+        .embed-mode .main-header,
+        .embed-mode .mobile-header-bar,
+        .embed-mode .desktop-nav,
+        .embed-mode .floating-logo-box,
+        .embed-mode .main-footer,
+        .embed-mode div[style*="ff9800"] {
+            display: none !important;
+        }
+        .embed-mode body {
+            padding-top: 0 !important;
+            background-color: #ffffff !important;
+        }
+    </style>
+    <script>
+        if (window.location.search.includes('embed=true')) {
+            document.documentElement.classList.add('embed-mode');
+        }
+    </script>
 </head>
 <body>
     <div style="background-color: #ff9800; color: #fff; text-align: center; padding: 10px; font-weight: bold; z-index: 10000; position: relative; width: 100%;">This page is currently under development and will be ready by August 6, 2026.</div>
