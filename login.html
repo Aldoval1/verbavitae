@@ -116,7 +116,7 @@
 
             } catch (error) {
                 console.error("Login error:", error);
-                errorEl.textContent = 'Invalid email or password.';
+                errorEl.textContent = error.message ? error.message : 'Invalid email or password.';
                 errorEl.style.display = 'block';
                 submitBtn.textContent = 'Sign In';
                 submitBtn.disabled = false;
