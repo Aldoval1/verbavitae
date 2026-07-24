@@ -136,6 +136,39 @@
     border-color: #3182ce;
 }
 
+/* E-Board Social Icon Buttons */
+.eboard-social-links {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 15px;
+}
+
+.eboard-icon-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: #f7fafc;
+    color: #1d0c8d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 1.15rem;
+    transition: all 0.25s ease;
+    border: 1px solid #cbd5e0;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.eboard-icon-btn:hover {
+    background-color: #1d0c8d;
+    color: #ffffff;
+    border-color: #1d0c8d;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 12px rgba(29, 12, 141, 0.25);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .eboard-card {
