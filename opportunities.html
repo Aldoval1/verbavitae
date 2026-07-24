@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explore Student Opportunities, Scholarships, and Internships at Verba Vitae">
+    <title>Verba Vitae - Opportunities</title>
+    <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/opportunities.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div style="background-color: #ff9800; color: #fff; text-align: center; padding: 10px; font-weight: bold; z-index: 10000; position: relative; width: 100%;">This page is currently under development and will be ready by August 6, 2026.</div>
+    
+    <header class="main-header">
+        <!-- Mobile Header (Visible only on mobile) -->
+        <div class="mobile-header-bar">
+            <div class="burger-menu" id="burger-menu">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="mobile-logo-container">
+                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae" class="mobile-logo-img">
+                <span class="mobile-logo-text">VERBA VITAE</span>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Menu -->
+        <div class="mobile-nav" id="mobile-nav">
+            <a href="login.html">Log In</a>
+            <a href="join.html">Join</a>
+            <a href="eboard.html">Our E-Board</a>
+            <a href="opportunities.html" class="active">Opportunities</a>
+            <a href="news.html">News</a>
+            <a href="events.html">Events</a>
+            <a href="shop.html">Shop</a>
+        </div>
+
+        <!-- Desktop Navigation (Visible only on desktop) -->
+        <div class="desktop-nav">
+            <div class="top-bar">
+                <div class="nav-links left-links">
+                </div>
+                <div class="nav-links right-links" style="justify-content: flex-end; padding-right: 5%;">
+                    <a href="login.html" class="btn-login">LOG IN</a>
+                </div>
+            </div>
+            
+            <div class="secondary-bar">
+                <div class="nav-links left-links">
+                    <a href="join.html">Join</a>
+                    <span class="divider">|</span>
+                    <a href="eboard.html">Our E-Board</a>
+                    <span class="divider">|</span>
+                    <a href="opportunities.html" class="active" style="color: #cccccc;">Opportunities</a>
+                </div>
+                <div class="nav-links right-links">
+                    <a href="news.html">News</a>
+                    <span class="divider">|</span>
+                    <a href="events.html">Events</a>
+                    <span class="divider">|</span>
+                    <a href="shop.html">Shop</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="floating-logo-box">
+        <a href="index.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center;">
+            <img src="images/verbavitaelogofill.jpg" alt="Verba Vitae Logo" class="logo-img">
+            <h1 class="logo-title">VERBA VITAE</h1>
+            <p class="logo-subtitle">Organization</p>
+        </a>
+    </div>
+
+    <main class="opp-container">
+        <div class="opp-hero">
+            <h1>Student Opportunities Hub</h1>
+            <p>Discover scholarships, internships, research fellowships, and leadership roles designed to accelerate your growth and success.</p>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="controls-bar">
+            <div class="opp-search-box">
+                <i class="fas fa-search opp-search-icon"></i>
+                <input type="text" id="oppSearch" placeholder="Search opportunities, keywords, or organizations..." oninput="filterOpportunities()">
+            </div>
+            <div class="opp-filters">
+                <button class="opp-filter-btn active" onclick="setCategory('all', this)">All Types</button>
+                <button class="opp-filter-btn" onclick="setCategory('scholarship', this)">Scholarships</button>
+                <button class="opp-filter-btn" onclick="setCategory('internship', this)">Internships</button>
+                <button class="opp-filter-btn" onclick="setCategory('research', this)">Research</button>
+                <button class="opp-filter-btn" onclick="setCategory('leadership', this)">Leadership</button>
+            </div>
+        </div>
+
+        <!-- Opportunities Grid -->
+        <div class="opp-grid" id="oppGrid">
+            <!-- Card 1 -->
+            <div class="opp-card" data-category="scholarship">
+                <div class="opp-top-row">
+                    <span class="opp-tag">Scholarship</span>
+                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Aug 30, 2026</span>
+                </div>
+                <h2 class="opp-title">2026 Verba Vitae Academic Excellence Grant</h2>
+                <div class="opp-org"><i class="fas fa-building"></i> Verba Vitae Foundation</div>
+                <p class="opp-desc">Financial awards up to $1,000 to assist active members with tuition, books, research materials, or academic conference travel.</p>
+                <div class="opp-meta-info">
+                    <span><i class="fas fa-user-graduate"></i> Eligibility: Active Verba Vitae Members</span>
+                    <span><i class="fas fa-dollar-sign"></i> Award: $250 – $1,000</span>
+                </div>
+                <a href="join.html" class="btn-apply">Apply Now</a>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="opp-card" data-category="internship">
+                <div class="opp-top-row">
+                    <span class="opp-tag" style="background:#e3f2fd; color:#1976d2;">Internship</span>
+                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Aug 15, 2026</span>
+                </div>
+                <h2 class="opp-title">Software & Web Development Intern</h2>
+                <div class="opp-org"><i class="fas fa-building"></i> Tech Partner Labs</div>
+                <p class="opp-desc">Gain hands-on experience building modern web applications, working with JavaScript, APIs, and cloud services in a collaborative team.</p>
+                <div class="opp-meta-info">
+                    <span><i class="fas fa-user-graduate"></i> Eligibility: Computer Science / Engineering Majors</span>
+                    <span><i class="fas fa-map-marker-alt"></i> Location: Hybrid / Remote</span>
+                </div>
+                <a href="join.html" class="btn-apply">Apply Now</a>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="opp-card" data-category="research">
+                <div class="opp-top-row">
+                    <span class="opp-tag" style="background:#f3e5f5; color:#7b1fa2;">Research</span>
+                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Sept 10, 2026</span>
+                </div>
+                <h2 class="opp-title">Undergraduate Research Fellowship</h2>
+                <div class="opp-org"><i class="fas fa-building"></i> Academic Research Council</div>
+                <p class="opp-desc">Conduct faculty-guided research in humanities, science, or technology. Stipend and presentation opportunities included.</p>
+                <div class="opp-meta-info">
+                    <span><i class="fas fa-user-graduate"></i> Eligibility: Sophomores, Juniors & Seniors</span>
+                    <span><i class="fas fa-dollar-sign"></i> Stipend: $1,500 per semester</span>
+                </div>
+                <a href="join.html" class="btn-apply">Apply Now</a>
+            </div>
+
+            <!-- Card 4 -->
+            <div class="opp-card" data-category="leadership">
+                <div class="opp-top-row">
+                    <span class="opp-tag" style="background:#e8f5e9; color:#388e3c;">Leadership</span>
+                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Aug 05, 2026</span>
+                </div>
+                <h2 class="opp-title">Verba Vitae Committee Chair Lead</h2>
+                <div class="opp-org"><i class="fas fa-building"></i> Verba Vitae Executive Board</div>
+                <p class="opp-desc">Lead student committees for event planning, digital media, or community outreach while building executive management skills.</p>
+                <div class="opp-meta-info">
+                    <span><i class="fas fa-user-graduate"></i> Eligibility: Active Members with 1+ Semester</span>
+                    <span><i class="fas fa-award"></i> Role: Executive Leadership Experience</span>
+                </div>
+                <a href="join.html" class="btn-apply">Apply Now</a>
+            </div>
+
+            <!-- Card 5 -->
+            <div class="opp-card" data-category="scholarship">
+                <div class="opp-top-row">
+                    <span class="opp-tag">Scholarship</span>
+                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Sept 25, 2026</span>
+                </div>
+                <h2 class="opp-title">Community Service & Leadership Award</h2>
+                <div class="opp-org"><i class="fas fa-building"></i> Regional Student Fund</div>
+                <p class="opp-desc">Recognizing students who demonstrate exceptional dedication to civic engagement and community improvement initiatives.</p>
+                <div class="opp-meta-info">
+                    <span><i class="fas fa-user-graduate"></i> Eligibility: Minimum 25 Community Service Hours</span>
+                    <span><i class="fas fa-dollar-sign"></i> Award: $750</span>
+                </div>
+                <a href="join.html" class="btn-apply">Apply Now</a>
+            </div>
+
+            <!-- Card 6 -->
+            <div class="opp-card" data-category="internship">
+                <div class="opp-top-row">
+                    <span class="opp-tag" style="background:#e3f2fd; color:#1976d2;">Internship</span>
+                    <span class="opp-deadline"><i class="far fa-clock"></i> Deadline: Aug 20, 2026</span>
+                </div>
+                <h2 class="opp-title">Digital Media & Marketing Coordinator</h2>
+                <div class="opp-org"><i class="fas fa-building"></i> Creative Communications Group</div>
+                <p class="opp-desc">Manage social media strategy, content creation, and graphic design for community initiatives and brand campaigns.</p>
+                <div class="opp-meta-info">
+                    <span><i class="fas fa-user-graduate"></i> Eligibility: Open to all majors</span>
+                    <span><i class="fas fa-map-marker-alt"></i> Location: Flexible / Remote</span>
+                </div>
+                <a href="join.html" class="btn-apply">Apply Now</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-left">
+                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae" class="footer-logo">
+            </div>
+            
+            <div class="footer-center">
+                <h4 class="footer-social-title">FOLLOW US</h4>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#"><i class="fab fa-tiktok"></i></a>
+                </div>
+                <div class="footer-links">
+                    &copy; Copyright 2026 Verba Vitae | <a href="#">Privacy Policy</a> | <a href="#">Membership Terms and Conditions</a>
+                </div>
+            </div>
+
+            <div class="footer-right"></div>
+        </div>
+    </footer>
+
+    <script>
+        // Burger Menu Toggle
+        const burgerMenu = document.getElementById('burger-menu');
+        const mobileNav = document.getElementById('mobile-nav');
+        if (burgerMenu && mobileNav) {
+            burgerMenu.addEventListener('click', () => {
+                mobileNav.classList.toggle('active');
+            });
+        }
+
+        let activeCategory = 'all';
+
+        function setCategory(cat, btn) {
+            activeCategory = cat;
+            document.querySelectorAll('.opp-filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterOpportunities();
+        }
+
+        function filterOpportunities() {
+            const query = document.getElementById('oppSearch').value.toLowerCase();
+            const cards = document.querySelectorAll('.opp-card');
+
+            cards.forEach(card => {
+                const category = card.dataset.category;
+                const text = card.innerText.toLowerCase();
+                const matchesCategory = (activeCategory === 'all' || category === activeCategory);
+                const matchesQuery = text.includes(query);
+
+                if (matchesCategory && matchesQuery) {
+                    card.style.display = 'flex';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

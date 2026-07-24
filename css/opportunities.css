@@ -1,0 +1,209 @@
+/* Opportunities Page Specific Styles */
+.opp-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: var(--font-main, 'Montserrat', sans-serif);
+}
+
+.opp-hero {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.opp-hero h1 {
+    font-size: 2.4rem;
+    color: var(--color-dark-blue, #1d0c8d);
+    font-weight: 800;
+    margin-bottom: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.opp-hero p {
+    font-size: 1.1rem;
+    color: #555555;
+    max-width: 680px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Controls Bar (Search + Filters) */
+.controls-bar {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.opp-search-box {
+    position: relative;
+    width: 100%;
+    max-width: 550px;
+}
+
+.opp-search-box input {
+    width: 100%;
+    padding: 14px 20px 14px 45px;
+    border-radius: 30px;
+    border: 2px solid #e2e8f0;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.opp-search-box input:focus {
+    border-color: var(--color-dark-blue, #1d0c8d);
+    box-shadow: 0 4px 14px rgba(29, 12, 141, 0.15);
+}
+
+.opp-search-icon {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a0aec0;
+    font-size: 1.1rem;
+}
+
+.opp-filters {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.opp-filter-btn {
+    background-color: #ffffff;
+    border: 2px solid #e2e8f0;
+    color: #4a5568;
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.opp-filter-btn:hover,
+.opp-filter-btn.active {
+    background-color: var(--color-dark-blue, #1d0c8d);
+    color: #ffffff;
+    border-color: var(--color-dark-blue, #1d0c8d);
+}
+
+/* Opportunity Cards Grid */
+.opp-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+.opp-card {
+    background-color: #ffffff;
+    border-radius: 14px;
+    padding: 30px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    border: 1px solid #edf2f7;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.opp-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+}
+
+.opp-top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.opp-tag {
+    background-color: #eef5fb;
+    color: var(--color-dark-blue, #1d0c8d);
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.opp-deadline {
+    font-size: 0.85rem;
+    color: #e53e3e;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.opp-title {
+    font-size: 1.35rem;
+    color: #1a202c;
+    font-weight: 700;
+    margin-bottom: 10px;
+    line-height: 1.35;
+}
+
+.opp-org {
+    font-size: 0.95rem;
+    color: #718096;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.opp-desc {
+    font-size: 0.95rem;
+    color: #4a5568;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    flex: 1;
+}
+
+.opp-meta-info {
+    border-top: 1px solid #edf2f7;
+    padding-top: 15px;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #718096;
+}
+
+.btn-apply {
+    background-color: var(--color-orange, #d68b2d);
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    display: block;
+}
+
+.btn-apply:hover {
+    background-color: #b87322;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+    .opp-hero h1 { font-size: 1.8rem; }
+    .opp-grid { grid-template-columns: 1fr; }
+    .opp-card { padding: 20px; }
+}
