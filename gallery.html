@@ -124,6 +124,45 @@
             });
         }
 
+        // Sample Fallback Albums
+        const defaultAlbums = [
+            {
+                id: 'sample-1',
+                title: 'Community Workshop',
+                coverUrl: 'images/slide1.jpg'
+            },
+            {
+                id: 'sample-2',
+                title: 'Annual Leadership Summit',
+                coverUrl: 'images/slide2.jpg'
+            },
+            {
+                id: 'sample-3',
+                title: 'Campus Welcome Event',
+                coverUrl: 'images/slide3.jpg'
+            }
+        ];
+
+        function renderAlbumCards(albums) {
+            const grid = document.getElementById('publicGalleryGrid');
+            if (!grid) return;
+
+            let html = '';
+            albums.forEach(data => {
+                const cover = data.coverUrl || 'images/verbavitaelogoblue.png';
+                const title = data.title || 'Untitled Album';
+                html += `
+                    <a href="album.html?id=${data.id}" class="gallery-album-card" style="text-decoration:none; color:inherit; display:block; cursor:pointer;">
+                        <img src="${cover}" alt="${title}" class="album-cover" onerror="this.onerror=null; this.src='images/verbavitaelogoblue.png';">
+                        <div class="album-overlay">
+                            <h3 class="album-title">${title}</h3>
+                        </div>
+                    </a>
+                `;
+            });
+            grid.innerHTML = html;
+        }
+
         // Fetch Public Albums
         async function fetchAlbums() {
             const grid = document.getElementById('publicGalleryGrid');
@@ -131,7 +170,7 @@
             
             try {
                 if (typeof db === 'undefined' || !db) {
-                    grid.innerHTML = '<p class="no-events" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">No albums available at the moment.</p>';
+                    renderAlbumCards(defaultAlbums);
                     return;
                 }
 
@@ -144,7 +183,7 @@
                 }
 
                 if (!snapshot || snapshot.empty) {
-                    grid.innerHTML = '<p class="no-events" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666; font-size: 1.1rem;">No albums available at the moment.</p>';
+                    renderAlbumCards(defaultAlbums);
                     return;
                 }
                 
@@ -160,23 +199,10 @@
                     return tB - tA;
                 });
 
-                let html = '';
-                albums.forEach(data => {
-                    const cover = data.coverUrl || 'images/verbavitaelogoblue.png';
-                    const title = data.title || 'Untitled Album';
-                    html += `
-                        <a href="album.html?id=${data.id}" class="gallery-album-card" style="text-decoration:none; color:inherit; display:block; cursor:pointer;">
-                            <img src="${cover}" alt="${title}" class="album-cover" onerror="this.onerror=null; this.src='images/verbavitaelogoblue.png';">
-                            <div class="album-overlay">
-                                <h3 class="album-title">${title}</h3>
-                            </div>
-                        </a>
-                    `;
-                });
-                grid.innerHTML = html;
+                renderAlbumCards(albums.length > 0 ? albums : defaultAlbums);
             } catch (error) {
                 console.error("Error fetching albums:", error);
-                grid.innerHTML = '<p class="no-events" style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666; font-size: 1.1rem;">No albums available at the moment.</p>';
+                renderAlbumCards(defaultAlbums);
             }
         }
 
