@@ -7,6 +7,11 @@
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/dashboard.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-init.js"></script>
 </head>
 <body>
     <div style="background-color: #ff9800; color: #fff; text-align: center; padding: 10px; font-weight: bold; z-index: 10000; position: relative; width: 100%;">This page is currently under development and will be ready by August 6, 2026.</div>
@@ -147,7 +152,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Protect Dashboard Route
             const isLoggedIn = localStorage.getItem('verba_logged_in');
-            if (isLoggedIn !== 'true') {
+            if (auth) {
+                auth.onAuthStateChanged((user) => {
+                    if (!user && isLoggedIn !== 'true') {
+                        window.location.href = 'login.html';
+                    }
+                });
+            } else if (isLoggedIn !== 'true') {
                 window.location.href = 'login.html';
             }
 

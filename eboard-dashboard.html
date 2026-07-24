@@ -141,9 +141,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Protect Route (Optional: Check if user is eboard)
+            // Protect Route
             const isLoggedIn = localStorage.getItem('verba_logged_in');
-            if (isLoggedIn !== 'true') {
+            if (typeof auth !== 'undefined' && auth) {
+                auth.onAuthStateChanged((user) => {
+                    if (!user && isLoggedIn !== 'true') {
+                        window.location.href = 'login.html';
+                    }
+                });
+            } else if (isLoggedIn !== 'true') {
                 window.location.href = 'login.html';
             }
 

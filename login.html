@@ -94,6 +94,9 @@
                 const userCredential = await auth.signInWithEmailAndPassword(email, pass);
                 const user = userCredential.user;
 
+                // Save login session flag
+                localStorage.setItem('verba_logged_in', 'true');
+
                 // 2. Fetch User Role from Firestore (with fallback if rules restrict reading)
                 let role = 'member';
                 try {
