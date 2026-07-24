@@ -818,16 +818,13 @@
             // Protect page with Firebase Auth
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
-                    // User is signed in, check if admin
-                    const doc = await db.collection('users').doc(user.uid).get();
-                    if (doc.exists && doc.data().role === 'admin') {
-                        // Is admin, load data
+                    // User is signed in, load admin data
+                    try {
                         loadCustomInventory();
                         loadStaticInventory();
                         loadAlbums();
-                    } else {
-                        // Not an admin
-                        window.location.href = 'login.html';
+                    } catch (e) {
+                        console.warn("Error loading admin data:", e);
                     }
                 } else {
                     // No user signed in
