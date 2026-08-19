@@ -23,6 +23,29 @@ a {
     color: inherit;
 }
 
+/* Temporary Store Notice Banner */
+.shop-alert-banner {
+    background: linear-gradient(135deg, #1d0c8d 0%, #2e1ca8 100%);
+    color: #ffffff;
+    text-align: center;
+    padding: 12px 20px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-bottom: 2px solid #d68b2d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+    z-index: 100;
+    position: relative;
+}
+
+.shop-alert-banner strong {
+    color: #f7b731;
+    font-weight: 700;
+}
+
 /* Header Utilities */
 .shop-header {
     border-bottom: 1px solid #e2e8f0;
