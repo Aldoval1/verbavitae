@@ -55,7 +55,7 @@ body.store-closed-body {
 
 .store-closed-card {
     background: #ffffff;
-    border-radius: 20px;
+    border-radius: 0;
     padding: 50px 40px;
     max-width: 560px;
     width: 100%;
@@ -127,7 +127,7 @@ body.store-closed-body {
     font-weight: 700;
     font-size: 1rem;
     padding: 14px 34px;
-    border-radius: 8px;
+    border-radius: 0;
     text-decoration: none;
     transition: all 0.25s ease;
     box-shadow: 0 4px 15px rgba(29, 12, 141, 0.25);
