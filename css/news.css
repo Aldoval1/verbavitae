@@ -1,8 +1,8 @@
 /* News Page Specific Styles */
 .news-container {
     max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 20px;
+    margin: 0 auto 60px auto;
+    padding: 150px 20px 0 20px;
     font-family: var(--font-main, 'Montserrat', sans-serif);
 }
 
@@ -220,6 +220,13 @@
 .news-modal-close:hover {
     background: #cbd5e0;
     color: #1a202c;
+}
+
+@media (max-width: 768px) {
+    .news-container {
+        padding-top: 30px;
+        margin: 0 auto 40px auto;
+    }
 }
 
 @media (max-width: 600px) {

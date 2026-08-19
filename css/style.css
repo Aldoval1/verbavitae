@@ -785,7 +785,7 @@ body {
 /* GALLERY SECTION STYLES */
 /* ========================================= */
 .gallery-section {
-    padding: 100px 5%;
+    padding: 150px 5% 100px;
     background-color: #ffffff;
     border-bottom: 5px solid var(--color-dark-blue);
     text-align: center;

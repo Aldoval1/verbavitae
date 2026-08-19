@@ -1,8 +1,8 @@
 /* Opportunities Page Specific Styles */
 .opp-container {
     max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 20px;
+    margin: 0 auto 60px auto;
+    padding: 150px 20px 0 20px;
     font-family: var(--font-main, 'Montserrat', sans-serif);
 }
 
@@ -200,6 +200,13 @@
 .btn-apply:hover {
     background-color: #b87322;
     transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+    .opp-container {
+        padding-top: 30px;
+        margin: 0 auto 40px auto;
+    }
 }
 
 @media (max-width: 600px) {
