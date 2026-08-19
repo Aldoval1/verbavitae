@@ -23,27 +23,112 @@ a {
     color: inherit;
 }
 
-/* Temporary Store Notice Banner */
-.shop-alert-banner {
-    background: linear-gradient(135deg, #1d0c8d 0%, #2e1ca8 100%);
-    color: #ffffff;
-    text-align: center;
-    padding: 12px 20px;
-    font-size: 0.95rem;
-    font-weight: 500;
-    border-bottom: 2px solid #d68b2d;
+/* Fullscreen Store Closed Page */
+.store-closed-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: radial-gradient(circle at center, #1b2650 0%, #0a0f24 100%);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
-    z-index: 100;
-    position: relative;
+    z-index: 999999;
+    padding: 24px;
+    font-family: 'Montserrat', sans-serif;
+    color: #ffffff;
+    text-align: center;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
-.shop-alert-banner strong {
+.store-closed-card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 24px;
+    padding: 50px 40px;
+    max-width: 580px;
+    width: 100%;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: fadeInScale 0.5s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.94);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.store-closed-logo {
+    width: 90px;
+    height: auto;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 6px 15px rgba(0, 0, 0, 0.4));
+}
+
+.store-closed-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(214, 139, 45, 0.18);
     color: #f7b731;
+    border: 1px solid rgba(214, 139, 45, 0.45);
+    padding: 7px 18px;
+    border-radius: 50px;
+    font-size: 0.85rem;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+}
+
+.store-closed-title {
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 16px;
+    line-height: 1.25;
+}
+
+.store-closed-text {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: #cbd5e1;
+    margin-bottom: 35px;
+    max-width: 480px;
+}
+
+.btn-store-home {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #d68b2d;
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 14px 34px;
+    border-radius: 10px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    box-shadow: 0 6px 20px rgba(214, 139, 45, 0.35);
+}
+
+.btn-store-home:hover {
+    background: #e59a3c;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(214, 139, 45, 0.5);
+    color: #ffffff;
 }
 
 /* Header Utilities */
