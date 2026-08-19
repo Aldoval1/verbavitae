@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verba Vitae - Shop</title>
+    <title>Verba Vitae - Technology (Temporarily Closed)</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
-    <link rel="stylesheet" href="css/shop.css?v=20260819">
+    <link rel="stylesheet" href="css/shop.css?v=20260819c">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-<body>
-    <div class="store-closed-screen">
+<body class="store-closed-body">
+    <div class="store-closed-container">
         <div class="store-closed-card">
             <img src="images/verbavitaelogoblue.png" alt="Verba Vitae" class="store-closed-logo">
             <span class="store-closed-badge"><i class="fas fa-lock"></i> Store Temporarily Closed</span>
@@ -23,80 +23,5 @@
             </a>
         </div>
     </div>
-    <header class="shop-header">
-        <!-- Top Utility Bar -->
-        <div class="shop-top-bar">
-            <div class="top-bar-links">
-            </div>
-        </div>
-
-        <!-- Main Nav Bar -->
-        <div class="shop-main-nav">
-            <a href="index.html" class="shop-logo-link">
-                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae Logo" class="shop-logo">
-            </a>
-
-            <div class="search-container">
-                <input type="text" placeholder="Search products, savings, or recipes">
-                <button class="search-btn">ðŸ”</button>
-            </div>
-
-            <div class="user-actions">
-                <a href="#" class="action-link">
-                    <span class="icon">ðŸ›’</span> Cart
-                </a>
-                <a href="login.html" class="btn-shop-login">Log in</a>
-            </div>
-        </div>
-
-        <!-- Secondary Nav Bar -->
-        <div class="shop-secondary-nav">
-            <div class="secondary-links">
-                <div class="dropdown">
-                    <a href="shop.html">Books <span class="arrow">v</span></a>
-                </div>
-                <div class="dropdown active">
-                    <a href="technology.html">Technology <span class="arrow">v</span></a>
-                </div>
-                <div class="dropdown">
-                    <a href="snacks.html">Snacks <span class="arrow">v</span></a>
-                </div>
-                <div class="dropdown">
-                    <a href="accessories.html">Accessories <span class="icon-carrot">ðŸ¥•</span></a>
-                </div>
-            </div>
-        </div>
-    </header>
-    
-    <main class="shop-content">
-        <section class="search-results" style="width: 100%; padding: 40px;">
-            <h2>Technology</h2>
-            <div class="results-grid">
-                <!-- Custom products will be injected here -->
-            </div>
-        </section>
-    </main>
-    <script src="js/cart.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const sidebarLinks = document.querySelectorAll('.shop-sidebar a');
-            
-            sidebarLinks.forEach(link => {
-                link.addEventListener('click', function(e) {
-                    // Prevent default jumping behavior if href is just '#'
-                    if (this.getAttribute('href') === '#') {
-                        e.preventDefault();
-                    }
-                    
-                    // Remove active class from all links
-                    sidebarLinks.forEach(l => l.classList.remove('active-category'));
-                    
-                    // Add active class to clicked link
-                    this.classList.add('active-category');
-                });
-            });
-        });
-    </script>
 </body>
 </html>
