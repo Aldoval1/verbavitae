@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/login.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -23,10 +24,7 @@
                 <div class="login-header">
                     <a href="index.html" class="login-logo-link">
                         <img src="images/verbavitaelogoblue.png" alt="Verba Vitae Logo" class="login-logo">
-                        <div class="login-title-box">
-                            <h1 class="login-title">VERBA VITAE</h1>
-                            <p class="login-subtitle">Organization</p>
-                        </div>
+                        <span class="login-title">LOGIN</span>
                     </a>
                 </div>
 
@@ -37,8 +35,8 @@
                             <a href="#" class="forgot-link">Forgot Username?</a>
                         </div>
                         <div class="input-with-icon">
-                            <input type="text" id="username" name="username">
-                            <span class="input-icon">ðŸ‘¤</span>
+                            <input type="email" id="username" name="username" placeholder="example@gmail.com" required autocomplete="username">
+                            <span class="input-icon"><i class="fas fa-user"></i></span>
                         </div>
                     </div>
 
@@ -48,8 +46,8 @@
                             <a href="#" class="forgot-link">Forgot Password?</a>
                         </div>
                         <div class="input-with-icon">
-                            <input type="password" id="password" name="password">
-                            <span class="input-icon">ðŸ”’</span>
+                            <input type="password" id="password" name="password" placeholder="Password" required autocomplete="current-password">
+                            <span class="input-icon" style="cursor: pointer;" title="Show/Hide Password"><i class="fas fa-eye" id="togglePassword"></i></span>
                         </div>
                     </div>
 
@@ -72,10 +70,21 @@
     </div>
 
     <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function () {
+                const isPassword = passwordInput.getAttribute('type') === 'password';
+                passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                this.classList.toggle('fa-eye');
+                this.classList.toggle('fa-eye-slash');
+            });
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('username').value.trim().toLowerCase();
-            const pass = document.getElementById('password').value;
+            const pass = document.getElementById('password').value.trim();
             const errorEl = document.getElementById('loginError');
             const submitBtn = e.target.querySelector('.btn-signin');
 
