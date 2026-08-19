@@ -98,7 +98,7 @@
 
                 // 2. Fetch User Role from Firestore (with automatic admin detection)
                 let role = 'member';
-                const isAdminEmail = email.includes('admin') || email.includes('verbavitae') || email === 'aaronbacallao06@gmail.com';
+                const isAdminEmail = email.includes('admin') || email.includes('verbavitae') || email === 'aaronbacallao06@gmail.com' || email === 'aaronbacallao7@gmail.com';
                 
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
