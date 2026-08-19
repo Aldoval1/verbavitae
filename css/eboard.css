@@ -1,7 +1,7 @@
 /* E-Board Specific Styles */
 .eboard-container {
     max-width: 1000px;
-    margin: 60px auto;
+    margin: 140px auto 60px;
     padding: 0 20px;
     font-family: 'Montserrat', sans-serif;
 }
@@ -171,6 +171,10 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+    .eboard-container {
+        margin: 40px auto;
+    }
+
     .eboard-card {
         flex-direction: column;
     }
