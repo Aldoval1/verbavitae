@@ -31,9 +31,11 @@ body.store-closed-body {
     height: 100vh;
     min-height: 100vh;
     overflow: hidden;
-    background-image: linear-gradient(rgba(238, 245, 251, 0.85), rgba(238, 245, 251, 0.85)), url('../images/fondoverbafinal.png');
+    background-color: #ffffff;
+    background-image: url('../images/fondoverbafinal.png');
     background-size: cover;
     background-position: center;
+    background-repeat: no-repeat;
     background-attachment: fixed;
     display: flex;
     align-items: center;
@@ -57,7 +59,7 @@ body.store-closed-body {
     padding: 50px 40px;
     max-width: 560px;
     width: 100%;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.12);
+    box-shadow: 0 20px 50px rgba(29, 12, 141, 0.15);
     border: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
