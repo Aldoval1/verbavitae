@@ -98,7 +98,7 @@
 
                 // 2. Fetch User Role from Firestore (with automatic admin detection)
                 let role = 'member';
-                const isAdminEmail = email.includes('admin') || email.includes('verbavitae') || email === 'aaronbacallao06@gmail.com' || email === 'aaronbacallao7@gmail.com';
+                const isAdminEmail = email.includes('admin') || email.includes('verbavitae') || email === 'aaronbacallao06@gmail.com';
                 
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
@@ -131,7 +131,9 @@
 
             } catch (error) {
                 console.error("Login error:", error);
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+                if (error.code === 'auth/too-many-requests') {
+                    errorEl.textContent = 'Too many attempts. Access is temporarily blocked by Firebase. Please wait 2-3 minutes or try from an Incognito/Private window.';
+                } else if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
                     errorEl.innerHTML = 'Incorrect email or password. Don\'t have an account yet? <a href="join.html" style="color: #3182ce; font-weight: bold; text-decoration: underline;">Register here</a>';
                 } else {
                     errorEl.textContent = error.message ? error.message : 'Invalid email or password.';
