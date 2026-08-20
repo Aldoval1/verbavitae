@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>Verba Vitae - Camera</title>
+    <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
+    
+    <!-- CSS & Fonts -->
+    <link rel="stylesheet" href="css/camera.css?v=20260819">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="camera-app-body">
+    <div class="camera-wrapper">
+        <!-- Viewfinder Stream -->
+        <div class="viewfinder-container">
+            <video id="cameraVideo" autoplay playsinline muted></video>
+            
+            <!-- Grid Lines Overlay -->
+            <div class="camera-grid-overlay" id="gridOverlay">
+                <div></div><div></div><div></div>
+                <div></div><div></div><div></div>
+                <div></div><div></div><div></div>
+            </div>
+
+            <!-- Shutter Flash Pulse -->
+            <div class="shutter-flash" id="shutterFlash"></div>
+
+            <!-- Countdown Timer Number -->
+            <div class="countdown-overlay" id="countdownOverlay">3</div>
+
+            <!-- Hidden Canvas for high-res photo processing -->
+            <canvas id="captureCanvas"></canvas>
+        </div>
+
+        <!-- Top Control Bar -->
+        <header class="camera-top-bar">
+            <a href="index.html" class="top-btn" title="Back to Home">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+
+            <div class="camera-brand-badge">
+                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae Logo" class="camera-brand-logo">
+                <span>Verba Cam</span>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="top-btn" id="gridToggleBtn" title="Toggle Grid Lines">
+                    <i class="fas fa-border-all"></i>
+                </button>
+                <button class="top-btn" id="timerToggleBtn" title="Set Timer">
+                    <i class="fas fa-stopwatch"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Bottom Action Section -->
+        <footer class="camera-bottom-bar">
+            <!-- Filter Selection Carousel -->
+            <div class="filter-carousel">
+                <button class="filter-chip active" data-filter="none">Original</button>
+                <button class="filter-chip" data-filter="warm">Warm Glow</button>
+                <button class="filter-chip" data-filter="vintage">Vintage Book</button>
+                <button class="filter-chip" data-filter="bw">B&amp;W Noir</button>
+                <button class="filter-chip" data-filter="vibrant">Vibrant</button>
+                <button class="filter-chip" data-filter="cool">Cool Tone</button>
+            </div>
+
+            <!-- Shutter Row -->
+            <div class="shutter-row">
+                <!-- Gallery Thumbnail / File Picker -->
+                <button class="side-btn" id="galleryPickerBtn" title="Open from Gallery">
+                    <img id="galleryThumb" class="gallery-thumbnail" alt="Last photo">
+                    <i class="fas fa-images" id="galleryIcon"></i>
+                </button>
+                <input type="file" id="hiddenFileInput" accept="image/*" style="display: none;">
+
+                <!-- Big Shutter Button -->
+                <button class="shutter-btn" id="captureBtn" title="Take Photo">
+                    <div class="shutter-btn-inner"></div>
+                </button>
+
+                <!-- Switch Camera (Selfie Front / Rear) -->
+                <button class="side-btn" id="switchCameraBtn" title="Switch Camera (Front/Rear)">
+                    <i class="fas fa-camera-rotate"></i>
+                </button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Photo Preview Modal -->
+    <div class="preview-modal" id="previewModal">
+        <div class="preview-top-bar">
+            <label class="stamp-toggle-box" title="Add Verba Vitae Brand Stamp">
+                <input type="checkbox" id="watermarkToggle" checked>
+                <span>Verba Stamp</span>
+            </label>
+            <div style="font-weight: 700; font-size: 0.9rem; letter-spacing: 0.5px;">Photo Preview</div>
+            <div style="width: 80px;"></div>
+        </div>
+
+        <div class="preview-image-container">
+            <img id="previewImg" alt="Captured Photo Preview">
+        </div>
+
+        <div class="preview-actions">
+            <button class="btn-preview-action btn-retake" id="retakeBtn">
+                <i class="fas fa-rotate-left"></i> Retake
+            </button>
+            <button class="btn-preview-action btn-download" id="downloadBtn">
+                <i class="fas fa-download"></i> Save Photo
+            </button>
+        </div>
+    </div>
+
+    <!-- Camera Access Error / Permission Banner -->
+    <div class="camera-error-banner" id="cameraErrorBanner">
+        <i class="fas fa-camera-slash"></i>
+        <h3>Camera Access Required</h3>
+        <p>Please grant permission in your browser to use your front (selfie) and rear cameras with Verba Cam.</p>
+        <button class="btn-retry-camera" id="retryCameraBtn">Grant Access &amp; Retry</button>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/camera.js?v=20260819"></script>
+</body>
+</html>
