@@ -610,10 +610,22 @@
                 const emailPromises = emails.map(email => {
                     // Genera un código de 8 caracteres alfanuméricos
                     const uniqueCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+                    const joinUrl = `https://theverbavitae.org/join.html?code=${uniqueCode}`;
                     
                     return emailjs.send(serviceID, templateID, {
                         to_email: email,
-                        invite_code: uniqueCode
+                        email_to: email,
+                        user_email: email,
+                        email: email,
+                        recipient: email,
+                        send_to: email,
+                        to_name: email.split('@')[0],
+                        invite_code: uniqueCode,
+                        code: uniqueCode,
+                        invitation_code: uniqueCode,
+                        join_link: joinUrl,
+                        link: joinUrl,
+                        url: joinUrl
                     });
                 });
 
