@@ -103,8 +103,10 @@
 
         btnVerify.addEventListener('click', () => {
             const val = inviteCodeInput.value.trim().toLowerCase();
-            // Accept 'testing' or any dynamically generated code (length >= 8)
-            if (val === 'testing' || val.length >= 8) {
+            const validCustomCodes = ['peermentorinv', 'testing'];
+            
+            // Accept 'peermentorinv', 'testing', or any dynamically generated code (length >= 8)
+            if (validCustomCodes.includes(val) || val.length >= 8) {
                 codeError.style.display = 'none';
                 
                 // Fade out step 1
@@ -133,11 +135,11 @@
         btnRegister.addEventListener('click', async () => {
             const firstName = document.getElementById('first-name').value.trim();
             const lastName = document.getElementById('last-name').value.trim();
-            const email = document.getElementById('email').value.trim();
+            const email = document.getElementById('email').value.trim().toLowerCase();
             const phone = document.getElementById('phone').value.trim();
             const major = document.getElementById('major').value.trim();
-            const password = document.getElementById('password').value;
-            const code = inviteCodeInput.value.trim();
+            const password = document.getElementById('password').value.trim();
+            const code = inviteCodeInput.value.trim().toUpperCase();
 
             if (!firstName || !lastName || !email || !password) {
                 alert('Please fill out all required fields (First Name, Last Name, Email, Password).');
