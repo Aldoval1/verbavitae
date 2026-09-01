@@ -22,8 +22,8 @@
             <span>Verba Vitae Org</span>
         </div>
         <div class="dash-profile">
-            <div class="profile-pic">
-                <img src="images/cover1.png" alt="Profile" id="navProfilePic">
+            <div class="profile-pic" id="navProfilePicContainer" style="display: none;">
+                <img src="" alt="Profile" id="navProfilePic" style="display: none;">
             </div>
             <a href="#" class="config-link" id="openSettingsBtn" title="Settings" style="display: flex; align-items: center; color: var(--text-muted); transition: color 0.3s; padding: 5px;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -151,17 +151,27 @@
             <h2>Settings</h2>
             
             <div class="settings-group">
-                <label for="profilePicInput">Change Profile Picture (Image URL)</label>
-                <input type="text" id="profilePicInput" placeholder="https://example.com/image.png">
-                <button id="updatePicBtn" class="settings-btn">Update Picture</button>
+                <label for="profilePicInput">Profile Picture</label>
+                <input type="text" id="profilePicInput" placeholder="Image URL (https://...)" style="margin-bottom: 10px;">
+                <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px;">
+                    <label for="profilePicFileInput" class="settings-btn" style="background: #e2e8f0; color: #2d3748; cursor: pointer; text-align: center; margin: 0; padding: 10px 14px; font-size: 0.85rem; display: inline-block;">
+                        <i class="fas fa-upload"></i> Choose File
+                    </label>
+                    <input type="file" id="profilePicFileInput" accept="image/*" style="display: none;">
+                    <span id="fileNameDisplay" style="font-size: 0.85rem; color: #718096; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px;">No file chosen</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button id="updatePicBtn" class="settings-btn" style="flex: 1;">Save Picture</button>
+                    <button id="removePicBtn" class="settings-btn" style="background: #fed7d7; color: #c53030; flex: 1;">Remove</button>
+                </div>
             </div>
 
             <div class="settings-group">
                 <label for="languageSelect">Language</label>
                 <select id="languageSelect">
                     <option value="en">English</option>
-                    <option value="es">EspaÃ±ol</option>
-                    <option value="fr">FranÃ§ais</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
                 </select>
             </div>
 
@@ -173,22 +183,62 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Protect Dashboard Route
+            // Profile Picture Elements & Logic
+            const profilePicContainer = document.getElementById('navProfilePicContainer');
+            const navProfilePic = document.getElementById('navProfilePic');
+
+            function applyProfilePic(url) {
+                if (url && url.trim() !== '') {
+                    navProfilePic.src = url;
+                    navProfilePic.style.display = 'block';
+                    profilePicContainer.style.display = 'block';
+                } else {
+                    navProfilePic.src = '';
+                    navProfilePic.style.display = 'none';
+                    profilePicContainer.style.display = 'none';
+                }
+            }
+
+            // Initially default to no photo (nothing shown)
+            applyProfilePic(null);
+
+            // Load saved profile picture if any from local storage
+            const localSavedPic = localStorage.getItem('verba_profile_pic');
+            if (localSavedPic) {
+                applyProfilePic(localSavedPic);
+            }
+
+            // Protect Dashboard Route & Sync user profile picture from Firebase
             const isLoggedIn = localStorage.getItem('verba_logged_in');
             if (auth) {
-                auth.onAuthStateChanged((user) => {
+                auth.onAuthStateChanged(async (user) => {
                     if (!user && isLoggedIn !== 'true') {
                         window.location.href = 'login.html';
+                        return;
+                    }
+                    if (user) {
+                        try {
+                            const userPic = localStorage.getItem('verba_profile_pic_' + user.uid) || user.photoURL;
+                            if (userPic) {
+                                applyProfilePic(userPic);
+                            }
+                            if (typeof db !== 'undefined' && db) {
+                                const userDoc = await db.collection('users').doc(user.uid).get();
+                                if (userDoc.exists && userDoc.data().profilePic) {
+                                    applyProfilePic(userDoc.data().profilePic);
+                                    localStorage.setItem('verba_profile_pic_' + user.uid, userDoc.data().profilePic);
+                                    localStorage.setItem('verba_profile_pic', userDoc.data().profilePic);
+                                } else if (!userPic && !localSavedPic) {
+                                    applyProfilePic(null);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn("Could not load user profile pic from Firestore:", e);
+                        }
                     }
                 });
             } else if (isLoggedIn !== 'true') {
                 window.location.href = 'login.html';
-            }
-
-            // Load saved profile picture if any
-            const savedPic = localStorage.getItem('verba_profile_pic');
-            if (savedPic) {
-                document.getElementById('navProfilePic').src = savedPic;
             }
 
             // Load saved banner
@@ -215,15 +265,85 @@
                 modal.style.display = 'none';
             });
 
+            // File Upload Listener
+            let uploadedFileBase64 = null;
+            const fileInput = document.getElementById('profilePicFileInput');
+            const fileNameDisplay = document.getElementById('fileNameDisplay');
+            if (fileInput) {
+                fileInput.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        fileNameDisplay.textContent = file.name;
+                        const reader = new FileReader();
+                        reader.onload = function(evt) {
+                            uploadedFileBase64 = evt.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
             // Update Picture
-            document.getElementById('updatePicBtn').addEventListener('click', () => {
-                const url = document.getElementById('profilePicInput').value.trim();
-                if (url) {
-                    localStorage.setItem('verba_profile_pic', url);
-                    document.getElementById('navProfilePic').src = url;
-                    alert('Profile picture updated successfully!');
+            document.getElementById('updatePicBtn').addEventListener('click', async () => {
+                const url = uploadedFileBase64 || document.getElementById('profilePicInput').value.trim();
+                if (!url) {
+                    alert('Please enter an image URL or choose a file.');
+                    return;
                 }
+                applyProfilePic(url);
+                localStorage.setItem('verba_profile_pic', url);
+
+                const currentUser = auth ? auth.currentUser : null;
+                if (currentUser) {
+                    localStorage.setItem('verba_profile_pic_' + currentUser.uid, url);
+                    try {
+                        if (currentUser.updateProfile) {
+                            await currentUser.updateProfile({ photoURL: url });
+                        }
+                        if (typeof db !== 'undefined' && db) {
+                            await db.collection('users').doc(currentUser.uid).set({
+                                profilePic: url
+                            }, { merge: true });
+                        }
+                    } catch (err) {
+                        console.warn("Could not sync profile picture to Firestore:", err);
+                    }
+                }
+                alert('Profile picture updated successfully!');
+                modal.style.display = 'none';
             });
+
+            // Remove Picture
+            const removePicBtn = document.getElementById('removePicBtn');
+            if (removePicBtn) {
+                removePicBtn.addEventListener('click', async () => {
+                    applyProfilePic(null);
+                    localStorage.removeItem('verba_profile_pic');
+                    document.getElementById('profilePicInput').value = '';
+                    if (fileInput) fileInput.value = '';
+                    if (fileNameDisplay) fileNameDisplay.textContent = 'No file chosen';
+                    uploadedFileBase64 = null;
+
+                    const currentUser = auth ? auth.currentUser : null;
+                    if (currentUser) {
+                        localStorage.removeItem('verba_profile_pic_' + currentUser.uid);
+                        try {
+                            if (currentUser.updateProfile) {
+                                await currentUser.updateProfile({ photoURL: '' });
+                            }
+                            if (typeof db !== 'undefined' && db) {
+                                await db.collection('users').doc(currentUser.uid).update({
+                                    profilePic: firebase.firestore.FieldValue.delete()
+                                });
+                            }
+                        } catch (err) {
+                            console.warn("Could not remove profile picture:", err);
+                        }
+                    }
+                    alert('Profile picture removed.');
+                    modal.style.display = 'none';
+                });
+            }
 
             // Language Change (Simulated)
             document.getElementById('languageSelect').addEventListener('change', (e) => {
@@ -233,6 +353,7 @@
             // Logout Logic
             document.getElementById('logoutBtn').addEventListener('click', () => {
                 localStorage.removeItem('verba_logged_in');
+                if (auth) auth.signOut();
                 window.location.href = 'login.html';
             });
 
