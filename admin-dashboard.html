@@ -31,8 +31,8 @@
             <span>EXECUTIVE CONSOLE</span>
         </div>
         <div class="dash-profile">
-            <div class="profile-pic">
-                <img src="images/cover1.png" alt="Profile" id="navProfilePic">
+            <div class="profile-pic" id="navProfilePicContainer" style="display: none;">
+                <img src="" alt="Profile" id="navProfilePic" style="display: none;">
             </div>
             <a href="login.html" class="config-link" title="Log Out" id="logoutBtn" style="display: flex; align-items: center; padding: 5px;">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -451,6 +451,16 @@
     <div id="toastContainer" class="toast-container"></div>
 
     <script>
+        // Profile Picture Dynamic Display
+        const adminPicContainer = document.getElementById('navProfilePicContainer');
+        const adminPicImg = document.getElementById('navProfilePic');
+        const adminSavedPic = localStorage.getItem('verba_profile_pic');
+        if (adminSavedPic && !adminSavedPic.includes('cover1.png') && adminPicContainer && adminPicImg) {
+            adminPicImg.src = adminSavedPic;
+            adminPicImg.style.display = 'block';
+            adminPicContainer.style.display = 'block';
+        }
+
         // --- Tab System ---
         function switchTab(tabName) {
             document.querySelectorAll('.tab-panel').forEach(panel => {

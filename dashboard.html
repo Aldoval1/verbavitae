@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verba Vitae - Dashboard</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
-    <link rel="stylesheet" href="css/dashboard.css?v=20260723b">
+    <link rel="stylesheet" href="css/dashboard.css?v=20260901a">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Firebase SDKs -->
@@ -188,7 +188,7 @@
             const navProfilePic = document.getElementById('navProfilePic');
 
             function applyProfilePic(url) {
-                if (url && url.trim() !== '') {
+                if (url && url.trim() !== '' && !url.includes('cover1.png')) {
                     navProfilePic.src = url;
                     navProfilePic.style.display = 'block';
                     profilePicContainer.style.display = 'block';
@@ -202,10 +202,12 @@
             // Initially default to no photo (nothing shown)
             applyProfilePic(null);
 
-            // Load saved profile picture if any from local storage
+            // Load saved profile picture if any from local storage (filtering out legacy cover1.png)
             const localSavedPic = localStorage.getItem('verba_profile_pic');
-            if (localSavedPic) {
+            if (localSavedPic && !localSavedPic.includes('cover1.png')) {
                 applyProfilePic(localSavedPic);
+            } else if (localSavedPic) {
+                localStorage.removeItem('verba_profile_pic');
             }
 
             // Protect Dashboard Route & Sync user profile picture from Firebase
@@ -219,16 +221,16 @@
                     if (user) {
                         try {
                             const userPic = localStorage.getItem('verba_profile_pic_' + user.uid) || user.photoURL;
-                            if (userPic) {
+                            if (userPic && !userPic.includes('cover1.png')) {
                                 applyProfilePic(userPic);
                             }
                             if (typeof db !== 'undefined' && db) {
                                 const userDoc = await db.collection('users').doc(user.uid).get();
-                                if (userDoc.exists && userDoc.data().profilePic) {
+                                if (userDoc.exists && userDoc.data().profilePic && !userDoc.data().profilePic.includes('cover1.png')) {
                                     applyProfilePic(userDoc.data().profilePic);
                                     localStorage.setItem('verba_profile_pic_' + user.uid, userDoc.data().profilePic);
                                     localStorage.setItem('verba_profile_pic', userDoc.data().profilePic);
-                                } else if (!userPic && !localSavedPic) {
+                                } else if (!userPic) {
                                     applyProfilePic(null);
                                 }
                             }
