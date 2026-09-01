@@ -184,6 +184,16 @@
 
         const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
+        function escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
         async function fetchEvents() {
             let fetched = [];
             try {
@@ -239,7 +249,19 @@
                     maxSlots: maxSlots,
                     regCount: regCount,
                     slotsLeft: slotsLeft,
-                    desc: `<p>${ev.description || 'Join us for this exciting event!'}</p><p style="margin-top: 15px; font-weight: 600; color: #1976d2;"><i class="fas fa-award"></i> Volunteer Service Hours Granted: ${ev.serviceHours || 0} Hours</p><p style="margin-top: 5px; font-weight: 600; color: ${slotsLeft > 0 ? '#2b6cb0' : '#e53e3e'};"><i class="fas fa-users"></i> Volunteer Capacity: ${slotsLeft} / ${maxSlots} Slots Remaining</p>`
+                    desc: `
+                        <div class="event-text-body">${escapeHtml(ev.description || 'Join us for this exciting event!')}</div>
+                        <div class="event-meta-boxes">
+                            <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: #1976d2; font-size: 0.95rem;">
+                                <i class="fas fa-award" style="font-size: 1.1rem;"></i> 
+                                <span>Volunteer Service Hours Granted: <strong>${ev.serviceHours || 0} Hours</strong></span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: ${slotsLeft > 0 ? '#2b6cb0' : '#e53e3e'}; font-size: 0.95rem;">
+                                <i class="fas fa-users" style="font-size: 1.1rem;"></i> 
+                                <span>Volunteer Capacity: <strong>${slotsLeft} / ${maxSlots} Slots Remaining</strong></span>
+                            </div>
+                        </div>
+                    `
                 };
             });
 

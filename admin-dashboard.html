@@ -1200,7 +1200,7 @@
                         <span><i class="far fa-clock"></i> ${ev.time}</span>
                         <span><i class="fas fa-map-marker-alt"></i> <a href="${mapsUrl}" target="_blank" style="color:var(--admin-accent); text-decoration:underline;">${ev.location}</a></span>
                     </div>
-                    <p style="font-size:0.9rem; color:var(--admin-text); margin:5px 0 0 0; line-height:1.4;">${ev.description || ''}</p>
+                    <p style="font-size:0.9rem; color:var(--admin-text); margin:8px 0 0 0; line-height:1.5; white-space: pre-line;">${ev.description || ''}</p>
                     <div style="margin-top:8px; align-self:flex-end; display:flex; gap:10px;">
                         <button class="admin-btn" style="padding:4px 12px; font-size:0.8rem; background:#3182ce;" onclick="viewEventAttendees('${ev.id}', '${ev.title.replace(/'/g, "\\'")}')"><i class="fas fa-users"></i> View Attendees (${regCount})</button>
                         <button class="btn-expel" onclick="deleteEvent('${ev.id}')">Delete Event</button>

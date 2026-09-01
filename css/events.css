@@ -202,8 +202,24 @@
     word-break: break-word;
 }
 
-.details-desc p {
+.details-desc .event-text-body {
+    white-space: pre-line;
+    line-height: 1.75;
+    color: #2d3748;
+    font-size: 1.02rem;
     margin-bottom: 20px;
+    word-break: break-word;
+}
+
+.details-desc .event-meta-boxes {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
 }
 
 .details-bottom {
