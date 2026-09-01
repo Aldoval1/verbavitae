@@ -7,7 +7,7 @@
     <title>Verba Vitae - Events</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/events.css">
+    <link rel="stylesheet" href="css/events.css?v=20260901c">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -261,6 +261,12 @@
                 const item = document.createElement('div');
                 item.className = `event-item ${index === currentIndex ? 'active' : ''}`;
                 item.onclick = () => selectEvent(index);
+
+                let shortLocation = ev.location || 'Miami, FL';
+                if (shortLocation.includes(',')) {
+                    const locParts = shortLocation.split(',');
+                    shortLocation = locParts.slice(0, 2).join(',').trim();
+                }
                 
                 item.innerHTML = `
                     <div class="event-date">
@@ -269,9 +275,10 @@
                     </div>
                     <div class="event-brief">
                         <h4>${ev.title}</h4>
-                        <p style="color: #3182ce; font-weight: 600; font-size: 0.82rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                            <i class="fas fa-map-marker-alt" style="color: #e53e3e;"></i> ${ev.location}
-                        </p>
+                        <div class="event-card-location" title="${ev.location}">
+                            <i class="fas fa-map-marker-alt" style="color: #e53e3e; flex-shrink: 0; font-size: 0.78rem;"></i>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${shortLocation}</span>
+                        </div>
                         <p>${ev.brief}</p>
                     </div>
                 `;

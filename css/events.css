@@ -31,37 +31,48 @@
     max-width: 1200px;
     margin: 0 auto;
     display: flex;
-    gap: 0; /* Removing gap, using borders instead */
+    gap: 0;
     background: #fff;
     border-radius: 12px;
     box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
     overflow: hidden;
     min-height: 600px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Left Side: List */
 .events-list {
-    flex: 0 0 35%;
+    flex: 0 0 380px;
+    width: 380px;
+    max-width: 380px;
+    min-width: 0;
     background-color: #f8fafd;
     border-right: 1px solid #e1e8f0;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .event-item {
     display: flex;
-    padding: 25px 20px;
+    padding: 20px 18px;
     border-bottom: 1px solid #e1e8f0;
     cursor: pointer;
     transition: all 0.3s ease;
     align-items: center;
     gap: 15px;
     border-left: 4px solid transparent;
+    min-width: 0;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .event-item:hover {
     background-color: #ffffff;
-    transform: translateX(5px);
+    transform: translateX(4px);
 }
 
 .event-item.active {
@@ -77,50 +88,78 @@
     background-color: var(--color-dark-blue);
     color: #fff;
     border-radius: 8px;
-    min-width: 70px;
-    height: 70px;
+    min-width: 65px;
+    width: 65px;
+    height: 65px;
+    flex-shrink: 0;
     box-shadow: 0 4px 10px rgba(29, 12, 141, 0.2);
 }
 
 .event-date .day {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 800;
     line-height: 1;
 }
 
 .event-date .month {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
-    margin-top: 4px;
+    margin-top: 3px;
+}
+
+.event-brief {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .event-brief h4 {
     color: var(--color-dark-blue);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     font-weight: 700;
-    margin-bottom: 5px;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-brief .event-card-location {
+    color: #3182ce;
+    font-weight: 600;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 5px;
 }
 
 .event-brief p {
     color: #666;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+    margin: 0;
 }
 
 /* Right Side: Details */
 .event-details {
-    flex: 1;
-    padding: 50px;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 35px 45px;
     display: flex;
     flex-direction: column;
     position: relative;
     transition: opacity 0.3s ease;
+    overflow-x: hidden;
+    box-sizing: border-box;
 }
 
 .event-details.fade {
@@ -128,7 +167,8 @@
 }
 
 .details-top {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
+    min-width: 0;
 }
 
 .location-badge {
@@ -139,7 +179,7 @@
     color: var(--color-orange);
     padding: 8px 16px;
     border-radius: 30px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -147,17 +187,19 @@
 
 .details-title {
     color: var(--color-dark-blue);
-    font-size: 2.8rem;
+    font-size: 2.2rem;
     font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 20px;
+    line-height: 1.25;
+    margin: 10px 0 15px 0;
+    word-break: break-word;
 }
 
 .details-desc {
     color: #444;
-    font-size: 1.1rem;
-    line-height: 1.8;
+    font-size: 1.05rem;
+    line-height: 1.7;
     flex-grow: 1;
+    word-break: break-word;
 }
 
 .details-desc p {
