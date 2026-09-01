@@ -16,6 +16,10 @@
         })();
     </script>
     
+    <!-- Leaflet Map SDK -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -317,10 +321,6 @@
                         </div>
                     </div>
                     <div class="form-group" style="display: flex; gap: 15px;">
-                        <div style="flex: 1.5;">
-                            <label for="eventLocation">Location / Google Maps Place</label>
-                            <input type="text" id="eventLocation" required placeholder="e.g. FIU Modesto Maidique Campus, Miami FL">
-                        </div>
                         <div style="flex: 1;">
                             <label for="eventServiceHours">Service Hours Provided</label>
                             <input type="number" id="eventServiceHours" required placeholder="e.g. 4" min="0" step="0.5">
@@ -330,11 +330,26 @@
                             <input type="number" id="eventMaxSlots" required placeholder="e.g. 20" min="1" value="20">
                         </div>
                     </div>
+
+                    <div class="form-group">
+                        <label for="eventLocation"><i class="fas fa-map-marker-alt" style="color: #e53e3e;"></i> Event Address & Venue Location</label>
+                        <div style="display: flex; gap: 10px; margin-bottom: 8px;">
+                            <input type="text" id="eventLocation" required placeholder="Type event address (e.g. 11200 SW 8th St, Miami, FL)" style="flex: 1;">
+                            <button type="button" id="btnSearchAddress" class="admin-btn" style="white-space: nowrap; padding: 0 16px; background: #3182ce; display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-search-location"></i> Find on Map
+                            </button>
+                        </div>
+                        <div id="adminEventMap" style="width: 100%; height: 280px; border-radius: 8px; border: 1px solid var(--admin-border); margin-bottom: 6px; z-index: 1;"></div>
+                        <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin: 0 0 10px 0;">
+                            <i class="fas fa-info-circle"></i> Type an address and click <strong>Find on Map</strong>, or click / drag the red pin on the map to set the exact venue location.
+                        </p>
+                    </div>
+
                     <div class="form-group">
                         <label for="eventDescription">Event Description & Volunteer Objectives</label>
                         <textarea id="eventDescription" rows="4" required placeholder="Provide a detailed description of the event, volunteer duties, and instructions..." style="width: 100%; padding: 10px; font-family: 'Montserrat', sans-serif; border: 1px solid var(--admin-border); border-radius: 4px; box-sizing: border-box;"></textarea>
                     </div>
-                    <button type="submit" class="admin-btn">Publish Event</button>
+                    <button type="submit" class="admin-btn"><i class="fas fa-paper-plane"></i> Publish Event</button>
                 </form>
 
                 <div style="margin-top: 35px; border-top: 2px solid var(--admin-border); padding-top: 20px;">
@@ -480,6 +495,13 @@
 
             if (tabName === 'members-manage' || tabName === 'members-invite') {
                 document.querySelector('.dropbtn').classList.add('active');
+            }
+
+            if (tabName === 'events') {
+                initAdminEventMap();
+                setTimeout(() => {
+                    if (adminMap) adminMap.invalidateSize();
+                }, 200);
             }
         }
 
@@ -949,6 +971,121 @@
             }
         };
 
+        // --- Event Map Venue Picker & Address Search ---
+        let adminMap = null;
+        let eventMarker = null;
+        let selectedEventLat = 25.7562;
+        let selectedEventLng = -80.3755;
+
+        function initAdminEventMap() {
+            const mapContainer = document.getElementById('adminEventMap');
+            if (!mapContainer) return;
+
+            if (adminMap) {
+                adminMap.invalidateSize();
+                return;
+            }
+
+            // Init Leaflet map centered at Miami / FIU default
+            adminMap = L.map('adminEventMap').setView([selectedEventLat, selectedEventLng], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(adminMap);
+
+            // Draggable Marker
+            eventMarker = L.marker([selectedEventLat, selectedEventLng], { draggable: true }).addTo(adminMap);
+            eventMarker.bindPopup("<b>Event Venue Pin</b><br>Type an address and search, or drag this pin!").openPopup();
+
+            // When marker is dragged
+            eventMarker.on('dragend', function () {
+                const pos = eventMarker.getLatLng();
+                selectedEventLat = pos.lat;
+                selectedEventLng = pos.lng;
+                reverseGeocode(pos.lat, pos.lng);
+            });
+
+            // When map is clicked
+            adminMap.on('click', function (e) {
+                selectedEventLat = e.latlng.lat;
+                selectedEventLng = e.latlng.lng;
+                eventMarker.setLatLng(e.latlng);
+                reverseGeocode(e.latlng.lat, e.latlng.lng);
+            });
+
+            // Search Address Button & Keydown
+            const btnSearch = document.getElementById('btnSearchAddress');
+            const locationInput = document.getElementById('eventLocation');
+
+            if (btnSearch) {
+                btnSearch.addEventListener('click', searchAddressOnMap);
+            }
+            if (locationInput) {
+                locationInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchAddressOnMap();
+                    }
+                });
+            }
+        }
+
+        async function searchAddressOnMap() {
+            const locationInput = document.getElementById('eventLocation');
+            const query = locationInput.value.trim();
+            if (!query) {
+                showToast('Please enter an address to search on map.');
+                return;
+            }
+
+            const btn = document.getElementById('btnSearchAddress');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`);
+                const data = await response.json();
+
+                if (data && data.length > 0) {
+                    const result = data[0];
+                    selectedEventLat = parseFloat(result.lat);
+                    selectedEventLng = parseFloat(result.lon);
+
+                    if (!adminMap) initAdminEventMap();
+                    adminMap.setView([selectedEventLat, selectedEventLng], 16);
+                    eventMarker.setLatLng([selectedEventLat, selectedEventLng]);
+                    
+                    const cleanAddress = result.display_name;
+                    locationInput.value = cleanAddress;
+                    eventMarker.bindPopup(`<b>${query}</b><br>${cleanAddress}`).openPopup();
+                    showToast('Venue location pinned on map!');
+                } else {
+                    showToast('Address not found. Please try adding city/state or drag the pin on map.');
+                }
+            } catch (err) {
+                console.error("Geocoding error:", err);
+                showToast('Could not geocode address at this time.');
+            } finally {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            }
+        }
+
+        async function reverseGeocode(lat, lng) {
+            try {
+                const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+                const data = await response.json();
+                if (data && data.display_name) {
+                    document.getElementById('eventLocation').value = data.display_name;
+                    eventMarker.bindPopup(`<b>Selected Venue</b><br>${data.display_name}`).openPopup();
+                }
+            } catch (err) {
+                console.warn("Reverse geocode warning:", err);
+            }
+        }
+
         // --- Event Publishing Management ---
         const eventForm = document.getElementById('eventForm');
         const adminEventsList = document.getElementById('adminEventsList');
@@ -973,6 +1110,8 @@
                     date,
                     time,
                     location,
+                    lat: selectedEventLat,
+                    lng: selectedEventLng,
                     serviceHours,
                     maxSlots,
                     description,
@@ -995,7 +1134,7 @@
                 showToast('Event published successfully!');
                 eventForm.reset();
                 loadAdminEvents();
-                btn.textContent = 'Publish Event';
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish Event';
                 btn.disabled = false;
             });
         }
