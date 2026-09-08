@@ -8,11 +8,15 @@
 (function () {
     'use strict';
 
-    // Default Firebase API key from project as fallback default
-    const defaultGoogleKey = (typeof firebaseConfig !== 'undefined' && firebaseConfig && firebaseConfig.apiKey) ? 
-        firebaseConfig.apiKey : 'AIzaSyDYQWPWtY17SUP32rDHjOSqSENIAg_x5Tk';
+    // Active working Google AI Studio API key provided by user
+    const defaultGoogleKey = 'AIzaSyBenPzZ7MOAQQdkAWch-eAWRr5ctk6mjTU';
 
     // State Management
+    const storedKey = localStorage.getItem('vv_speech_gemini_key');
+    const activeKey = (!storedKey || storedKey === 'AIzaSyDYQWPWtY17SUP32rDHjOSqSENIAg_x5Tk') ? 
+        defaultGoogleKey : storedKey;
+    localStorage.setItem('vv_speech_gemini_key', activeKey);
+
     const state = {
         pdfDoc: null,
         currentPage: 1,
@@ -33,7 +37,7 @@
         viewMode: 'split',
         theme: 'light',
         ttsProvider: 'gemini', // 'gemini' | 'webspeech' | 'openai'
-        geminiApiKey: localStorage.getItem('vv_speech_gemini_key') || defaultGoogleKey,
+        geminiApiKey: activeKey,
         geminiVoice: localStorage.getItem('vv_speech_gemini_voice') || 'Aoede',
         openAiKey: localStorage.getItem('vv_speech_openai_key') || '',
         openAiVoice: localStorage.getItem('vv_speech_openai_voice') || 'nova',
@@ -617,7 +621,9 @@
      * Fetch Gemini audio binary from API
      */
     async function fetchGeminiAudioBlob(text, voiceName, apiKey) {
-        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+        // Use active Gemini TTS audio model
+        const modelName = 'gemini-3.1-flash-tts-preview';
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
         const promptText = `Lee el siguiente texto en voz alta con una entonación humana completamente fluida, natural, expresiva y sin pausas artificiales:\n\n"${text}"`;
 
@@ -661,7 +667,8 @@
         const base64Data = part.inlineData.data;
         const mimeType = part.inlineData.mimeType || 'audio/wav';
 
-        if (mimeType.includes('pcm')) {
+        // Gemini returns audio/l16; rate=24000 (raw PCM 16-bit 24kHz)
+        if (mimeType.includes('pcm') || mimeType.includes('l16')) {
             return pcmToWav(base64Data, 24000);
         } else {
             return base64ToBlob(base64Data, mimeType);
