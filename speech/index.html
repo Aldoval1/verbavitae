@@ -310,16 +310,49 @@
             </div>
             <div class="speech-modal-body">
                 <p style="font-size: 0.9rem; color: var(--speech-text-muted); line-height: 1.5;">
-                    Por defecto, Verba Vitae utiliza las <strong>voces neurales integradas del sistema (Web Speech API)</strong>, gratuitas e ilimitadas. Si deseas utilizar modelos de voz AI hiperrealistas de estudio, puedes activar las siguientes opciones:
+                    Elige el motor de voz con el que deseas escuchar tus documentos. Para máxima fluidez humana y naturalidad, recomendamos <strong>Gemini 2.0 AI</strong>.
                 </p>
 
                 <!-- Provider Selector -->
                 <div>
                     <label style="font-size: 0.85rem; font-weight: 700; color: var(--speech-text); display: block; margin-bottom: 6px;">Motor de Voz Activo</label>
                     <select id="tts-provider-select" class="modal-input">
-                        <option value="webspeech">Web Speech API Neural (Gratis, Ilimitado, Sin API Key)</option>
-                        <option value="openai">OpenAI TTS (tts-1 / tts-1-hd) (Requiere API Key)</option>
+                        <option value="gemini">✨ Gemini 2.0 AI Neural (Ultra Fluida, Humana y Expresiva)</option>
+                        <option value="webspeech">Web Speech API (Voces Nativas del Sistema - Gratis)</option>
+                        <option value="openai">OpenAI TTS (tts-1 / tts-1-hd)</option>
                     </select>
+                </div>
+
+                <!-- Gemini AI Option Box -->
+                <div class="voice-provider-option" style="border: 2px solid rgba(29, 12, 141, 0.2); background: #fdfefe;">
+                    <div class="voice-provider-title">
+                        <span style="color: var(--speech-primary); font-size: 1rem;"><i class="fas fa-sparkles"></i> Gemini 2.0 AI Neural Voice</span>
+                        <span class="voice-badge-tag tag-default" style="background: rgba(29, 12, 141, 0.1); color: var(--speech-primary);">Recomendado</span>
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--speech-text-muted); margin: 4px 0 8px;">
+                        Voces neuronales de última generación de Google Gemini con cadencia fluida, respiración realista y entonación humana sin pausas robóticas.
+                    </p>
+                    
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--speech-text);">Clave de API de Gemini / Google AI:</label>
+                    <input type="password" id="gemini-api-key" class="modal-input" placeholder="AIzaSy...">
+                    
+                    <label style="font-size: 0.8rem; font-weight: 600; color: var(--speech-text); margin-top: 6px;">Voz de Gemini:</label>
+                    <select id="gemini-voice-select" class="modal-input">
+                        <option value="Aoede">Aoede (Femenina • Expresiva, Melódica y Fluida)</option>
+                        <option value="Kore">Kore (Femenina • Cálida, Cercana y Natural)</option>
+                        <option value="Puck">Puck (Masculina • Clara, Enérgica y Juvenil)</option>
+                        <option value="Charon">Charon (Masculina • Grave, Sobria y Profesional)</option>
+                        <option value="Fenrir">Fenrir (Masculina • Profunda y Resonante)</option>
+                    </select>
+
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 10px; flex-wrap: wrap; gap: 8px;">
+                        <button type="button" class="btn-upload-sample" id="btn-test-gemini" style="padding: 6px 16px; font-size: 0.82rem;">
+                            <i class="fas fa-volume-up"></i> Probar Voz Gemini
+                        </button>
+                        <small style="color: var(--speech-text-muted); font-size: 0.75rem;">
+                            <i class="fas fa-info-circle"></i> Clave editable guardada localmente
+                        </small>
+                    </div>
                 </div>
 
                 <!-- OpenAI Option Box -->
@@ -329,9 +362,9 @@
                         <span class="voice-badge-tag tag-premium">Estudio AI</span>
                     </div>
                     <p style="font-size: 0.82rem; color: var(--speech-text-muted);">
-                        Voces humanas ultra-realistas generadas con inteligencia artificial de OpenAI.
+                        Voces humanas generadas con modelos de OpenAI (tts-1 / tts-1-hd).
                     </p>
-                    <input type="password" id="openai-api-key" class="modal-input" placeholder="Ingresa tu clave de API: sk-...">
+                    <input type="password" id="openai-api-key" class="modal-input" placeholder="Clave OpenAI: sk-...">
                     <select id="openai-voice-select" class="modal-input">
                         <option value="nova">Voz Nova (Energética, Cálida)</option>
                         <option value="alloy">Voz Alloy (Neutral, Equilibrada)</option>
@@ -340,17 +373,6 @@
                         <option value="onyx">Voz Onyx (Grave, Profesional)</option>
                         <option value="shimmer">Voz Shimmer (Clara, Melódica)</option>
                     </select>
-                </div>
-
-                <!-- ElevenLabs Info Box -->
-                <div class="voice-provider-option">
-                    <div class="voice-provider-title">
-                        <span>ElevenLabs Multilingual</span>
-                        <span class="voice-badge-tag tag-premium">Próximamente</span>
-                    </div>
-                    <p style="font-size: 0.82rem; color: var(--speech-text-muted);">
-                        Soporte para clonación y síntesis de voz ElevenLabs v2. Disponible en la próxima actualización.
-                    </p>
                 </div>
             </div>
             <div class="speech-modal-footer">
@@ -397,6 +419,9 @@
             });
         }
     </script>
+
+    <!-- Firebase Init (Loads default API key) -->
+    <script src="../js/firebase-init.js"></script>
 
     <!-- Speech AI Reader Controller -->
     <script src="../js/speech-reader.js"></script>

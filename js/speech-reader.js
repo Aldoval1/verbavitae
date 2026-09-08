@@ -1,11 +1,16 @@
 /**
  * Verba Vitae - Speech AI PDF Reader
  * Advanced single-page PDF streaming with text-to-speech audio reader,
- * sentence-by-sentence karaoke highlighting, and auto-page turning.
+ * Gemini 2.0 AI Neural Speech integration, fluid continuous synthesis,
+ * karaoke sentence highlighting, and auto-page turning.
  */
 
 (function () {
     'use strict';
+
+    // Default Firebase API key from project as fallback default
+    const defaultGoogleKey = (typeof firebaseConfig !== 'undefined' && firebaseConfig && firebaseConfig.apiKey) ? 
+        firebaseConfig.apiKey : 'AIzaSyDYQWPWtY17SUP32rDHjOSqSENIAg_x5Tk';
 
     // State Management
     const state = {
@@ -23,15 +28,18 @@
         isPaused: false,
         autoAdvance: true,
         speechRate: 1.0,
-        selectedVoice: null,
+        selectedVoice: 'gemini:Aoede', // Default to ultra fluid Gemini AI voice!
         availableVoices: [],
-        viewMode: 'split', // 'split' or 'single'
+        viewMode: 'split',
         theme: 'light',
-        ttsProvider: 'webspeech', // 'webspeech' | 'openai' | 'elevenlabs'
+        ttsProvider: 'gemini', // 'gemini' | 'webspeech' | 'openai'
+        geminiApiKey: localStorage.getItem('vv_speech_gemini_key') || defaultGoogleKey,
+        geminiVoice: localStorage.getItem('vv_speech_gemini_voice') || 'Aoede',
         openAiKey: localStorage.getItem('vv_speech_openai_key') || '',
         openAiVoice: localStorage.getItem('vv_speech_openai_voice') || 'nova',
-        elevenLabsKey: localStorage.getItem('vv_speech_eleven_key') || '',
-        activeAudioElement: null
+        activeAudioElement: null,
+        prefetchedAudios: new Map(), // sentenceIndex -> audio object/blob
+        isPrefetching: false
     };
 
     // DOM Elements
@@ -77,6 +85,9 @@
     const settingsModal = document.getElementById('ai-settings-modal');
     const btnCloseModal = document.getElementById('btn-close-modal');
     const btnSaveSettings = document.getElementById('btn-save-settings');
+    const btnTestGeminiVoice = document.getElementById('btn-test-gemini');
+    const geminiKeyInput = document.getElementById('gemini-api-key');
+    const geminiVoiceSelect = document.getElementById('gemini-voice-select');
     const openAiKeyInput = document.getElementById('openai-api-key');
     const openAiVoiceSelect = document.getElementById('openai-voice-select');
     const ttsProviderSelect = document.getElementById('tts-provider-select');
@@ -90,71 +101,107 @@
     /**
      * Show toast message
      */
-    function showToast(message, icon = 'fa-info-circle') {
+    function showToast(message, icon = 'fa-info-circle', duration = 4000) {
         if (!toastEl) return;
         toastEl.innerHTML = `<i class="fas ${icon}"></i> <span>${message}</span>`;
         toastEl.classList.add('show');
-        setTimeout(() => toastEl.classList.remove('show'), 3500);
+        setTimeout(() => toastEl.classList.remove('show'), duration);
     }
 
     /**
-     * Populate Voices from Web Speech API
+     * Populate Voice Select List with Gemini AI options + Native Web Speech
      */
     function initVoiceList() {
-        if (!('speechSynthesis' in window)) {
-            showToast('Tu navegador no soporta síntesis de voz Web Speech.', 'fa-exclamation-triangle');
-            return;
-        }
+        if (!voiceSelect) return;
+        voiceSelect.innerHTML = '';
 
-        const loadVoices = () => {
-            const voices = window.speechSynthesis.getVoices();
-            if (!voices || voices.length === 0) return;
-            state.availableVoices = voices;
+        // 1. Group: Gemini AI Voices (Ultra Fluid & Natural)
+        const geminiGroup = document.createElement('optgroup');
+        geminiGroup.label = '🌟 Gemini 2.0 AI (Ultra Fluida & Humana)';
 
-            if (voiceSelect) {
-                voiceSelect.innerHTML = '';
+        const geminiVoices = [
+            { id: 'gemini:Aoede', name: 'Aoede', desc: 'Femenina • Expresiva y Melódica' },
+            { id: 'gemini:Kore', name: 'Kore', desc: 'Femenina • Natural y Cálida' },
+            { id: 'gemini:Puck', name: 'Puck', desc: 'Masculina • Enérgica y Clara' },
+            { id: 'gemini:Charon', name: 'Charon', desc: 'Masculina • Grave y Profesional' },
+            { id: 'gemini:Fenrir', name: 'Fenrir', desc: 'Masculina • Profunda y Resonante' }
+        ];
 
-                // Group voices: Spanish first, then English, then others
+        geminiVoices.forEach(gv => {
+            const opt = document.createElement('option');
+            opt.value = gv.id;
+            opt.textContent = `✨ Gemini AI - ${gv.name} (${gv.desc})`;
+            geminiGroup.appendChild(opt);
+        });
+        voiceSelect.appendChild(geminiGroup);
+
+        // 2. Web Speech System Voices
+        if ('speechSynthesis' in window) {
+            const loadNativeVoices = () => {
+                const voices = window.speechSynthesis.getVoices();
+                if (!voices || voices.length === 0) return;
+                state.availableVoices = voices;
+
+                // Remove previous native groups if any
+                const existingNativeGroups = voiceSelect.querySelectorAll('.native-group');
+                existingNativeGroups.forEach(g => g.remove());
+
                 const spanishVoices = voices.filter(v => v.lang.toLowerCase().startsWith('es'));
                 const englishVoices = voices.filter(v => v.lang.toLowerCase().startsWith('en'));
-                const otherVoices = voices.filter(v => !v.lang.toLowerCase().startsWith('es') && !v.lang.toLowerCase().startsWith('en'));
 
-                const addGroup = (label, voiceList) => {
-                    if (voiceList.length === 0) return;
+                const addNativeGroup = (label, list) => {
+                    if (list.length === 0) return;
                     const optGroup = document.createElement('optgroup');
+                    optGroup.className = 'native-group';
                     optGroup.label = label;
-                    voiceList.forEach(v => {
+                    list.forEach(v => {
                         const opt = document.createElement('option');
-                        opt.value = v.name;
-                        // Mark natural voices
+                        opt.value = 'native:' + v.name;
                         const isNatural = /natural|neural|online|google|siri/i.test(v.name);
-                        opt.textContent = `${v.name} (${v.lang})${isNatural ? ' ✨ AI' : ''}`;
+                        opt.textContent = `${v.name} (${v.lang})${isNatural ? ' [Natural]' : ''}`;
                         optGroup.appendChild(opt);
                     });
                     voiceSelect.appendChild(optGroup);
                 };
 
-                addGroup('Español (Recomendado)', spanishVoices);
-                addGroup('English', englishVoices);
-                addGroup('Otros Idiomas', otherVoices);
+                addNativeGroup('Voces del Sistema (Español)', spanishVoices);
+                addNativeGroup('Voces del Sistema (English)', englishVoices);
+            };
 
-                // Auto-select preferred voice
-                const preferred = spanishVoices.find(v => /natural|neural|google|sabina|alvaro/i.test(v.name)) ||
-                                 spanishVoices[0] ||
-                                 englishVoices.find(v => /natural|neural|google|jenny|guy/i.test(v.name)) ||
-                                 voices[0];
-
-                if (preferred) {
-                    voiceSelect.value = preferred.name;
-                    state.selectedVoice = preferred;
-                }
+            loadNativeVoices();
+            if (window.speechSynthesis.onvoiceschanged !== undefined) {
+                window.speechSynthesis.onvoiceschanged = loadNativeVoices;
             }
-        };
-
-        loadVoices();
-        if (window.speechSynthesis.onvoiceschanged !== undefined) {
-            window.speechSynthesis.onvoiceschanged = loadVoices;
         }
+
+        // Set default selected voice
+        const savedVoice = localStorage.getItem('vv_speech_active_voice');
+        if (savedVoice) {
+            voiceSelect.value = savedVoice;
+            state.selectedVoice = savedVoice;
+        } else {
+            voiceSelect.value = 'gemini:Aoede';
+            state.selectedVoice = 'gemini:Aoede';
+        }
+
+        updateProviderFromVoice(voiceSelect.value);
+    }
+
+    /**
+     * Synchronize TTS provider based on voice selection
+     */
+    function updateProviderFromVoice(voiceVal) {
+        if (!voiceVal) return;
+        if (voiceVal.startsWith('gemini:')) {
+            state.ttsProvider = 'gemini';
+            state.geminiVoice = voiceVal.replace('gemini:', '');
+            localStorage.setItem('vv_speech_gemini_voice', state.geminiVoice);
+        } else if (voiceVal.startsWith('openai:')) {
+            state.ttsProvider = 'openai';
+        } else {
+            state.ttsProvider = 'webspeech';
+        }
+        localStorage.setItem('vv_speech_active_voice', voiceVal);
     }
 
     /**
@@ -165,6 +212,7 @@
             if (pageLoadingOverlay) pageLoadingOverlay.classList.add('active');
             stopSpeech();
             state.textCache.clear();
+            state.prefetchedAudios.clear();
 
             const loadingTask = window.pdfjsLib.getDocument({
                 data: data,
@@ -184,7 +232,6 @@
                 pageInput.max = state.totalPages;
             }
 
-            // Hide upload, reveal reader workspace
             if (dropzone) dropzone.style.display = 'none';
             if (workspace) workspace.classList.add('active');
 
@@ -209,7 +256,6 @@
         try {
             const page = await state.pdfDoc.getPage(state.currentPage);
 
-            // Calculate responsive scale based on viewport width
             const containerWidth = canvas.parentElement ? canvas.parentElement.clientWidth - 40 : 800;
             const unscaledViewport = page.getViewport({ scale: 1 });
             const desiredScale = Math.min(Math.max(containerWidth / unscaledViewport.width, 0.8), 2.0);
@@ -238,10 +284,7 @@
             await state.renderTask.promise;
             state.renderTask = null;
 
-            // Update navigation button states
             updateNavState();
-
-            // Extract and prepare text for speech & synchronized reader
             await preparePageText(page);
 
         } catch (error) {
@@ -285,7 +328,6 @@
             lastY = item.transform[5];
         }
 
-        // Clean text and split into sentences
         const cleaned = rawText.replace(/\s+/g, ' ').trim();
         const sentences = tokenizeSentences(cleaned);
 
@@ -296,27 +338,27 @@
     }
 
     /**
-     * Split text into speech-friendly sentence units
+     * Split text into speech-friendly natural thought units
      */
     function tokenizeSentences(text) {
         if (!text || text.trim() === '') {
             return ['Esta página no contiene texto reconocible o es una imagen.'];
         }
 
-        // Split by sentence terminators (. ! ? \n) keeping delimiters
+        // Split by natural sentence boundaries (. ! ? \n)
         const rawTokens = text.match(/[^.!?\n]+[.!?]+|[^.!?\n]+$/g) || [text];
         const result = [];
 
         rawTokens.forEach(token => {
             const trimmed = token.trim();
             if (trimmed.length > 0) {
-                // If sentence is exceedingly long (> 300 chars), split by comma/semicolon for more natural speech breathing
-                if (trimmed.length > 250) {
-                    const subTokens = trimmed.split(/([,;:]\s+)/);
+                // Keep sentences cohesive; only subdivide if excessively long (> 300 chars)
+                if (trimmed.length > 300) {
+                    const subTokens = trimmed.split(/([;:]\s+)/);
                     let buffer = '';
                     for (let i = 0; i < subTokens.length; i++) {
                         buffer += subTokens[i];
-                        if (buffer.length > 120 || i === subTokens.length - 1) {
+                        if (buffer.length > 150 || i === subTokens.length - 1) {
                             if (buffer.trim().length > 0) result.push(buffer.trim());
                             buffer = '';
                         }
@@ -351,7 +393,6 @@
             span.dataset.index = index;
             span.textContent = sentence + ' ';
 
-            // Clicking any sentence plays speech from that sentence
             span.addEventListener('click', () => {
                 jumpToSentence(index);
             });
@@ -387,8 +428,15 @@
      */
     function jumpToSentence(index) {
         state.currentSentenceIndex = Math.max(0, Math.min(index, state.currentSentences.length - 1));
-        if (state.isPlaying) {
+        if (state.activeAudioElement) {
+            state.activeAudioElement.pause();
+            state.activeAudioElement = null;
+        }
+        if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
+        }
+
+        if (state.isPlaying) {
             speakCurrentSentence();
         } else {
             updateHighlightedSentence();
@@ -397,7 +445,7 @@
     }
 
     /**
-     * Update navigation state (buttons, input)
+     * Update navigation state
      */
     function updateNavState() {
         if (pageInput) pageInput.value = state.currentPage;
@@ -417,6 +465,7 @@
 
         state.currentPage = pageNum;
         state.currentSentenceIndex = 0;
+        state.prefetchedAudios.clear();
 
         if (state.pageRendering) {
             state.pageNumPending = pageNum;
@@ -440,7 +489,11 @@
         }
 
         if (state.isPaused) {
-            window.speechSynthesis.resume();
+            if (state.activeAudioElement) {
+                state.activeAudioElement.play();
+            } else if ('speechSynthesis' in window) {
+                window.speechSynthesis.resume();
+            }
             state.isPaused = false;
             state.isPlaying = true;
             setSpeakingUI(true);
@@ -454,22 +507,20 @@
     }
 
     /**
-     * Speak current sentence using Web Speech API or external AI
+     * Master dispatcher for speaking current sentence
      */
     async function speakCurrentSentence() {
         if (!state.isPlaying) return;
 
-        // Check if we reached the end of current page's sentences
+        // End of current page?
         if (state.currentSentenceIndex >= state.currentSentences.length) {
             if (state.autoAdvance && state.currentPage < state.totalPages) {
-                // Seamlessly advance to the NEXT PAGE!
                 showToast(`Avanzando automáticamente a la página ${state.currentPage + 1}...`, 'fa-forward');
                 await goToPage(state.currentPage + 1, true);
                 return;
             } else {
-                // End of page or document
                 stopSpeech();
-                showToast('Lectura finalizada para esta sección.', 'fa-flag-checkered');
+                showToast('Lectura finalizada para este documento.', 'fa-flag-checkered');
                 return;
             }
         }
@@ -477,24 +528,261 @@
         const sentenceText = state.currentSentences[state.currentSentenceIndex];
         updateHighlightedSentence();
 
-        // Check if OpenAI TTS provider is selected and configured
-        if (state.ttsProvider === 'openai' && state.openAiKey) {
+        // Check selected provider
+        if (state.ttsProvider === 'gemini') {
+            await speakWithGemini(sentenceText);
+        } else if (state.ttsProvider === 'openai' && state.openAiKey) {
             await speakWithOpenAI(sentenceText);
+        } else {
+            speakWithWebSpeech(sentenceText);
+        }
+    }
+
+    /**
+     * =========================================================
+     * Gemini 2.0 Flash Neural Audio Engine (Ultra Fluid & Human)
+     * =========================================================
+     */
+    async function speakWithGemini(text) {
+        // If key is empty, prompt settings modal
+        const apiKey = state.geminiApiKey || defaultGoogleKey;
+        if (!apiKey) {
+            showToast('Por favor ingresa tu clave API de Gemini en Ajustes.', 'fa-key');
+            if (settingsModal) settingsModal.classList.add('active');
+            speakWithWebSpeech(text);
             return;
         }
 
-        // Web Speech API execution
-        window.speechSynthesis.cancel(); // clear previous
+        const voiceName = state.geminiVoice || 'Aoede';
+        const currentIndex = state.currentSentenceIndex;
+
+        try {
+            setSpeakingUI(true);
+
+            // Check if audio was prefetched in memory
+            let audioBlob = state.prefetchedAudios.get(currentIndex);
+
+            if (!audioBlob) {
+                audioBlob = await fetchGeminiAudioBlob(text, voiceName, apiKey);
+            }
+
+            if (!audioBlob) {
+                throw new Error('No audio returned from Gemini');
+            }
+
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const audio = new Audio(audioUrl);
+            state.activeAudioElement = audio;
+
+            // Apply playback rate
+            audio.playbackRate = state.speechRate || 1.0;
+
+            audio.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+                state.activeAudioElement = null;
+                if (!state.isPlaying) return;
+                state.currentSentenceIndex++;
+                speakCurrentSentence();
+            };
+
+            audio.onerror = (e) => {
+                console.warn('Audio playback error, advancing to next sentence:', e);
+                state.currentSentenceIndex++;
+                speakCurrentSentence();
+            };
+
+            // Prefetch next sentence in background for continuous seamless flow!
+            prefetchNextGeminiSentence(currentIndex + 1, voiceName, apiKey);
+
+            await audio.play();
+
+        } catch (err) {
+            console.error('Gemini Audio error:', err);
+            const errMsg = err.message || '';
+
+            if (errMsg.includes('403') || errMsg.includes('PERMISSION_DENIED') || errMsg.includes('blocked')) {
+                showToast('Clave de Gemini con restricción en Google Cloud. Abriendo opciones...', 'fa-exclamation-triangle', 5000);
+                if (settingsModal) settingsModal.classList.add('active');
+            } else {
+                showToast('Detalle de voz Gemini: ' + errMsg + '. Usando voz neural del navegador...', 'fa-info-circle');
+            }
+
+            // Fallback to fluid Web Speech engine
+            state.ttsProvider = 'webspeech';
+            speakWithWebSpeech(text);
+        }
+    }
+
+    /**
+     * Fetch Gemini audio binary from API
+     */
+    async function fetchGeminiAudioBlob(text, voiceName, apiKey) {
+        const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
+
+        const promptText = `Lee el siguiente texto en voz alta con una entonación humana completamente fluida, natural, expresiva y sin pausas artificiales:\n\n"${text}"`;
+
+        const requestBody = {
+            contents: [{
+                role: 'user',
+                parts: [{ text: promptText }]
+            }],
+            generationConfig: {
+                responseModalities: ["AUDIO"],
+                speechConfig: {
+                    voiceConfig: {
+                        prebuiltVoiceConfig: {
+                            voiceName: voiceName
+                        }
+                    }
+                }
+            }
+        };
+
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            const errorJson = await response.json().catch(() => ({}));
+            const msg = errorJson.error ? errorJson.error.message : `HTTP ${response.status}`;
+            throw new Error(msg);
+        }
+
+        const data = await response.json();
+        const candidate = data.candidates && data.candidates[0];
+        const part = candidate && candidate.content && candidate.content.parts && candidate.content.parts[0];
+
+        if (!part || !part.inlineData || !part.inlineData.data) {
+            throw new Error('Gemini no devolvió datos de audio en la respuesta.');
+        }
+
+        const base64Data = part.inlineData.data;
+        const mimeType = part.inlineData.mimeType || 'audio/wav';
+
+        if (mimeType.includes('pcm')) {
+            return pcmToWav(base64Data, 24000);
+        } else {
+            return base64ToBlob(base64Data, mimeType);
+        }
+    }
+
+    /**
+     * Prefetch the next sentence in background to eliminate latency between phrases
+     */
+    async function prefetchNextGeminiSentence(nextIndex, voiceName, apiKey) {
+        if (state.isPrefetching || nextIndex >= state.currentSentences.length) return;
+        if (state.prefetchedAudios.has(nextIndex)) return;
+
+        state.isPrefetching = true;
+        try {
+            const nextText = state.currentSentences[nextIndex];
+            const blob = await fetchGeminiAudioBlob(nextText, voiceName, apiKey);
+            if (blob) {
+                state.prefetchedAudios.set(nextIndex, blob);
+            }
+        } catch (e) {
+            // Silently ignore prefetch failures; will fetch on-demand
+        } finally {
+            state.isPrefetching = false;
+        }
+    }
+
+    /**
+     * Convert raw PCM 24kHz 16-bit mono to valid WAV Blob
+     */
+    function pcmToWav(pcmBase64, sampleRate = 24000) {
+        const binary = atob(pcmBase64);
+        const len = binary.length;
+        const buffer = new ArrayBuffer(44 + len);
+        const view = new DataView(buffer);
+
+        function writeStr(offset, str) {
+            for (let i = 0; i < str.length; i++) {
+                view.setUint8(offset + i, str.charCodeAt(i));
+            }
+        }
+
+        // RIFF header
+        writeStr(0, 'RIFF');
+        view.setUint32(4, 36 + len, true);
+        writeStr(8, 'WAVE');
+
+        // fmt chunk
+        writeStr(12, 'fmt ');
+        view.setUint32(16, 16, true); // Subchunk1Size
+        view.setUint16(20, 1, true); // AudioFormat (1 = PCM)
+        view.setUint16(22, 1, true); // NumChannels (1 = Mono)
+        view.setUint32(24, sampleRate, true); // SampleRate
+        view.setUint32(28, sampleRate * 2, true); // ByteRate (SampleRate * 1 * 2)
+        view.setUint16(32, 2, true); // BlockAlign (1 * 16/8)
+        view.setUint16(34, 16, true); // BitsPerSample
+
+        // data chunk
+        writeStr(36, 'data');
+        view.setUint32(40, len, true);
+
+        // Copy audio bytes
+        const uint8 = new Uint8Array(buffer, 44);
+        for (let i = 0; i < len; i++) {
+            uint8[i] = binary.charCodeAt(i);
+        }
+
+        return new Blob([buffer], { type: 'audio/wav' });
+    }
+
+    /**
+     * Convert base64 string to Blob
+     */
+    function base64ToBlob(base64, mimeType) {
+        const byteCharacters = atob(base64);
+        const byteArrays = [];
+        const sliceSize = 512;
+
+        for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+            const slice = byteCharacters.slice(offset, offset + sliceSize);
+            const byteNumbers = new Array(slice.length);
+            for (let i = 0; i < slice.length; i++) {
+                byteNumbers[i] = slice.charCodeAt(i);
+            }
+            byteArrays.push(new Uint8Array(byteNumbers));
+        }
+
+        return new Blob(byteArrays, { type: mimeType });
+    }
+
+    /**
+     * =========================================================
+     * Enhanced Fluid Web Speech API Engine
+     * =========================================================
+     */
+    function speakWithWebSpeech(sentenceText) {
+        if (!('speechSynthesis' in window)) {
+            showToast('Navegador sin soporte para Web Speech.', 'fa-exclamation-triangle');
+            return;
+        }
+
+        window.speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(sentenceText);
         utterance.rate = state.speechRate;
 
-        // Apply selected voice
-        const selectedVoiceName = voiceSelect ? voiceSelect.value : null;
-        if (selectedVoiceName) {
-            const matched = state.availableVoices.find(v => v.name === selectedVoiceName);
-            if (matched) utterance.voice = matched;
-        } else if (state.selectedVoice) {
-            utterance.voice = state.selectedVoice;
+        // Pick best natural voice matching language
+        const voiceVal = voiceSelect ? voiceSelect.value : '';
+        let targetVoice = null;
+
+        if (voiceVal.startsWith('native:')) {
+            const name = voiceVal.replace('native:', '');
+            targetVoice = state.availableVoices.find(v => v.name === name);
+        } else {
+            // Find preferred Spanish natural voice
+            targetVoice = state.availableVoices.find(v => v.lang.startsWith('es') && /natural|neural|google|sabina|alvaro/i.test(v.name)) ||
+                          state.availableVoices.find(v => v.lang.startsWith('es')) ||
+                          state.availableVoices[0];
+        }
+
+        if (targetVoice) {
+            utterance.voice = targetVoice;
         }
 
         utterance.onstart = () => {
@@ -509,8 +797,7 @@
 
         utterance.onerror = (e) => {
             if (e.error === 'canceled' || e.error === 'interrupted') return;
-            console.warn('Speech synthesis warning:', e);
-            // Move to next sentence on benign error
+            console.warn('SpeechSynthesis error:', e);
             state.currentSentenceIndex++;
             speakCurrentSentence();
         };
@@ -519,7 +806,7 @@
     }
 
     /**
-     * Optional: Speak with OpenAI TTS
+     * Speak with OpenAI TTS
      */
     async function speakWithOpenAI(text) {
         try {
@@ -533,13 +820,13 @@
                 body: JSON.stringify({
                     model: 'tts-1',
                     input: text,
-                    voice: state.openAiVoice,
+                    voice: state.openAiVoice || 'nova',
                     speed: state.speechRate
                 })
             });
 
             if (!response.ok) {
-                throw new Error(`OpenAI API error (${response.status})`);
+                throw new Error(`OpenAI error: ${response.status}`);
             }
 
             const blob = await response.blob();
@@ -548,6 +835,8 @@
             state.activeAudioElement = audio;
 
             audio.onended = () => {
+                URL.revokeObjectURL(audioUrl);
+                state.activeAudioElement = null;
                 if (!state.isPlaying) return;
                 state.currentSentenceIndex++;
                 speakCurrentSentence();
@@ -561,9 +850,9 @@
             await audio.play();
         } catch (err) {
             console.error('OpenAI TTS error:', err);
-            showToast('Fallo en voz OpenAI. Usando voz Web Speech por defecto.', 'fa-exclamation-triangle');
+            showToast('Fallo en voz OpenAI. Usando voz del sistema.', 'fa-exclamation-triangle');
             state.ttsProvider = 'webspeech';
-            speakCurrentSentence();
+            speakWithWebSpeech(text);
         }
     }
 
@@ -576,7 +865,7 @@
         state.isPlaying = false;
         if (state.activeAudioElement) {
             state.activeAudioElement.pause();
-        } else {
+        } else if ('speechSynthesis' in window) {
             window.speechSynthesis.pause();
         }
         setSpeakingUI(false);
@@ -623,11 +912,9 @@
     }
 
     /**
-     * Generate an interactive multi-page sample PDF for instant testing
+     * Generate an interactive multi-page sample PDF
      */
     function loadSampleDocument() {
-        // Built-in minimalist multi-page PDF generator (raw PDF specification)
-        // Creates a real 3-page bilingual reading sample for Verba Vitae
         const samplePdfContent = generateSamplePdfBinary();
         const blob = new Blob([samplePdfContent], { type: 'application/pdf' });
         const fileReader = new FileReader();
@@ -638,16 +925,14 @@
     }
 
     /**
-     * Binary generator for a lightweight 3-page sample PDF without external dependencies
+     * Binary generator for a lightweight 3-page sample PDF
      */
     function generateSamplePdfBinary() {
-        // Generates a valid multi-page PDF 1.4 in binary string
         const page1Text = "Bienvenido a Verba Vitae Speech AI. Esta plataforma permite leer documentos extensos pagina por pagina sin saturar la memoria. Puedes escuchar la voz leyendo en altavoz y seguir el texto sincronizado.";
         const page2Text = "Segunda pagina de lectura. La tecnologia de avance automatico cambia de pagina cuando termina la oracion final. De esta forma, puedes escuchar libros enteros con total comodidad.";
         const page3Text = "Tercera pagina del documento. Verba Vitae fomenta la lectura bilingue y el acceso a la literatura universitaria. Sube tu propio archivo PDF arriba para comenzar a disfrutar de la lectura auditiva.";
 
         const escapePdfText = (str) => str.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
-
         const p1 = escapePdfText(page1Text);
         const p2 = escapePdfText(page2Text);
         const p3 = escapePdfText(page3Text);
@@ -737,6 +1022,44 @@ startxref
 1476
 %%EOF`;
         return new TextEncoder().encode(pdf);
+    }
+
+    /**
+     * Test Gemini Voice inside Settings modal
+     */
+    async function testGeminiVoice() {
+        const testBtn = document.getElementById('btn-test-gemini');
+        const originalHtml = testBtn ? testBtn.innerHTML : '';
+        if (testBtn) {
+            testBtn.disabled = true;
+            testBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generando voz...';
+        }
+
+        const key = (geminiKeyInput && geminiKeyInput.value.trim()) || state.geminiApiKey || defaultGoogleKey;
+        const voice = (geminiVoiceSelect && geminiVoiceSelect.value) || state.geminiVoice || 'Aoede';
+
+        try {
+            const sampleText = 'Hola, soy la inteligencia artificial de Gemini. Ahora tu lectura de libros es mucho más fluida, natural y humana.';
+            const blob = await fetchGeminiAudioBlob(sampleText, voice, key);
+            const url = URL.createObjectURL(blob);
+            const audio = new Audio(url);
+            audio.onended = () => {
+                URL.revokeObjectURL(url);
+                if (testBtn) {
+                    testBtn.disabled = false;
+                    testBtn.innerHTML = originalHtml;
+                }
+            };
+            audio.play();
+            showToast('¡Voz de Gemini probada con éxito!', 'fa-check');
+        } catch (err) {
+            console.error('Error probando Gemini:', err);
+            showToast('Error con la clave de Gemini: ' + (err.message || 'Verifica la clave'), 'fa-times-circle', 6000);
+            if (testBtn) {
+                testBtn.disabled = false;
+                testBtn.innerHTML = originalHtml;
+            }
+        }
     }
 
     /**
@@ -854,12 +1177,11 @@ startxref
                 btnToggleSplit.innerHTML = isSingle ? 
                     '<i class="fas fa-columns"></i> <span>Vista Dividida</span>' : 
                     '<i class="fas fa-desktop"></i> <span>Vista Enfocada</span>';
-                // Trigger re-render to fit new width
                 renderCurrentPage();
             });
         }
 
-        // Theme selection (Light, Sepia, Dark)
+        // Theme selection
         if (themeSelect) {
             themeSelect.addEventListener('change', (e) => {
                 document.body.classList.remove('theme-dark', 'theme-sepia');
@@ -916,7 +1238,9 @@ startxref
                 speedButtons.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 state.speechRate = parseFloat(btn.dataset.speed || '1.0');
-                if (state.isPlaying) {
+                if (state.activeAudioElement) {
+                    state.activeAudioElement.playbackRate = state.speechRate;
+                } else if (state.isPlaying) {
                     window.speechSynthesis.cancel();
                     speakCurrentSentence();
                 }
@@ -926,10 +1250,18 @@ startxref
         // Voice dropdown change
         if (voiceSelect) {
             voiceSelect.addEventListener('change', () => {
-                const voiceName = voiceSelect.value;
-                state.selectedVoice = state.availableVoices.find(v => v.name === voiceName);
+                const voiceVal = voiceSelect.value;
+                state.selectedVoice = voiceVal;
+                updateProviderFromVoice(voiceVal);
+
                 if (state.isPlaying) {
-                    window.speechSynthesis.cancel();
+                    if (state.activeAudioElement) {
+                        state.activeAudioElement.pause();
+                        state.activeAudioElement = null;
+                    }
+                    if ('speechSynthesis' in window) {
+                        window.speechSynthesis.cancel();
+                    }
                     speakCurrentSentence();
                 }
             });
@@ -938,6 +1270,8 @@ startxref
         // AI Settings Modal
         if (btnAiSettings && settingsModal) {
             btnAiSettings.addEventListener('click', () => {
+                if (geminiKeyInput) geminiKeyInput.value = state.geminiApiKey || defaultGoogleKey;
+                if (geminiVoiceSelect) geminiVoiceSelect.value = state.geminiVoice || 'Aoede';
                 if (openAiKeyInput) openAiKeyInput.value = state.openAiKey;
                 if (openAiVoiceSelect) openAiVoiceSelect.value = state.openAiVoice;
                 if (ttsProviderSelect) ttsProviderSelect.value = state.ttsProvider;
@@ -951,8 +1285,21 @@ startxref
             });
         }
 
+        if (btnTestGeminiVoice) {
+            btnTestGeminiVoice.addEventListener('click', testGeminiVoice);
+        }
+
         if (btnSaveSettings && settingsModal) {
             btnSaveSettings.addEventListener('click', () => {
+                if (geminiKeyInput) {
+                    state.geminiApiKey = geminiKeyInput.value.trim();
+                    localStorage.setItem('vv_speech_gemini_key', state.geminiApiKey);
+                }
+                if (geminiVoiceSelect) {
+                    state.geminiVoice = geminiVoiceSelect.value;
+                    localStorage.setItem('vv_speech_gemini_voice', state.geminiVoice);
+                    if (voiceSelect) voiceSelect.value = 'gemini:' + state.geminiVoice;
+                }
                 if (openAiKeyInput) {
                     state.openAiKey = openAiKeyInput.value.trim();
                     localStorage.setItem('vv_speech_openai_key', state.openAiKey);
@@ -963,6 +1310,9 @@ startxref
                 }
                 if (ttsProviderSelect) {
                     state.ttsProvider = ttsProviderSelect.value;
+                    if (state.ttsProvider === 'gemini' && voiceSelect) {
+                        voiceSelect.value = 'gemini:' + state.geminiVoice;
+                    }
                 }
                 settingsModal.classList.remove('active');
                 showToast('Configuraciones de voz AI guardadas.', 'fa-save');
@@ -971,7 +1321,6 @@ startxref
 
         // Keyboard Shortcuts
         window.addEventListener('keydown', (e) => {
-            // Avoid when typing in input
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
                 return;
             }
