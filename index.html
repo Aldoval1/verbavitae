@@ -14,8 +14,15 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <!-- Note: We only need firestore to read public albums, no auth/storage needed for viewing -->
     <script src="js/firebase-init.js"></script>
+    
+    <!-- Three.js (Local with CDN Fallback) -->
+    <script src="js/three.min.js"></script>
+    <script>
+        if (typeof THREE === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+        }
+    </script>
 </head>
 <body>
     <header class="main-header">
@@ -40,6 +47,7 @@
             <a href="news.html">News</a>
             <a href="events.html">Events</a>
             <a href="shop.html">Shop</a>
+            <a href="speech.html" style="color: var(--color-orange); font-weight: 700;"><i class="fas fa-volume-up"></i> Speech AI</a>
         </div>
 
         <!-- Desktop Navigation (Visible only on desktop) -->
@@ -66,6 +74,8 @@
                     <a href="events.html">Events</a>
                     <span class="divider">|</span>
                     <a href="shop.html">Shop</a>
+                    <span class="divider">|</span>
+                    <a href="speech.html" style="color: #ffe066; font-weight: 700;"><i class="fas fa-volume-up"></i> Speech AI</a>
                 </div>
             </div>
         </div>
@@ -94,6 +104,9 @@
 
     <section class="about-section">
         <div class="about-card">
+            <div class="book-3d-wrapper">
+                <div id="book-3d-container" class="book-3d-container" title="Drag to rotate the 3D book"></div>
+            </div>
             <h2 class="about-title">VERBA VITAE MISSION</h2>
             <p class="about-content">
                 To foster a love for reading and books among college students and our community, while promoting bilingual literacy by incorporating both English and Spanish literature into our club events and service opportunities.
@@ -181,5 +194,7 @@
 
 
     </script>
+    <!-- 3D Book Interactive Experience -->
+    <script src="js/book-3d.js"></script>
 </body>
 </html>

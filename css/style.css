@@ -277,6 +277,37 @@ body {
     text-align: left;
 }
 
+/* 3D Book Interactive Showcase */
+.book-3d-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.book-3d-container {
+    width: 340px;
+    height: 290px;
+    position: relative;
+    user-select: none;
+    touch-action: none;
+    outline: none;
+}
+
+.book-3d-container canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+    cursor: grab;
+    filter: drop-shadow(0 15px 25px rgba(13, 27, 62, 0.2));
+    transition: filter 0.3s ease;
+}
+
+.book-3d-container:hover canvas {
+    filter: drop-shadow(0 20px 30px rgba(29, 12, 141, 0.3));
+}
+
 .about-title {
     color: var(--color-dark-blue);
     font-size: 2.2rem;
@@ -568,6 +599,7 @@ body {
     /* About */
     .about-section { padding: 60px 15px; }
     .about-card { width: 100%; padding: 30px 20px; }
+    .book-3d-container { width: 260px; height: 230px; }
     .about-title { font-size: 1.6rem; margin-bottom: 20px; }
     .about-content { font-size: 1rem; line-height: 1.6; }
 

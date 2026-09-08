@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verba Vitae Speech AI - Sube tus archivos PDF y una inteligencia artificial te los lee en altavoz página por página.">
+    <title>Verba Vitae - Speech AI Reader</title>
+    <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/speech.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Mozilla PDF.js library for high performance on-demand streaming -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <!-- Mobile Header -->
+        <div class="mobile-header-bar">
+            <div class="burger-menu" id="burger-menu">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="mobile-logo-container">
+                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae" class="mobile-logo-img">
+                <span class="mobile-logo-text">VERBA VITAE</span>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Menu -->
+        <div class="mobile-nav" id="mobile-nav">
+            <a href="login.html">Log In</a>
+            <a href="join.html">Join</a>
+            <a href="eboard.html">Our E-Board</a>
+            <a href="opportunities.html">Opportunities</a>
+            <a href="news.html">News</a>
+            <a href="events.html">Events</a>
+            <a href="shop.html">Shop</a>
+            <a href="speech.html" style="color: var(--speech-secondary); font-weight: 700;"><i class="fas fa-volume-up"></i> Speech AI</a>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <div class="desktop-nav">
+            <div class="top-bar">
+                <div class="nav-links left-links"></div>
+                <div class="nav-links right-links" style="justify-content: flex-end; padding-right: 5%;">
+                    <a href="login.html" class="btn-login">LOG IN</a>
+                </div>
+            </div>
+            
+            <div class="secondary-bar">
+                <div class="nav-links left-links">
+                    <a href="join.html">Join</a>
+                    <span class="divider">|</span>
+                    <a href="eboard.html">Our E-Board</a>
+                    <span class="divider">|</span>
+                    <a href="opportunities.html">Opportunities</a>
+                </div>
+                <div class="nav-links right-links">
+                    <a href="news.html">News</a>
+                    <span class="divider">|</span>
+                    <a href="events.html">Events</a>
+                    <span class="divider">|</span>
+                    <a href="shop.html">Shop</a>
+                    <span class="divider">|</span>
+                    <a href="speech.html" style="color: #ffe066; font-weight: 700;"><i class="fas fa-volume-up"></i> Speech AI</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Floating Logo Box -->
+    <div class="floating-logo-box">
+        <a href="index.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center;">
+            <img src="images/verbavitaelogofill.jpg" alt="Verba Vitae Logo" class="logo-img">
+            <h1 class="logo-title">VERBA VITAE</h1>
+            <p class="logo-subtitle">Organization</p>
+        </a>
+    </div>
+
+    <!-- Speech Hero Section -->
+    <section class="speech-hero">
+        <div class="speech-hero-content">
+            <div class="speech-badge">
+                <i class="fas fa-robot"></i> Inteligencia Artificial • Lectura en Altavoz
+            </div>
+            <h1 class="speech-hero-title">SPEECH AI READER</h1>
+            <p class="speech-hero-subtitle">
+                Sube tus libros y documentos PDF de cualquier tamaño. La IA lee el texto en altavoz mostrando <strong>una sola página a la vez</strong> y avanzando automáticamente de página. Sin necesidad de iniciar sesión.
+            </p>
+            <div class="speech-hero-stats">
+                <div class="stat-item"><i class="fas fa-layer-group"></i> <span>Tolera 500+ páginas</span></div>
+                <div class="stat-item"><i class="fas fa-tv"></i> <span>1 página a la vez</span></div>
+                <div class="stat-item"><i class="fas fa-headphones"></i> <span>Voces Neurales AI</span></div>
+                <div class="stat-item"><i class="fas fa-lock-open"></i> <span>100% Libre sin Login</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Reader Container -->
+    <main class="speech-container">
+        
+        <!-- Upload Dropzone Card -->
+        <div class="upload-card" id="upload-dropzone">
+            <input type="file" id="file-input" accept="application/pdf" style="display: none;">
+            <div class="upload-icon-circle">
+                <i class="fas fa-file-pdf"></i>
+            </div>
+            <h2 class="upload-title">Arrastra tu archivo PDF aquí</h2>
+            <p class="upload-desc">Admite libros, apuntes y artículos académicos extensos. Solo se carga una página en pantalla para un rendimiento óptimo.</p>
+            
+            <div class="upload-actions">
+                <button type="button" class="btn-upload-primary" id="btn-select-file">
+                    <i class="fas fa-folder-open"></i> Seleccionar PDF desde tu equipo
+                </button>
+                <button type="button" class="btn-upload-sample" id="btn-sample-doc">
+                    <i class="fas fa-book-open"></i> Probar con Documento de Ejemplo
+                </button>
+            </div>
+
+            <div class="upload-note">
+                <i class="fas fa-shield-alt"></i> Tu archivo se procesa de forma 100% privada en tu navegador. Nada se sube a servidores externos.
+            </div>
+        </div>
+
+        <!-- Active Reader Workspace -->
+        <div class="reader-workspace" id="reader-workspace">
+            
+            <!-- Top Toolbar -->
+            <div class="reader-top-toolbar">
+                <div class="doc-info">
+                    <div class="doc-icon-badge">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <div class="doc-meta">
+                        <span class="doc-name" id="doc-name">documento.pdf</span>
+                        <span class="doc-stats" id="doc-stats">Cargando páginas...</span>
+                    </div>
+                </div>
+
+                <!-- Page Navigation: Single page focus -->
+                <div class="page-nav-group">
+                    <button class="nav-page-btn" id="btn-first-page" title="Primera página">
+                        <i class="fas fa-angle-double-left"></i>
+                    </button>
+                    <button class="nav-page-btn" id="btn-prev-page" title="Página anterior (Flecha Izquierda)">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    
+                    <div class="page-indicator-box">
+                        <span>Pág.</span>
+                        <input type="number" id="current-page-input" class="page-input" min="1" value="1">
+                        <span>de</span>
+                        <span id="total-pages-count">1</span>
+                    </div>
+
+                    <button class="nav-page-btn" id="btn-next-page" title="Página siguiente (Flecha Derecha)">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="nav-page-btn" id="btn-last-page" title="Última página">
+                        <i class="fas fa-angle-double-right"></i>
+                    </button>
+                </div>
+
+                <!-- Toolbar Options -->
+                <div class="toolbar-options">
+                    <select id="theme-select" class="tool-btn" style="outline: none;">
+                        <option value="light">☀️ Tema Claro</option>
+                        <option value="sepia">📜 Tema Sepia</option>
+                        <option value="dark">🌙 Tema Oscuro</option>
+                    </select>
+
+                    <button class="tool-btn" id="btn-toggle-split" title="Alternar entre vista dividida y vista centrada">
+                        <i class="fas fa-desktop"></i> <span>Vista Enfocada</span>
+                    </button>
+
+                    <button class="tool-btn" id="btn-new-pdf" title="Subir otro archivo">
+                        <i class="fas fa-upload"></i> <span>Cambiar PDF</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Split View: Single Page Canvas + Karaoke Text Highlighting -->
+            <div class="reader-split-view" id="reader-split-view">
+                
+                <!-- Left Panel: Single Page Canvas -->
+                <div class="page-viewer-panel">
+                    <div class="page-panel-header">
+                        <div class="badge-single-page">
+                            <i class="fas fa-file-alt"></i> Página Activa
+                        </div>
+                        <div>
+                            <small>Solo se renderiza 1 página en memoria</small>
+                        </div>
+                    </div>
+
+                    <div class="canvas-viewport" id="canvas-viewport">
+                        <div class="page-loading-overlay" id="page-loading-overlay">
+                            <div class="loading-spinner"></div>
+                            <span style="font-weight: 600; font-size: 0.9rem; color: var(--speech-primary);">Procesando página...</span>
+                        </div>
+                        <canvas id="pdf-canvas"></canvas>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Synchronized Karaoke Reader -->
+                <div class="page-text-panel">
+                    <div class="text-panel-header">
+                        <div class="text-panel-title">
+                            <i class="fas fa-headphones" style="color: var(--speech-secondary);"></i>
+                            <span>Lectura Asistida en Tiempo Real</span>
+                        </div>
+                        <small style="color: var(--speech-text-muted);">Toca cualquier frase para escucharla</small>
+                    </div>
+
+                    <div class="text-content-scroll" id="text-content-scroll">
+                        <!-- Sentences will be injected here with live highlighting -->
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sticky Floating AI Audio Bar -->
+            <div class="speech-audio-bar">
+                
+                <!-- Soundwave & Speaking Avatar -->
+                <div class="ai-wave-container" id="ai-wave-container">
+                    <div class="ai-avatar-pulse" id="ai-avatar-pulse" title="Estado de la voz AI">
+                        <i class="fas fa-volume-up"></i>
+                    </div>
+                    <div class="soundwave-bars">
+                        <div class="soundwave-bar"></div>
+                        <div class="soundwave-bar"></div>
+                        <div class="soundwave-bar"></div>
+                        <div class="soundwave-bar"></div>
+                        <div class="soundwave-bar"></div>
+                    </div>
+                </div>
+
+                <!-- Main Playback Controls -->
+                <div class="audio-main-controls">
+                    <button class="btn-audio-circle" id="btn-prev-sentence" title="Frase anterior">
+                        <i class="fas fa-step-backward"></i>
+                    </button>
+
+                    <button class="btn-audio-circle btn-play-hero" id="btn-play-pause" title="Reproducir / Pausar (Espacio)">
+                        <i class="fas fa-play" id="play-pause-icon"></i>
+                    </button>
+
+                    <button class="btn-audio-circle" id="btn-next-sentence" title="Siguiente frase">
+                        <i class="fas fa-step-forward"></i>
+                    </button>
+
+                    <button class="btn-audio-circle" id="btn-stop" title="Detener audio">
+                        <i class="fas fa-stop"></i>
+                    </button>
+
+                    <button class="btn-audio-circle" id="btn-replay-page" title="Repetir página actual">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+
+                <!-- Voice Selection & Speed Controls -->
+                <div class="audio-voice-controls">
+                    
+                    <!-- Voice Selector Dropdown -->
+                    <div class="voice-select-wrapper">
+                        <i class="fas fa-microphone-alt voice-select-icon"></i>
+                        <select class="voice-select" id="voice-select" title="Seleccionar voz AI"></select>
+                    </div>
+
+                    <!-- Speed Pills -->
+                    <div class="speed-group" title="Velocidad de lectura">
+                        <button class="speed-btn" data-speed="0.75">0.75x</button>
+                        <button class="speed-btn active" data-speed="1.0">1.0x</button>
+                        <button class="speed-btn" data-speed="1.25">1.25x</button>
+                        <button class="speed-btn" data-speed="1.5">1.5x</button>
+                        <button class="speed-btn" data-speed="2.0">2.0x</button>
+                    </div>
+
+                    <!-- Auto-Advance Toggle -->
+                    <label class="auto-advance-wrap" title="Avanzar automáticamente a la siguiente página cuando termine de leer la actual">
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="auto-advance-toggle" checked>
+                            <span class="slider"></span>
+                        </div>
+                        <span>Auto-avanzar página</span>
+                    </label>
+
+                    <!-- Advanced AI Models Button -->
+                    <button class="tool-btn" id="btn-ai-settings" title="Configurar más modelos de voz AI (OpenAI / ElevenLabs)">
+                        <i class="fas fa-cog"></i> <span>Modelos AI</span>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- AI Voice Models Settings Modal -->
+    <div class="speech-modal-overlay" id="ai-settings-modal">
+        <div class="speech-modal-box">
+            <div class="speech-modal-header">
+                <h3><i class="fas fa-brain"></i> Configuración de Modelos de Voz AI</h3>
+                <button class="btn-close-modal" id="btn-close-modal">&times;</button>
+            </div>
+            <div class="speech-modal-body">
+                <p style="font-size: 0.9rem; color: var(--speech-text-muted); line-height: 1.5;">
+                    Por defecto, Verba Vitae utiliza las <strong>voces neurales integradas del sistema (Web Speech API)</strong>, gratuitas e ilimitadas. Si deseas utilizar modelos de voz AI hiperrealistas de estudio, puedes activar las siguientes opciones:
+                </p>
+
+                <!-- Provider Selector -->
+                <div>
+                    <label style="font-size: 0.85rem; font-weight: 700; color: var(--speech-text); display: block; margin-bottom: 6px;">Motor de Voz Activo</label>
+                    <select id="tts-provider-select" class="modal-input">
+                        <option value="webspeech">Web Speech API Neural (Gratis, Ilimitado, Sin API Key)</option>
+                        <option value="openai">OpenAI TTS (tts-1 / tts-1-hd) (Requiere API Key)</option>
+                    </select>
+                </div>
+
+                <!-- OpenAI Option Box -->
+                <div class="voice-provider-option">
+                    <div class="voice-provider-title">
+                        <span>OpenAI Neural TTS</span>
+                        <span class="voice-badge-tag tag-premium">Estudio AI</span>
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--speech-text-muted);">
+                        Voces humanas ultra-realistas generadas con inteligencia artificial de OpenAI.
+                    </p>
+                    <input type="password" id="openai-api-key" class="modal-input" placeholder="Ingresa tu clave de API: sk-...">
+                    <select id="openai-voice-select" class="modal-input">
+                        <option value="nova">Voz Nova (Energética, Cálida)</option>
+                        <option value="alloy">Voz Alloy (Neutral, Equilibrada)</option>
+                        <option value="echo">Voz Echo (Masculina suave)</option>
+                        <option value="fable">Voz Fable (Expresiva)</option>
+                        <option value="onyx">Voz Onyx (Grave, Profesional)</option>
+                        <option value="shimmer">Voz Shimmer (Clara, Melódica)</option>
+                    </select>
+                </div>
+
+                <!-- ElevenLabs Info Box -->
+                <div class="voice-provider-option">
+                    <div class="voice-provider-title">
+                        <span>ElevenLabs Multilingual</span>
+                        <span class="voice-badge-tag tag-premium">Próximamente</span>
+                    </div>
+                    <p style="font-size: 0.82rem; color: var(--speech-text-muted);">
+                        Soporte para clonación y síntesis de voz ElevenLabs v2. Disponible en la próxima actualización.
+                    </p>
+                </div>
+            </div>
+            <div class="speech-modal-footer">
+                <button type="button" class="btn-upload-primary" id="btn-save-settings">
+                    <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Element -->
+    <div class="speech-toast" id="speech-toast">
+        <i class="fas fa-info-circle"></i> <span>Notificación</span>
+    </div>
+
+    <!-- Main Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-left">
+                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae" class="footer-logo">
+            </div>
+            
+            <div class="footer-center">
+                <h4 class="footer-social-title">FOLLOW US</h4>
+                <div class="social-icons">
+                    <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+
+            <div class="footer-right">
+                <p style="color: rgba(255,255,255,0.7); font-size: 0.85rem;">© 2026 Verba Vitae Organization. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Burger Menu Script -->
+    <script>
+        const burgerMenu = document.getElementById('burger-menu');
+        const mobileNav = document.getElementById('mobile-nav');
+        if (burgerMenu && mobileNav) {
+            burgerMenu.addEventListener('click', () => {
+                mobileNav.classList.toggle('active');
+            });
+        }
+    </script>
+
+    <!-- Speech AI Reader Controller -->
+    <script src="js/speech-reader.js"></script>
+</body>
+</html>
