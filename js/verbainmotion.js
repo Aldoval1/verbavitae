@@ -202,38 +202,72 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // =========================================================================
-    // Visual References: Locked Video Preview & Clean Player Controller
+    // Visual References: Native HTML5 Video (No YouTube, No Overlays, Pure Art)
     // =========================================================================
-    document.querySelectorAll('.drawn-frame-box').forEach(box => {
-        const cover = box.querySelector('.ref-locked-cover');
-        const playerContainer = box.querySelector('.ref-video-player');
-        const lockBtn = box.querySelector('.ref-lock-btn');
-        const videoId = box.dataset.videoId;
-        const videoTitle = box.dataset.videoTitle || 'Verba in Motion Reference';
+    const videoObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            const video = entry.target;
+            if (entry.isIntersecting) {
+                const playPromise = video.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        video.muted = true;
+                        video.play();
+                    });
+                }
+            } else {
+                video.pause();
+            }
+        });
+    }, { threshold: 0.25 });
 
-        if (cover && playerContainer && videoId) {
-            cover.addEventListener('click', () => {
-                cover.classList.add('unlocked');
-                playerContainer.innerHTML = `
-                    <iframe 
-                        src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1" 
-                        title="${videoTitle}" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                        allowfullscreen>
-                    </iframe>
-                `;
-                if (lockBtn) lockBtn.style.display = 'block';
-            });
-        }
+    document.querySelectorAll('.ref-native-video').forEach(video => {
+        videoObserver.observe(video);
+        
+        const box = video.closest('.drawn-frame-box');
+        if (!box) return;
 
-        if (lockBtn && cover && playerContainer) {
-            lockBtn.addEventListener('click', (e) => {
+        const soundBtn = box.querySelector('.ref-btn-sound');
+        const playBtn = box.querySelector('.ref-btn-play');
+
+        if (soundBtn) {
+            soundBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
-                playerContainer.innerHTML = '';
-                cover.classList.remove('unlocked');
-                lockBtn.style.display = 'none';
+                video.muted = !video.muted;
+                soundBtn.innerHTML = video.muted 
+                    ? '<i class="fas fa-volume-mute"></i>' 
+                    : '<i class="fas fa-volume-up"></i>';
+                soundBtn.title = video.muted ? 'Unmute' : 'Mute';
             });
         }
+
+        if (playBtn) {
+            playBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (video.paused) {
+                    video.play();
+                    playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+                } else {
+                    video.pause();
+                    playBtn.innerHTML = '<i class="fas fa-play"></i>';
+                }
+            });
+        }
+
+        video.addEventListener('click', () => {
+            if (video.paused) {
+                video.play();
+            } else {
+                video.pause();
+            }
+        });
+
+        video.addEventListener('play', () => {
+            if (playBtn) playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+        });
+        video.addEventListener('pause', () => {
+            if (playBtn) playBtn.innerHTML = '<i class="fas fa-play"></i>';
+        });
     });
 });
 

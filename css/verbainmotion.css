@@ -557,151 +557,63 @@ body {
     -webkit-clip-path: url(#frame-clip-3);
 }
 
-/* Locked Video Preview Cover (Pure film still, 0 YouTube elements) */
-.ref-locked-cover {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 3;
-    cursor: pointer;
-    background: #050508;
-    overflow: hidden;
-    transition: opacity 0.4s ease, visibility 0.4s ease;
-}
-
-.ref-locked-cover.unlocked {
-    opacity: 0;
-    pointer-events: none;
-    visibility: hidden;
-}
-
-.ref-locked-img {
+/* Native HTML5 Video: Pure film playback, 0 YouTube elements, 0 red scrubbers, 0 pause icons */
+.ref-native-video {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    filter: brightness(0.85) contrast(1.1);
-    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
-}
-
-.drawn-frame-box:hover .ref-locked-img {
-    transform: scale(1.035);
-    filter: brightness(0.95) contrast(1.15);
-}
-
-.ref-locked-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.15) 0%, rgba(0, 0, 0, 0.6) 100%);
-    transition: background 0.3s ease;
-}
-
-.drawn-frame-box:hover .ref-locked-overlay {
-    background: radial-gradient(circle at center, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.4) 100%);
-}
-
-.ref-locked-badge {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-    transform: translateY(0);
-    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.drawn-frame-box:hover .ref-locked-badge {
-    transform: scale(1.08);
-}
-
-.ref-lock-icon {
-    width: 66px;
-    height: 66px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(10, 10, 14, 0.8);
-    border: 2px solid rgba(255, 255, 255, 0.88);
-    color: #ffffff;
-    font-size: 1.35rem;
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85), 0 0 25px rgba(41, 151, 255, 0.4);
-    padding-left: 4px; /* Visually center the play triangle */
-    transition: all 0.3s ease;
-}
-
-.drawn-frame-box:hover .ref-lock-icon {
-    background: var(--accent-blue);
-    border-color: #ffffff;
-    color: #ffffff;
-    box-shadow: 0 12px 35px rgba(41, 151, 255, 0.75), 0 0 22px #ffffff;
-}
-
-.ref-lock-label {
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.75);
-    padding: 6px 16px;
-    border: 1px solid rgba(255, 255, 255, 0.25);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
-}
-
-/* Active Video Player Stage */
-.ref-video-player {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
     background: #000000;
-}
-
-.ref-video-player iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    display: block;
-}
-
-/* Re-Lock Control Button */
-.ref-lock-btn {
-    position: absolute;
-    top: 14px;
-    right: 14px;
-    z-index: 10;
-    background: rgba(0, 0, 0, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    color: #ffffff;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 6px 14px;
+    pointer-events: auto;
     cursor: pointer;
-    display: none;
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+    filter: brightness(0.92) contrast(1.08);
+}
+
+.drawn-frame-box:hover .ref-native-video {
+    transform: scale(1.025);
+    filter: brightness(1) contrast(1.12);
+}
+
+/* Subtle corner sound toggle (Unobtrusive, zero YouTube clutter) */
+.ref-video-controls {
+    position: absolute;
+    bottom: 18px;
+    right: 22px;
+    z-index: 8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.drawn-frame-box:hover .ref-video-controls {
+    opacity: 1;
+}
+
+.ref-btn-sound,
+.ref-btn-play {
+    width: 38px;
+    height: 38px;
+    background: rgba(10, 10, 14, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     transition: all 0.2s ease;
 }
 
-.ref-lock-btn:hover {
-    background: #ffffff;
-    color: #000000;
+.ref-btn-sound:hover,
+.ref-btn-play:hover {
+    background: var(--accent-blue);
     border-color: #ffffff;
+    transform: scale(1.08);
 }
 
 /* Hand-Drawn SVG Frame Overlay (Only hand-sketched lines, NO solid black matte) */
