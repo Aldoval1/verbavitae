@@ -200,4 +200,40 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.reveal-on-scroll').forEach(el => {
         scrollObserver.observe(el);
     });
+
+    // =========================================================================
+    // Visual References: Locked Video Preview & Clean Player Controller
+    // =========================================================================
+    document.querySelectorAll('.drawn-frame-box').forEach(box => {
+        const cover = box.querySelector('.ref-locked-cover');
+        const playerContainer = box.querySelector('.ref-video-player');
+        const lockBtn = box.querySelector('.ref-lock-btn');
+        const videoId = box.dataset.videoId;
+        const videoTitle = box.dataset.videoTitle || 'Verba in Motion Reference';
+
+        if (cover && playerContainer && videoId) {
+            cover.addEventListener('click', () => {
+                cover.classList.add('unlocked');
+                playerContainer.innerHTML = `
+                    <iframe 
+                        src="https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&modestbranding=1&playsinline=1" 
+                        title="${videoTitle}" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                        allowfullscreen>
+                    </iframe>
+                `;
+                if (lockBtn) lockBtn.style.display = 'block';
+            });
+        }
+
+        if (lockBtn && cover && playerContainer) {
+            lockBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                playerContainer.innerHTML = '';
+                cover.classList.remove('unlocked');
+                lockBtn.style.display = 'none';
+            });
+        }
+    });
 });
+

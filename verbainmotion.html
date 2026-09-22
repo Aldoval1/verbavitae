@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Bespoke Stylesheet with Cache Busting -->
-    <link rel="stylesheet" href="css/verbainmotion.css?v=20260922_006">
+    <link rel="stylesheet" href="css/verbainmotion.css?v=20260922_007">
 </head>
 <body>
 
@@ -127,11 +127,29 @@
     <!-- =================================================================
          Visual References Section: Hand-Drawn Frame Benchmark Videos
          ================================================================= -->
+    <!-- =================================================================
+         Visual References & Aesthetic Benchmarks (Editorial Split Layout)
+         ================================================================= -->
     <section class="vim-section" id="references">
         <div class="vim-section-header reveal-on-scroll">
             <span class="vim-section-tag">Creative Direction</span>
             <h2 class="vim-section-title">Visual References.</h2>
         </div>
+
+        <!-- SVG Definitions for Hand-Drawn Organic Clips (Zero Rectangular Box) -->
+        <svg width="0" height="0" style="position: absolute; pointer-events: none;">
+            <defs>
+                <clipPath id="frame-clip-1" clipPathUnits="objectBoundingBox">
+                    <path d="M 0.0325,0.0489 Q 0.2625,0.0622 0.5,0.0489 Q 0.7562,0.0578 0.9688,0.0444 Q 0.975,0.3000 0.97,0.5000 Q 0.9738,0.7667 0.97,0.9511 Q 0.7438,0.9400 0.5,0.9533 Q 0.2562,0.9422 0.03,0.9511 Q 0.025,0.7444 0.0312,0.5000 Q 0.0262,0.2556 0.0325,0.0489 Z"></path>
+                </clipPath>
+                <clipPath id="frame-clip-2" clipPathUnits="objectBoundingBox">
+                    <path d="M 0.0288,0.0556 Q 0.2562,0.0422 0.5,0.0556 Q 0.7438,0.0467 0.9712,0.0578 Q 0.9662,0.2889 0.9725,0.5000 Q 0.9675,0.7556 0.9662,0.9444 Q 0.7562,0.9578 0.5,0.9467 Q 0.2438,0.9556 0.0325,0.9422 Q 0.0362,0.7444 0.0288,0.5000 Q 0.0338,0.2667 0.0288,0.0556 Z"></path>
+                </clipPath>
+                <clipPath id="frame-clip-3" clipPathUnits="objectBoundingBox">
+                    <path d="M 0.0325,0.0511 Q 0.2688,0.0578 0.5,0.0444 Q 0.7625,0.0556 0.9675,0.0489 Q 0.9725,0.3111 0.9662,0.5000 Q 0.9712,0.7600 0.9688,0.9511 Q 0.7375,0.9444 0.5,0.9578 Q 0.2625,0.9489 0.03,0.9467 Q 0.0338,0.7511 0.0275,0.5000 Q 0.0325,0.2622 0.0325,0.0511 Z"></path>
+                </clipPath>
+            </defs>
+        </svg>
 
         <div class="videos-container">
             
@@ -142,18 +160,28 @@
                     <h3 class="ref-video-name">Tactile Clay &amp; Organic Stop-Motion</h3>
                 </div>
                 <div class="ref-embed-col">
-                    <div class="drawn-frame-box">
-                        <iframe 
-                            src="https://www.youtube-nocookie.com/embed/g5ldyca-2J4" 
-                            title="Tactile Clay & Organic Stop-Motion" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            allowfullscreen 
-                            loading="lazy">
-                        </iframe>
+                    <div class="drawn-frame-box" data-video-id="g5ldyca-2J4" data-video-title="Tactile Clay & Organic Stop-Motion">
+                        <div class="ref-media-stage clip-ref-1">
+                            <!-- Locked Cinematic Poster (Zero YouTube UI) -->
+                            <div class="ref-locked-cover" title="Click to preview reference">
+                                <img src="images/ref_thumb_1.jpg" alt="Tactile Clay & Organic Stop-Motion" class="ref-locked-img">
+                                <div class="ref-locked-overlay">
+                                    <div class="ref-locked-badge">
+                                        <span class="ref-lock-icon"><i class="fas fa-play"></i></span>
+                                        <span class="ref-lock-label">PREVIEW REFERENCE</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Active Player injected upon click -->
+                            <div class="ref-video-player"></div>
+                        </div>
+
+                        <button class="ref-lock-btn" title="Lock preview"><i class="fas fa-lock"></i> Lock</button>
+
+                        <!-- Hand-drawn vector sketch overlay (NO solid black matte!) -->
                         <svg class="drawn-frame-overlay" viewBox="0 0 800 450" preserveAspectRatio="none">
-                            <path fill="#000000" fill-rule="evenodd" d="M 0,0 L 800,0 L 800,450 L 0,450 Z M 26,22 Q 210,28 400,22 Q 605,26 775,20 Q 780,135 776,225 Q 779,345 776,428 Q 595,423 400,429 Q 205,424 24,428 Q 20,335 25,225 Q 21,115 26,22 Z"></path>
-                            <path d="M 26,22 Q 210,28 400,22 Q 605,26 775,20 Q 780,135 776,225 Q 779,345 776,428 Q 595,423 400,429 Q 205,424 24,428 Q 20,335 25,225 Q 21,115 26,22" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"></path>
-                            <path d="M 22,25 Q 205,24 398,26 Q 600,22 779,23 Q 777,138 780,228 Q 775,340 773,425 Q 598,427 403,425 Q 202,428 27,424 Q 23,338 22,221 Q 24,118 22,25" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-dasharray="180,10,90,8" stroke-linecap="round"></path>
+                            <path d="M 26,22 Q 210,28 400,22 Q 605,26 775,20 Q 780,135 776,225 Q 779,345 776,428 Q 595,423 400,429 Q 205,424 24,428 Q 20,335 25,225 Q 21,115 26,22" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"></path>
+                            <path d="M 22,25 Q 205,24 398,26 Q 600,22 779,23 Q 777,138 780,228 Q 775,340 773,425 Q 598,427 403,425 Q 202,428 27,424 Q 23,338 22,221 Q 24,118 22,25" fill="none" stroke="rgba(255,255,255,0.42)" stroke-width="2" stroke-dasharray="180,10,90,8" stroke-linecap="round"></path>
                             <path d="M 10,25 L 42,23 M 26,9 L 24,41 M 758,23 L 790,21 M 774,9 L 776,41 M 10,427 L 42,429 M 24,411 L 26,443 M 758,429 L 790,427 M 776,411 L 774,443" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"></path>
                         </svg>
                     </div>
@@ -167,18 +195,28 @@
                     <h3 class="ref-video-name">Narrative Rhythm &amp; Symbolic Metaphor</h3>
                 </div>
                 <div class="ref-embed-col">
-                    <div class="drawn-frame-box">
-                        <iframe 
-                            src="https://www.youtube-nocookie.com/embed/7GHQNkZ7ET8" 
-                            title="Narrative Rhythm & Symbolic Metaphor" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            allowfullscreen 
-                            loading="lazy">
-                        </iframe>
+                    <div class="drawn-frame-box" data-video-id="7GHQNkZ7ET8" data-video-title="Narrative Rhythm & Symbolic Metaphor">
+                        <div class="ref-media-stage clip-ref-2">
+                            <!-- Locked Cinematic Poster (Zero YouTube UI) -->
+                            <div class="ref-locked-cover" title="Click to preview reference">
+                                <img src="images/ref_thumb_2.jpg" alt="Narrative Rhythm & Symbolic Metaphor" class="ref-locked-img">
+                                <div class="ref-locked-overlay">
+                                    <div class="ref-locked-badge">
+                                        <span class="ref-lock-icon"><i class="fas fa-play"></i></span>
+                                        <span class="ref-lock-label">PREVIEW REFERENCE</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Active Player injected upon click -->
+                            <div class="ref-video-player"></div>
+                        </div>
+
+                        <button class="ref-lock-btn" title="Lock preview"><i class="fas fa-lock"></i> Lock</button>
+
+                        <!-- Hand-drawn vector sketch overlay (NO solid black matte!) -->
                         <svg class="drawn-frame-overlay" viewBox="0 0 800 450" preserveAspectRatio="none">
-                            <path fill="#000000" fill-rule="evenodd" d="M 0,0 L 800,0 L 800,450 L 0,450 Z M 23,25 Q 205,19 400,25 Q 595,21 777,26 Q 773,130 778,225 Q 774,340 773,425 Q 605,431 400,426 Q 195,430 26,424 Q 29,335 23,225 Q 27,120 23,25 Z"></path>
-                            <path d="M 23,25 Q 205,19 400,25 Q 595,21 777,26 Q 773,130 778,225 Q 774,340 773,425 Q 605,431 400,426 Q 195,430 26,424 Q 29,335 23,225 Q 27,120 23,25" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"></path>
-                            <path d="M 27,22 Q 200,23 403,21 Q 600,25 773,22 Q 777,135 775,228 Q 777,338 776,428 Q 600,426 397,429 Q 200,426 22,428 Q 25,332 26,222 Q 23,115 27,22" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-dasharray="160,12,100,6" stroke-linecap="round"></path>
+                            <path d="M 23,25 Q 205,19 400,25 Q 595,21 777,26 Q 773,130 778,225 Q 774,340 773,425 Q 605,431 400,426 Q 195,430 26,424 Q 29,335 23,225 Q 27,120 23,25" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"></path>
+                            <path d="M 27,22 Q 200,23 403,21 Q 600,25 773,22 Q 777,135 775,228 Q 777,338 776,428 Q 600,426 397,429 Q 200,426 22,428 Q 25,332 26,222 Q 23,115 27,22" fill="none" stroke="rgba(255,255,255,0.42)" stroke-width="2" stroke-dasharray="160,12,100,6" stroke-linecap="round"></path>
                             <path d="M 10,25 L 42,23 M 26,9 L 24,41 M 758,23 L 790,21 M 774,9 L 776,41 M 10,427 L 42,429 M 24,411 L 26,443 M 758,429 L 790,427 M 776,411 L 774,443" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"></path>
                         </svg>
                     </div>
@@ -192,18 +230,28 @@
                     <h3 class="ref-video-name">Soundscaping &amp; Dynamic Post-Production</h3>
                 </div>
                 <div class="ref-embed-col">
-                    <div class="drawn-frame-box">
-                        <iframe 
-                            src="https://www.youtube-nocookie.com/embed/KO6527S5JOU" 
-                            title="Soundscaping & Dynamic Post-Production" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            allowfullscreen 
-                            loading="lazy">
-                        </iframe>
+                    <div class="drawn-frame-box" data-video-id="KO6527S5JOU" data-video-title="Soundscaping & Dynamic Post-Production">
+                        <div class="ref-media-stage clip-ref-3">
+                            <!-- Locked Cinematic Poster (Zero YouTube UI) -->
+                            <div class="ref-locked-cover" title="Click to preview reference">
+                                <img src="images/ref_thumb_3.jpg" alt="Soundscaping & Dynamic Post-Production" class="ref-locked-img">
+                                <div class="ref-locked-overlay">
+                                    <div class="ref-locked-badge">
+                                        <span class="ref-lock-icon"><i class="fas fa-play"></i></span>
+                                        <span class="ref-lock-label">PREVIEW REFERENCE</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Active Player injected upon click -->
+                            <div class="ref-video-player"></div>
+                        </div>
+
+                        <button class="ref-lock-btn" title="Lock preview"><i class="fas fa-lock"></i> Lock</button>
+
+                        <!-- Hand-drawn vector sketch overlay (NO solid black matte!) -->
                         <svg class="drawn-frame-overlay" viewBox="0 0 800 450" preserveAspectRatio="none">
-                            <path fill="#000000" fill-rule="evenodd" d="M 0,0 L 800,0 L 800,450 L 0,450 Z M 26,23 Q 215,26 400,20 Q 610,25 774,22 Q 778,140 773,225 Q 777,342 775,428 Q 590,425 400,431 Q 210,427 24,426 Q 27,338 22,225 Q 26,118 26,23 Z"></path>
-                            <path d="M 26,23 Q 215,26 400,20 Q 610,25 774,22 Q 778,140 773,225 Q 777,342 775,428 Q 590,425 400,431 Q 210,427 24,426 Q 27,338 22,225 Q 26,118 26,23" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"></path>
-                            <path d="M 22,26 Q 210,22 398,24 Q 605,22 777,25 Q 775,136 776,227 Q 774,345 772,424 Q 595,428 402,427 Q 205,430 28,423 Q 24,341 25,222 Q 23,122 22,26" fill="none" stroke="rgba(255,255,255,0.45)" stroke-width="2" stroke-dasharray="190,8,110,7" stroke-linecap="round"></path>
+                            <path d="M 26,23 Q 215,26 400,20 Q 610,25 774,22 Q 778,140 773,225 Q 777,342 775,428 Q 590,425 400,431 Q 210,427 24,426 Q 27,338 22,225 Q 26,118 26,23" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"></path>
+                            <path d="M 22,26 Q 210,22 398,24 Q 605,22 777,25 Q 775,136 776,227 Q 774,345 772,424 Q 595,428 402,427 Q 205,430 28,423 Q 24,341 25,222 Q 23,122 22,26" fill="none" stroke="rgba(255,255,255,0.42)" stroke-width="2" stroke-dasharray="190,8,110,7" stroke-linecap="round"></path>
                             <path d="M 10,25 L 42,23 M 26,9 L 24,41 M 758,23 L 790,21 M 774,9 L 776,41 M 10,427 L 42,429 M 24,411 L 26,443 M 758,429 L 790,427 M 776,411 L 774,443" stroke="rgba(255,255,255,0.55)" stroke-width="2" stroke-linecap="round"></path>
                         </svg>
                     </div>
@@ -352,6 +400,6 @@
     </footer>
 
     <!-- Interactive Script with Cache Busting -->
-    <script src="js/verbainmotion.js?v=20260922_004"></script>
+    <script src="js/verbainmotion.js?v=20260922_005"></script>
 </body>
 </html>
