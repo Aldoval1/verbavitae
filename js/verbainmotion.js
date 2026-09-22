@@ -1,15 +1,17 @@
 /**
  * VERBA IN MOTION - Apple-Style Scroll Controller
- * Handles frame-by-frame scroll advancement for the 10-frame VERBA_IN_MOTION sequence
- * and seamless interpolation of narrative blocks.
+ * Seamless multi-stage hero:
+ * Stage 1: Initial Verba Vitae Logo (Clay Heart in Motion) on pure black
+ * Stage 2: Scroll-driven 10-frame VERBA IN MOTION sequence
+ * Stage 3: Manifesto statement reveal
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     const track = document.getElementById('hero-scroll-track');
     const stage = document.getElementById('hero-sticky-stage');
+    const logoBox = document.getElementById('hero-logo-box');
     const motionWrapper = document.getElementById('hero-motion-wrapper');
-    const canvas = document.getElementById('hero-motion-canvas');
-    const fallbackImg = document.getElementById('hero-motion-fallback');
+    const frameImg = document.getElementById('hero-motion-frame');
     const scrollCue = document.getElementById('hero-scroll-cue');
     const ambientGlow = document.getElementById('hero-ambient-glow');
     const block2 = document.getElementById('hero-reveal-block-2');
@@ -25,44 +27,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // =========================================================================
-    // 10-Frame Image Sequence Preloader & Renderer
+    // 10-Frame Image Sequence Preloader
     // =========================================================================
     const totalFrames = 10;
-    const frames = [];
-    let currentDrawnIndex = -1;
+    const preloadedFrames = [];
+    const basePath = (frameImg && frameImg.dataset.basePath) ? frameImg.dataset.basePath : 'images/verba_in_motion_frames/';
 
-    // Detect base path from canvas data attribute or fallback
-    const basePath = (canvas && canvas.dataset.basePath) ? canvas.dataset.basePath : 'images/verba_in_motion_frames/';
-
-    function drawCurrentFrame(index) {
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        const img = frames[index];
-        if (img && img.complete && img.naturalWidth > 0) {
-            if (currentDrawnIndex !== index) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                currentDrawnIndex = index;
-            }
-        } else if (fallbackImg) {
-            fallbackImg.src = `${basePath}frame_${index}.png`;
-            fallbackImg.style.display = 'block';
-            canvas.style.display = 'none';
-        }
-    }
-
-    // Preload all 10 frames
     for (let i = 0; i < totalFrames; i++) {
         const img = new Image();
         img.src = `${basePath}frame_${i}.png`;
-        img.onload = () => {
-            if (i === 0 && currentDrawnIndex === -1) {
-                drawCurrentFrame(0);
-            }
-        };
-        frames.push(img);
+        preloadedFrames.push(img);
+    }
+
+    let currentFrameIndex = -1;
+
+    function setFrame(index) {
+        if (!frameImg || currentFrameIndex === index) return;
+        currentFrameIndex = index;
+        const targetSrc = `${basePath}frame_${index}.png`;
+        if (frameImg.src !== targetSrc) {
+            frameImg.src = targetSrc;
+        }
     }
 
     let ticking = false;
@@ -85,51 +70,84 @@ document.addEventListener('DOMContentLoaded', () => {
         const currentScroll = -rect.top;
         const progress = clamp(currentScroll / totalScroll, 0, 1);
 
-        // 1. Scroll cue fade out (fades out in first 8% of scroll)
+        // 1. Initial Scroll Cue (fades out in first 8% of scroll)
         if (scrollCue) {
             const cueOpacity = mapRange(progress, 0, 0.08, 1, 0);
             scrollCue.style.opacity = cueOpacity;
             scrollCue.style.pointerEvents = cueOpacity <= 0 ? 'none' : 'auto';
         }
 
-        // 2. Scroll-Driven 10-Frame Advancement
-        // Across progress 0.00 -> 0.48, scroll distance maps to frames 0 through 9
-        const frameProgress = clamp(progress / 0.48, 0, 1);
-        const frameIndex = clamp(Math.floor(frameProgress * totalFrames), 0, totalFrames - 1);
-        drawCurrentFrame(frameIndex);
+        // 2. Stage 1: Initial Verba Vitae Logo (Clay Heart)
+        // Fully visible at start (0% - 6%), then smoothly scales & fades out by 22%
+        if (logoBox) {
+            if (progress <= 0.06) {
+                logoBox.style.opacity = 1;
+                logoBox.style.transform = 'translateY(0px) scale(1)';
+                logoBox.style.pointerEvents = 'auto';
+            } else if (progress <= 0.24) {
+                const logoOpacity = mapRange(progress, 0.06, 0.22, 1, 0);
+                const translateY = mapRange(progress, 0.06, 0.22, 0, -45);
+                const scale = mapRange(progress, 0.06, 0.22, 1, 0.78);
+                logoBox.style.opacity = logoOpacity;
+                logoBox.style.transform = `translateY(${translateY}px) scale(${scale})`;
+                logoBox.style.pointerEvents = logoOpacity > 0.3 ? 'auto' : 'none';
+            } else {
+                logoBox.style.opacity = 0;
+                logoBox.style.pointerEvents = 'none';
+            }
+        }
 
-        // 3. Motion Wrapper Scaling & Fade Out
-        // Stays fully visible from 0.0 -> 0.50, then gracefully scales and fades out to reveal manifesto
+        // 3. Stage 2: Scroll-Driven VERBA IN MOTION 10-Frame Sequence
+        // Enters at 16%, in full focus from 25% to 65% (where 10 frames advance), fades out by 78%
         if (motionWrapper) {
-            if (progress <= 0.50) {
+            if (progress < 0.16) {
+                motionWrapper.style.opacity = 0;
+                motionWrapper.style.transform = 'translateY(40px) scale(0.92)';
+                motionWrapper.style.pointerEvents = 'none';
+                setFrame(0);
+            } else if (progress <= 0.26) {
+                const enterOpacity = mapRange(progress, 0.16, 0.26, 0, 1);
+                const enterTranslateY = mapRange(progress, 0.16, 0.26, 40, 0);
+                const enterScale = mapRange(progress, 0.16, 0.26, 0.92, 1.0);
+                motionWrapper.style.opacity = enterOpacity;
+                motionWrapper.style.transform = `translateY(${enterTranslateY}px) scale(${enterScale})`;
+                motionWrapper.style.pointerEvents = enterOpacity > 0.5 ? 'auto' : 'none';
+                setFrame(0);
+            } else if (progress <= 0.65) {
                 motionWrapper.style.opacity = 1;
                 motionWrapper.style.transform = 'translateY(0px) scale(1)';
                 motionWrapper.style.pointerEvents = 'auto';
-            } else if (progress <= 0.65) {
-                const fadeOpacity = mapRange(progress, 0.50, 0.65, 1, 0);
-                const translateY = mapRange(progress, 0.50, 0.65, 0, -35);
-                const scale = mapRange(progress, 0.50, 0.65, 1, 0.94);
-                motionWrapper.style.opacity = fadeOpacity;
-                motionWrapper.style.transform = `translateY(${translateY}px) scale(${scale})`;
-                motionWrapper.style.pointerEvents = fadeOpacity > 0.3 ? 'auto' : 'none';
+
+                // Map scroll progress across [0.26, 0.62] to frames 0 through 9
+                const frameProgress = clamp((progress - 0.26) / 0.36, 0, 1);
+                const frameIndex = clamp(Math.floor(frameProgress * totalFrames), 0, totalFrames - 1);
+                setFrame(frameIndex);
+            } else if (progress <= 0.78) {
+                const exitOpacity = mapRange(progress, 0.65, 0.78, 1, 0);
+                const exitTranslateY = mapRange(progress, 0.65, 0.78, 0, -35);
+                const exitScale = mapRange(progress, 0.65, 0.78, 1, 0.94);
+                motionWrapper.style.opacity = exitOpacity;
+                motionWrapper.style.transform = `translateY(${exitTranslateY}px) scale(${exitScale})`;
+                motionWrapper.style.pointerEvents = exitOpacity > 0.3 ? 'auto' : 'none';
+                setFrame(totalFrames - 1);
             } else {
                 motionWrapper.style.opacity = 0;
                 motionWrapper.style.pointerEvents = 'none';
             }
         }
 
-        // 4. Reveal Block 2: The Manifesto Statement
-        // Enters at 0.58, peaks at 0.74, fades out by 0.94
+        // 4. Stage 3: The Manifesto Statement Reveal
+        // Enters at 72%, peaks at 82%, fades out into vision section by 96%
         if (block2) {
-            if (progress >= 0.56 && progress <= 0.98) {
+            if (progress >= 0.70 && progress <= 0.98) {
                 let opacity = 0;
                 let translateY = 30;
-                if (progress <= 0.72) {
-                    opacity = mapRange(progress, 0.56, 0.70, 0, 1);
-                    translateY = mapRange(progress, 0.56, 0.70, 30, 0);
+                if (progress <= 0.82) {
+                    opacity = mapRange(progress, 0.70, 0.82, 0, 1);
+                    translateY = mapRange(progress, 0.70, 0.82, 30, 0);
                 } else {
-                    opacity = mapRange(progress, 0.82, 0.96, 1, 0);
-                    translateY = mapRange(progress, 0.82, 0.96, 0, -25);
+                    opacity = mapRange(progress, 0.88, 0.98, 1, 0);
+                    translateY = mapRange(progress, 0.88, 0.98, 0, -25);
                 }
                 block2.style.opacity = opacity;
                 block2.style.transform = `translateY(${translateY}px) scale(${0.96 + opacity * 0.04})`;
@@ -147,9 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // 6. Sticky Navigation Bar Visibility
-        // Shows as soon as user progresses past initial stage (progress > 0.15) or when past track
+        // Shows as soon as user progresses past initial stage (progress > 0.20) or when past track
         if (topNav) {
-            if (progress > 0.15 || rect.bottom <= 100) {
+            if (progress > 0.20 || rect.bottom <= 100) {
                 topNav.classList.add('visible');
             } else {
                 topNav.classList.remove('visible');
@@ -160,7 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', updateHeroScroll);
     
-    // Initial call to render frame 0 and set initial states
+    // Initial call to set initial states
     updateHeroScroll();
 
     // IntersectionObserver for elements in content sections
