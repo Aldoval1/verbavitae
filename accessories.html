@@ -3,24 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verba Vitae - Accessories (Temporarily Closed)</title>
+    <title>Verba Vitae - Accessories</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
-    <link rel="stylesheet" href="css/shop.css?v=20260819_square">
+    <link rel="stylesheet" href="css/shop.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-init.js"></script>
 </head>
-<body class="store-closed-body">
-    <div class="store-closed-container">
-        <div class="store-closed-card">
-            <img src="images/verbavitaelogoblue.png" alt="Verba Vitae" class="store-closed-logo">
-            <h1 class="store-closed-title">We'll Be Back Soon!</h1>
-            <p class="store-closed-text">
-                The Verba Vitae store is currently closed until our first meeting of the month.
-            </p>
-            <a href="index.html" class="btn-store-home">
-                <i class="fas fa-arrow-left"></i> Return to Home
+<body>
+    <header class="shop-header">
+        <!-- Top Utility Bar -->
+        <div class="shop-top-bar">
+            <div class="top-bar-links">
+            </div>
+        </div>
+
+        <!-- Main Nav Bar -->
+        <div class="shop-main-nav">
+            <a href="index.html" class="shop-logo-link">
+                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae Logo" class="shop-logo">
             </a>
+
+            <div class="search-container">
+                <input type="text" placeholder="Search products, savings, or recipes">
+                <button class="search-btn" aria-label="Search"><i class="fas fa-search"></i></button>
+            </div>
+
+            <div class="user-actions">
+                <a href="checkout.html" class="action-link" id="navCart">
+                    <span class="icon"><i class="fas fa-shopping-cart"></i></span> Cart (<span id="cartCount">0</span>)
+                </a>
+                <a href="login.html" class="btn-shop-login">Log in</a>
+            </div>
+        </div>
+
+        <!-- Secondary Nav Bar -->
+        <div class="shop-secondary-nav">
+            <div class="secondary-links">
+                <div class="dropdown">
+                    <a href="shop.html">Books <span class="arrow"><i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></span></a>
+                </div>
+                <div class="dropdown">
+                    <a href="technology.html">Technology <span class="arrow"><i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></span></a>
+                </div>
+                <div class="dropdown">
+                    <a href="snacks.html">Snacks <span class="arrow"><i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></span></a>
+                </div>
+                <div class="dropdown active">
+                    <a href="accessories.html">Accessories <span class="arrow"><i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></span></a>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="shop-content">
+        <section class="search-results" style="width: 100%; padding: 40px;">
+            <h2>Accessories</h2>
+            <div class="results-grid">
+                <!-- Custom products will be injected here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Product Details Modal -->
+    <div class="modal-overlay" id="bookModal">
+        <div class="modal-content">
+            <button class="close-modal">&times;</button>
+            <div class="modal-body">
+                <div class="modal-left">
+                    <div class="modal-cover" id="modalCover">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+                <div class="modal-right">
+                    <h2 id="modalTitle">Product</h2>
+                    <p class="modal-author" id="modalAuthor"></p>
+                    <p class="modal-price" id="modalPrice">$0.00</p>
+                    <div class="modal-details">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="modal-synopsis">
+                        <!-- Populated by JS -->
+                    </div>
+                    <div class="modal-links">
+                        <!-- Populated by JS -->
+                    </div>
+                    <button class="add-to-cart-btn">Add to Cart</button>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script src="js/cart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Update auth login button
+            if (typeof auth !== 'undefined') {
+                auth.onAuthStateChanged(user => {
+                    const loginBtn = document.querySelector('.btn-shop-login');
+                    if (loginBtn && user) {
+                        loginBtn.textContent = 'Account';
+                        loginBtn.href = 'dashboard.html';
+                    }
+                });
+            }
+
+            // Modal logic
+            const modal = document.getElementById('bookModal');
+            const closeModalBtn = document.querySelector('.close-modal');
+            if (closeModalBtn && modal) {
+                closeModalBtn.addEventListener('click', () => {
+                    modal.style.display = 'none';
+                });
+            }
+            window.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+    </script>
 </body>
 </html>
