@@ -26,7 +26,7 @@
         const scene = new THREE.Scene();
 
         const camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
-        camera.position.set(0, 0.2, 7.8);
+        camera.position.set(0, 0, 7.4);
 
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
         renderer.setSize(width, height);
@@ -572,19 +572,6 @@
         tasselMesh.rotation.x = Math.PI;
         bookGroup.add(tasselMesh);
 
-        // 6. Ground Shadow Disc
-        const shadowGeo = new THREE.PlaneGeometry(5.2, 5.2);
-        const shadowMat = new THREE.MeshBasicMaterial({
-            map: shadowTex,
-            transparent: true,
-            opacity: 0.7,
-            depthWrite: false
-        });
-        const shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
-        shadowMesh.rotation.x = -Math.PI / 2;
-        shadowMesh.position.y = -2.5;
-        scene.add(shadowMesh);
-
         // Initial Aesthetic Tilt
         bookGroup.rotation.x = 0.2;
         bookGroup.rotation.z = -0.05;
@@ -657,10 +644,6 @@
 
             // Floating Bobbing Wave
             bookGroup.position.y = Math.sin(elapsed * 1.8) * 0.12;
-
-            // Sync shadow breathing
-            shadowMesh.scale.setScalar(1 + Math.sin(elapsed * 1.8) * 0.05);
-            shadowMat.opacity = 0.7 - Math.sin(elapsed * 1.8) * 0.08;
 
             renderer.render(scene, camera);
         }

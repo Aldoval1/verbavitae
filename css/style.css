@@ -257,7 +257,7 @@ body {
 
 /* About Section */
 .about-section {
-    padding: 120px 20px;
+    padding: 45px 20px 70px 20px;
     background-image: linear-gradient(rgba(238, 245, 251, 0.2), rgba(238, 245, 251, 0.2)), url('../images/fondoverbafinal.png'); /* Transparencia simulada al 80% con el color de fondo */
     background-size: cover;
     background-position: center;
@@ -272,7 +272,7 @@ body {
     background-color: #dbe4ec; /* Azul grisáceo, un poco más oscuro que el gris original */
     width: 60%;
     max-width: 900px;
-    padding: 60px;
+    padding: 25px 50px 45px 50px;
     border-radius: 0px;
     text-align: left;
 }
@@ -283,12 +283,13 @@ body {
     justify-content: center;
     align-items: center;
     width: 100%;
-    margin-bottom: 20px;
+    margin-top: 0;
+    margin-bottom: 15px;
 }
 
 .book-3d-container {
-    width: 340px;
-    height: 290px;
+    width: 320px;
+    height: 250px;
     position: relative;
     user-select: none;
     touch-action: none;
@@ -300,12 +301,12 @@ body {
     height: 100% !important;
     display: block;
     cursor: grab;
-    filter: drop-shadow(0 15px 25px rgba(13, 27, 62, 0.2));
-    transition: filter 0.3s ease;
+    filter: none;
+    transition: none;
 }
 
 .book-3d-container:hover canvas {
-    filter: drop-shadow(0 20px 30px rgba(29, 12, 141, 0.3));
+    filter: none;
 }
 
 .about-title {
@@ -597,9 +598,9 @@ body {
     .join-btn { width: 100%; font-size: 1.1rem; padding: 15px 30px; }
 
     /* About */
-    .about-section { padding: 60px 15px; }
-    .about-card { width: 100%; padding: 30px 20px; }
-    .book-3d-container { width: 260px; height: 230px; }
+    .about-section { padding: 30px 15px 45px; }
+    .about-card { width: 100%; padding: 20px 18px 30px; }
+    .book-3d-container { width: 250px; height: 200px; }
     .about-title { font-size: 1.6rem; margin-bottom: 20px; }
     .about-content { font-size: 1rem; line-height: 1.6; }
 
