@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Titan+One&family=Caveat+Brush:wght@700&display=swap');
+
 /* ==========================================================================
    VERBA IN MOTION - Apple-Style Scroll Experience
    Aesthetic: Pure Black, Cinematic Contrast, Precision Typography, Straight Edges
@@ -18,7 +20,7 @@
     --border-highlight: rgba(255, 255, 255, 0.28);
     --border-active: #2997ff;
     --font-stack: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Montserrat", sans-serif;
-    --font-display: 'Shrikhand', cursive, sans-serif;
+    --font-display: 'Permanent Marker', 'Titan One', 'Caveat Brush', cursive, sans-serif;
 }
 
 /* Strict straight edges across entire page */
