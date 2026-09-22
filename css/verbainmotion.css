@@ -239,6 +239,52 @@ body {
     }
 }
 
+/* Scroll-Driven VERBA IN MOTION 10-Frame Canvas Stage */
+.hero-motion-wrapper {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 1120px;
+    padding: 0 16px;
+    will-change: transform, opacity;
+    transition: transform 0.1s linear, opacity 0.1s linear;
+}
+
+.hero-motion-canvas {
+    width: 100%;
+    max-width: 980px;
+    height: auto;
+    aspect-ratio: 2172 / 724;
+    display: block;
+    margin: 0 auto;
+    filter: drop-shadow(0 0 50px rgba(41, 151, 255, 0.45)) drop-shadow(0 20px 45px rgba(0, 0, 0, 0.9));
+    pointer-events: none;
+    will-change: transform;
+}
+
+.hero-motion-fallback {
+    width: 100%;
+    max-width: 980px;
+    height: auto;
+    aspect-ratio: 2172 / 724;
+    object-fit: contain;
+    filter: drop-shadow(0 0 50px rgba(41, 151, 255, 0.45));
+}
+
+.hero-motion-subtitle {
+    font-size: clamp(0.9rem, 1.8vw, 1.3rem);
+    color: var(--accent-blue);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 22px;
+    opacity: 0.9;
+}
+
 /* Scroll indicator cue shown initially */
 .hero-scroll-cue {
     position: absolute;

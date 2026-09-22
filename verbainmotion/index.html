@@ -48,15 +48,22 @@
             <!-- Ambient Subtle Radial Glow -->
             <div class="hero-ambient-glow" id="hero-ambient-glow"></div>
 
-            <!-- Initial State: Centered Animated Verba Vitae Clay Logo -->
-            <div class="hero-logo-box" id="hero-logo-box">
-                <img src="../images/verba_logo_plastilina_touch.gif" alt="Verba Vitae Clay Motion" class="hero-main-logo" id="hero-main-logo">
-            </div>
-
-            <!-- Phase 1 Reveal: Brand & Project Name -->
-            <div class="hero-reveal-block" id="hero-reveal-block-1">
-                <h1 class="hero-reveal-title">VERBA IN MOTION</h1>
-                <p class="hero-reveal-subtitle">Poetry in Motion • Visual Literature</p>
+            <!-- Center Stage: Scroll-Driven VERBA IN MOTION 10-Frame Animation -->
+            <div class="hero-motion-wrapper" id="hero-motion-wrapper">
+                <canvas 
+                    id="hero-motion-canvas" 
+                    width="2172" 
+                    height="724" 
+                    class="hero-motion-canvas"
+                    data-base-path="../images/verba_in_motion_frames/">
+                </canvas>
+                <img 
+                    id="hero-motion-fallback" 
+                    src="../images/verba_in_motion_frames/frame_0.png" 
+                    alt="Verba in Motion" 
+                    class="hero-motion-fallback" 
+                    style="display: none;">
+                <p class="hero-motion-subtitle">Poetry in Motion • Visual Literature</p>
             </div>
 
             <!-- Phase 2 Reveal: Manifesto Statement -->
@@ -348,7 +355,7 @@
         </div>
     </footer>
 
-    <!-- Interactive Script -->
-    <script src="../js/verbainmotion.js?v=20260921"></script>
+    <!-- Interactive Script with Cache Busting -->
+    <script src="../js/verbainmotion.js?v=20260922_003"></script>
 </body>
 </html>
