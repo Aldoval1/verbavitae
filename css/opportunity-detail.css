@@ -61,7 +61,7 @@
 
 .opp-hero-banner {
     position: relative;
-    border-radius: 24px;
+    border-radius: 0;
     overflow: hidden;
     min-height: 380px;
     background: linear-gradient(135deg, #0d1b2a 0%, #1d0c8d 60%, #1b2838 100%);
@@ -95,7 +95,7 @@
     color: #fce79a;
     border: 1px solid rgba(212, 175, 55, 0.4);
     padding: 6px 16px;
-    border-radius: 30px;
+    border-radius: 0;
     font-size: 0.82rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -158,7 +158,7 @@
 
 .opp-section-card {
     background: #ffffff;
-    border-radius: 20px;
+    border-radius: 0;
     padding: 38px;
     border: 1px solid var(--opp-border);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
@@ -189,7 +189,7 @@
     background: #f0f7ff;
     border-left: 4px solid var(--opp-accent);
     padding: 18px 22px;
-    border-radius: 0 12px 12px 0;
+    border-radius: 0;
     margin-top: 24px;
 }
 
@@ -212,7 +212,7 @@
 .role-card {
     background: #ffffff;
     border: 1.5px solid var(--opp-border);
-    border-radius: 16px;
+    border-radius: 0;
     overflow: hidden;
     transition: all 0.25s ease;
 }
@@ -240,7 +240,7 @@
 .role-icon-box {
     width: 52px;
     height: 52px;
-    border-radius: 14px;
+    border-radius: 0;
     background: linear-gradient(135deg, rgba(29, 12, 141, 0.1) 0%, rgba(49, 130, 206, 0.15) 100%);
     color: var(--opp-deep-blue);
     display: flex;
@@ -318,7 +318,7 @@
 
 .role-qualities-box {
     background: #f8fafc;
-    border-radius: 8px;
+    border-radius: 0;
     padding: 10px 14px;
     font-size: 0.85rem;
     color: #4a5568;
@@ -337,7 +337,7 @@
 
 .opp-sidebar-card {
     background: #ffffff;
-    border-radius: 20px;
+    border-radius: 0;
     padding: 30px;
     border: 1px solid var(--opp-border);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
@@ -372,7 +372,7 @@
 .fact-icon {
     width: 36px;
     height: 36px;
-    border-radius: 10px;
+    border-radius: 0;
     background: #edf2f7;
     color: var(--opp-accent);
     display: flex;
@@ -407,7 +407,7 @@
     text-decoration: none;
     font-size: 1.05rem;
     font-weight: 800;
-    border-radius: 12px;
+    border-radius: 0;
     box-shadow: 0 6px 20px rgba(214, 139, 45, 0.35);
     transition: all 0.25s ease;
     text-align: center;
@@ -435,7 +435,7 @@
 
 .opp-apply-banner {
     background: linear-gradient(135deg, #1d0c8d 0%, #0d1b2a 100%);
-    border-radius: 24px;
+    border-radius: 0;
     padding: 55px 45px;
     color: #ffffff;
     display: flex;
@@ -454,7 +454,7 @@
     right: -20%;
     width: 400px;
     height: 400px;
-    border-radius: 50%;
+    border-radius: 0;
     background: radial-gradient(circle, rgba(49, 130, 206, 0.25) 0%, transparent 70%);
 }
 
@@ -493,7 +493,7 @@
     font-size: 1.12rem;
     font-weight: 800;
     text-decoration: none;
-    border-radius: 40px;
+    border-radius: 0;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
     transition: all 0.25s ease;
 }
@@ -529,4 +529,72 @@
         text-align: center;
         padding: 40px 24px;
     }
+}
+
+
+/* Video References Section */
+.video-references-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 22px;
+    margin-top: 15px;
+}
+
+.video-ref-item {
+    background: #ffffff;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.video-ref-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.video-aspect-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    background: #000000;
+}
+
+.video-aspect-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 0;
+}
+
+.video-ref-meta {
+    padding: 14px 16px;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+}
+
+.video-ref-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #3182ce;
+    margin-bottom: 6px;
+}
+
+.video-ref-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0d1b2a;
+    margin: 0;
+    line-height: 1.4;
 }

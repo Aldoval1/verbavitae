@@ -32,7 +32,7 @@
     background: rgba(49, 130, 206, 0.1);
     color: var(--opp-accent);
     padding: 6px 18px;
-    border-radius: 30px;
+    border-radius: 0;
     font-size: 0.82rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -74,7 +74,7 @@
 .opp-search-box input {
     width: 100%;
     padding: 15px 22px 15px 50px;
-    border-radius: 40px;
+    border-radius: 0;
     border: 2px solid var(--opp-border);
     font-size: 1rem;
     outline: none;
@@ -109,7 +109,7 @@
 /* Featured / Standard Opportunity Card */
 .opp-card {
     background: var(--opp-card-bg);
-    border-radius: 18px;
+    border-radius: 0;
     overflow: hidden;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
     border: 1px solid var(--opp-border);
@@ -165,7 +165,7 @@
     text-transform: uppercase;
     letter-spacing: 0.8px;
     padding: 5px 14px;
-    border-radius: 20px;
+    border-radius: 0;
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
@@ -213,7 +213,7 @@
 .opp-card-roles-box {
     background: #f8fafc;
     border: 1px solid var(--opp-border);
-    border-radius: 12px;
+    border-radius: 0;
     padding: 16px 18px;
     margin-bottom: 24px;
 }
@@ -241,7 +241,7 @@
     border: 1px solid #cbd5e0;
     color: #2d3748;
     padding: 5px 12px;
-    border-radius: 16px;
+    border-radius: 0;
     font-size: 0.8rem;
     font-weight: 600;
     display: inline-flex;
@@ -266,7 +266,7 @@
     color: #ffffff;
     text-decoration: none;
     padding: 14px 20px;
-    border-radius: 10px;
+    border-radius: 0;
     font-weight: 700;
     font-size: 0.95rem;
     text-align: center;
@@ -289,7 +289,7 @@
     color: #1e293b;
     text-decoration: none;
     padding: 14px 20px;
-    border-radius: 10px;
+    border-radius: 0;
     font-weight: 700;
     font-size: 0.95rem;
     text-align: center;
@@ -309,7 +309,7 @@
     text-align: center;
     padding: 70px 20px;
     background: #ffffff;
-    border-radius: 16px;
+    border-radius: 0;
     border: 1px solid var(--opp-border);
 }
 

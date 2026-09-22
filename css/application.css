@@ -38,7 +38,7 @@
     background: rgba(49, 130, 206, 0.1);
     color: var(--app-accent);
     padding: 6px 18px;
-    border-radius: 30px;
+    border-radius: 0;
     font-size: 0.85rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -106,7 +106,7 @@
 .step-circle {
     width: 42px;
     height: 42px;
-    border-radius: 50%;
+    border-radius: 0;
     background: #ffffff;
     border: 3px solid #e2e8f0;
     color: #a0aec0;
@@ -151,7 +151,7 @@
 /* Step Card Container */
 .apply-card {
     background: #ffffff;
-    border-radius: 20px;
+    border-radius: 0;
     padding: 40px;
     border: 1px solid var(--app-border);
     box-shadow: 0 10px 30px rgba(13, 27, 42, 0.06);
@@ -215,7 +215,7 @@
 .form-control {
     width: 100%;
     padding: 13px 16px;
-    border-radius: 10px;
+    border-radius: 0;
     border: 2px solid var(--app-border);
     font-size: 0.95rem;
     font-family: inherit;
@@ -253,7 +253,7 @@ textarea.form-control {
 
 .role-select-card {
     border: 2px solid var(--app-border);
-    border-radius: 14px;
+    border-radius: 0;
     padding: 20px;
     cursor: pointer;
     transition: all 0.25s ease;
@@ -279,7 +279,7 @@ textarea.form-control {
 .role-select-check {
     width: 24px;
     height: 24px;
-    border-radius: 6px;
+    border-radius: 0;
     border: 2px solid #cbd5e0;
     display: flex;
     align-items: center;
@@ -326,7 +326,7 @@ textarea.form-control {
 .role-question-group {
     background: #f8fafc;
     border: 1.5px solid var(--app-border);
-    border-radius: 14px;
+    border-radius: 0;
     padding: 24px;
     margin-bottom: 24px;
 }
@@ -344,7 +344,7 @@ textarea.form-control {
     background: var(--app-primary);
     color: #ffffff;
     padding: 5px 12px;
-    border-radius: 20px;
+    border-radius: 0;
     font-size: 0.78rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -371,7 +371,7 @@ textarea.form-control {
     gap: 10px;
     background: #ffffff;
     border: 1px solid var(--app-border);
-    border-radius: 8px;
+    border-radius: 0;
     padding: 10px 14px;
     font-size: 0.9rem;
     color: #2d3748;
@@ -392,7 +392,7 @@ textarea.form-control {
 /* File Upload Dropzone */
 .file-upload-box {
     border: 2px dashed #cbd5e0;
-    border-radius: 12px;
+    border-radius: 0;
     padding: 20px;
     text-align: center;
     background: #ffffff;
@@ -429,7 +429,7 @@ textarea.form-control {
     background: #edf2f7;
     border: 1px solid #cbd5e0;
     padding: 6px 14px;
-    border-radius: 20px;
+    border-radius: 0;
     font-size: 0.85rem;
     color: #2d3748;
     margin-top: 10px;
@@ -439,7 +439,7 @@ textarea.form-control {
 .review-summary-card {
     background: #f8fafc;
     border: 1px solid var(--app-border);
-    border-radius: 14px;
+    border-radius: 0;
     padding: 24px;
     margin-bottom: 24px;
 }
@@ -499,7 +499,7 @@ textarea.form-control {
     color: #4a5568;
     border: none;
     padding: 13px 26px;
-    border-radius: 10px;
+    border-radius: 0;
     font-weight: 700;
     font-size: 0.95rem;
     cursor: pointer;
@@ -519,7 +519,7 @@ textarea.form-control {
     color: #ffffff;
     border: none;
     padding: 13px 32px;
-    border-radius: 10px;
+    border-radius: 0;
     font-weight: 700;
     font-size: 0.95rem;
     cursor: pointer;
@@ -541,7 +541,7 @@ textarea.form-control {
     color: #ffffff;
     border: none;
     padding: 14px 36px;
-    border-radius: 10px;
+    border-radius: 0;
     font-weight: 800;
     font-size: 1rem;
     cursor: pointer;
@@ -567,7 +567,7 @@ textarea.form-control {
 .success-icon-circle {
     width: 80px;
     height: 80px;
-    border-radius: 50%;
+    border-radius: 0;
     background: #def7ec;
     color: #0e9f6e;
     font-size: 2.2rem;
@@ -602,7 +602,7 @@ textarea.form-control {
 .success-meta-box {
     background: #f8fafc;
     border: 1px solid var(--app-border);
-    border-radius: 12px;
+    border-radius: 0;
     padding: 16px 24px;
     display: inline-flex;
     gap: 30px;

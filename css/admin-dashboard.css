@@ -421,7 +421,7 @@ body {
     background: var(--admin-accent);
     color: #ffffff;
     padding: 2px 8px;
-    border-radius: 12px;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 800;
     margin-left: 6px;
@@ -467,7 +467,7 @@ body {
     width: 100%;
     padding: 10px 14px 10px 38px;
     border: 1.5px solid var(--admin-border);
-    border-radius: 8px;
+    border-radius: 0;
     font-family: inherit;
     font-size: 0.9rem;
     outline: none;
@@ -489,7 +489,7 @@ body {
 .apps-filter-select {
     padding: 10px 14px;
     border: 1.5px solid var(--admin-border);
-    border-radius: 8px;
+    border-radius: 0;
     font-family: inherit;
     font-size: 0.88rem;
     background: #ffffff;
@@ -501,7 +501,7 @@ body {
 .apps-table-container {
     overflow-x: auto;
     background: #ffffff;
-    border-radius: 8px;
+    border-radius: 0;
     border: 1px solid var(--admin-border);
 }
 
@@ -537,7 +537,7 @@ body {
 .status-badge {
     display: inline-block;
     padding: 4px 10px;
-    border-radius: 12px;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
@@ -574,7 +574,7 @@ body {
     color: #ffffff;
     border: none;
     padding: 8px 14px;
-    border-radius: 6px;
+    border-radius: 0;
     font-weight: 700;
     font-size: 0.8rem;
     cursor: pointer;
@@ -610,7 +610,7 @@ body {
     max-width: 880px;
     width: 100%;
     max-height: 92vh;
-    border-radius: 20px;
+    border-radius: 0;
     overflow-y: auto;
     box-shadow: 0 25px 60px -15px rgba(13, 27, 42, 0.45), 0 0 1px 1px rgba(255, 255, 255, 0.2);
     display: flex;
@@ -660,7 +660,7 @@ body {
     background: rgba(49, 130, 206, 0.1);
     color: #2b6cb0;
     padding: 4px 12px;
-    border-radius: 20px;
+    border-radius: 0;
     font-size: 0.75rem;
     font-weight: 800;
     text-transform: uppercase;
@@ -680,7 +680,7 @@ body {
     border: 1px solid #e2e8f0;
     width: 38px;
     height: 38px;
-    border-radius: 50%;
+    border-radius: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -709,7 +709,7 @@ body {
 .modal-admin-controls {
     background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%);
     border: 1.5px solid #cbd5e1;
-    border-radius: 16px;
+    border-radius: 0;
     padding: 22px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
 }
@@ -742,7 +742,7 @@ body {
 
 .status-select-styled {
     padding: 9px 16px;
-    border-radius: 10px;
+    border-radius: 0;
     border: 1.5px solid #cbd5e1;
     font-weight: 700;
     font-family: inherit;
@@ -764,7 +764,7 @@ body {
     color: #ffffff;
     border: none;
     padding: 10px 20px;
-    border-radius: 10px;
+    border-radius: 0;
     font-weight: 700;
     font-size: 0.88rem;
     cursor: pointer;
@@ -783,7 +783,7 @@ body {
 .notes-textarea-styled {
     width: 100%;
     padding: 12px 14px;
-    border-radius: 10px;
+    border-radius: 0;
     border: 1.5px solid #cbd5e1;
     font-family: inherit;
     font-size: 0.9rem;
@@ -830,7 +830,7 @@ body {
 .modal-info-card {
     background: #f8fafc;
     border: 1px solid #e2e8f0;
-    border-radius: 12px;
+    border-radius: 0;
     padding: 12px 16px;
     display: flex;
     align-items: center;
@@ -850,7 +850,7 @@ body {
     width: 38px;
     height: 38px;
     min-width: 38px;
-    border-radius: 10px;
+    border-radius: 0;
     background: #ebf8ff;
     color: #3182ce;
     display: flex;
@@ -886,7 +886,7 @@ body {
     background: linear-gradient(135deg, #1d0c8d 0%, #2b6cb0 100%);
     color: #ffffff;
     padding: 8px 18px;
-    border-radius: 30px;
+    border-radius: 0;
     font-size: 0.85rem;
     font-weight: 700;
     display: inline-flex;
@@ -900,7 +900,7 @@ body {
     background: #ffffff;
     border: 1px solid #e2e8f0;
     border-left: 4px solid #3182ce;
-    border-radius: 12px;
+    border-radius: 0;
     padding: 16px 20px;
     margin-bottom: 14px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
@@ -923,7 +923,7 @@ body {
     line-height: 1.6;
     background: #f8fafc;
     padding: 12px 16px;
-    border-radius: 8px;
+    border-radius: 0;
     border: 1px solid #e2e8f0;
     font-weight: 500;
     word-break: break-word;
@@ -936,7 +936,7 @@ body {
     background: #ebf8ff;
     color: #2b6cb0;
     padding: 10px 18px;
-    border-radius: 10px;
+    border-radius: 0;
     font-weight: 700;
     font-size: 0.92rem;
     text-decoration: none;
