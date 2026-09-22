@@ -5,9 +5,306 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verba Vitae - E-Board Admin Console</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
-    <link rel="stylesheet" href="css/eboard-dashboard.css?v=20260921">
+    <link rel="stylesheet" href="css/eboard-dashboard.css?v=20260921_modal_v4">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style id="eboardAppDetailModalStyles">
+        .app-modal-overlay {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            background: rgba(13, 27, 42, 0.78) !important;
+            backdrop-filter: blur(8px) !important;
+            -webkit-backdrop-filter: blur(8px) !important;
+            z-index: 99999 !important;
+            display: none;
+            justify-content: center !important;
+            align-items: center !important;
+            padding: 20px !important;
+            box-sizing: border-box !important;
+        }
+        .app-modal-card {
+            background: #ffffff !important;
+            max-width: 880px !important;
+            width: 100% !important;
+            max-height: 92vh !important;
+            border-radius: 20px !important;
+            overflow-y: auto !important;
+            box-shadow: 0 25px 60px -15px rgba(13, 27, 42, 0.45), 0 0 1px 1px rgba(255, 255, 255, 0.2) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            border: 1px solid rgba(226, 232, 240, 0.9) !important;
+            position: relative !important;
+            animation: modalSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+        }
+        @keyframes modalSlideUp {
+            from { opacity: 0; transform: translateY(20px) scale(0.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .app-modal-accent-bar {
+            height: 6px !important;
+            width: 100% !important;
+            background: linear-gradient(90deg, #1d0c8d 0%, #3182ce 50%, #d4af37 100%) !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 20 !important;
+        }
+        .app-modal-header {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 20px 28px !important;
+            border-bottom: 1px solid #edf2f7 !important;
+            position: sticky !important;
+            top: 6px !important;
+            background: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(10px) !important;
+            z-index: 15 !important;
+        }
+        .modal-opp-chip {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            background: rgba(49, 130, 206, 0.1) !important;
+            color: #2b6cb0 !important;
+            padding: 4px 12px !important;
+            border-radius: 20px !important;
+            font-size: 0.75rem !important;
+            font-weight: 800 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.8px !important;
+        }
+        .app-modal-header h2 {
+            font-size: 1.45rem !important;
+            font-weight: 800 !important;
+            color: #0d1b2a !important;
+            margin: 6px 0 0 0 !important;
+            letter-spacing: -0.3px !important;
+        }
+        .app-modal-close {
+            background: #f1f5f9 !important;
+            border: 1px solid #e2e8f0 !important;
+            width: 38px !important;
+            height: 38px !important;
+            border-radius: 50% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 1.3rem !important;
+            color: #64748b !important;
+            cursor: pointer !important;
+            transition: all 0.2s ease !important;
+            padding: 0 !important;
+        }
+        .app-modal-close:hover {
+            background: #e2e8f0 !important;
+            color: #0f172a !important;
+            transform: rotate(90deg) !important;
+        }
+        .app-modal-body {
+            padding: 28px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 26px !important;
+            background: #ffffff !important;
+        }
+        .modal-admin-controls {
+            background: linear-gradient(135deg, #f8fafc 0%, #edf2f7 100%) !important;
+            border: 1.5px solid #cbd5e1 !important;
+            border-radius: 16px !important;
+            padding: 22px !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02) !important;
+        }
+        .modal-admin-controls h4 {
+            color: #1e293b !important;
+            font-size: 0.92rem !important;
+            font-weight: 800 !important;
+            margin: 0 0 16px 0 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+        }
+        .status-controls-row {
+            display: flex !important;
+            gap: 12px !important;
+            flex-wrap: wrap !important;
+            align-items: center !important;
+            margin-bottom: 16px !important;
+        }
+        .status-label {
+            font-weight: 700 !important;
+            font-size: 0.88rem !important;
+            color: #334155 !important;
+        }
+        .status-select-styled {
+            padding: 9px 16px !important;
+            border-radius: 10px !important;
+            border: 1.5px solid #cbd5e1 !important;
+            font-weight: 700 !important;
+            font-family: inherit !important;
+            font-size: 0.9rem !important;
+            background: #ffffff !important;
+            color: #1e293b !important;
+            outline: none !important;
+            cursor: pointer !important;
+        }
+        .btn-save-status {
+            background: linear-gradient(135deg, #1d0c8d 0%, #3182ce 100%) !important;
+            color: #ffffff !important;
+            border: none !important;
+            padding: 10px 20px !important;
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+            font-size: 0.88rem !important;
+            cursor: pointer !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            box-shadow: 0 3px 8px rgba(29, 12, 141, 0.2) !important;
+        }
+        .btn-save-status:hover {
+            transform: translateY(-1px) !important;
+            box-shadow: 0 5px 12px rgba(29, 12, 141, 0.3) !important;
+        }
+        .notes-textarea-styled {
+            width: 100% !important;
+            padding: 12px 14px !important;
+            border-radius: 10px !important;
+            border: 1.5px solid #cbd5e1 !important;
+            font-family: inherit !important;
+            font-size: 0.9rem !important;
+            color: #1e293b !important;
+            background: #ffffff !important;
+            box-sizing: border-box !important;
+            outline: none !important;
+            resize: vertical !important;
+        }
+        .modal-section-header {
+            font-size: 0.85rem !important;
+            font-weight: 800 !important;
+            color: #334155 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.8px !important;
+            margin-bottom: 12px !important;
+            padding-bottom: 8px !important;
+            border-bottom: 1.5px solid #f1f5f9 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+        .modal-info-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 12px !important;
+        }
+        @media (max-width: 640px) {
+            .modal-info-grid { grid-template-columns: 1fr !important; }
+        }
+        .modal-info-card {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 12px !important;
+        }
+        .modal-info-card.full-width { grid-column: 1 / -1 !important; }
+        .modal-info-icon {
+            width: 38px !important;
+            height: 38px !important;
+            min-width: 38px !important;
+            border-radius: 10px !important;
+            background: #ebf8ff !important;
+            color: #3182ce !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-size: 0.95rem !important;
+        }
+        .modal-info-text { overflow: hidden !important; }
+        .modal-info-label {
+            display: block !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            color: #64748b !important;
+        }
+        .modal-info-value {
+            font-size: 0.92rem !important;
+            font-weight: 700 !important;
+            color: #0f172a !important;
+            margin-top: 2px !important;
+            white-space: normal !important;
+            word-break: break-word !important;
+        }
+        .role-pill-badge {
+            background: linear-gradient(135deg, #1d0c8d 0%, #2b6cb0 100%) !important;
+            color: #ffffff !important;
+            padding: 8px 18px !important;
+            border-radius: 30px !important;
+            font-size: 0.85rem !important;
+            font-weight: 700 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            box-shadow: 0 4px 10px rgba(29, 12, 141, 0.18) !important;
+        }
+        .modal-answer-card {
+            background: #ffffff !important;
+            border: 1px solid #e2e8f0 !important;
+            border-left: 4px solid #3182ce !important;
+            border-radius: 12px !important;
+            padding: 16px 20px !important;
+            margin-bottom: 14px !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02) !important;
+        }
+        .modal-answer-q {
+            font-size: 0.88rem !important;
+            font-weight: 700 !important;
+            color: #334155 !important;
+            margin-bottom: 10px !important;
+            line-height: 1.45 !important;
+            display: flex !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
+        }
+        .modal-answer-a {
+            font-size: 0.94rem !important;
+            color: #0f172a !important;
+            line-height: 1.6 !important;
+            background: #f8fafc !important;
+            padding: 12px 16px !important;
+            border-radius: 8px !important;
+            border: 1px solid #e2e8f0 !important;
+            font-weight: 500 !important;
+            word-break: break-word !important;
+        }
+        .portfolio-link-chip {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+            background: #ebf8ff !important;
+            color: #2b6cb0 !important;
+            padding: 10px 18px !important;
+            border-radius: 10px !important;
+            font-weight: 700 !important;
+            font-size: 0.92rem !important;
+            text-decoration: none !important;
+            border: 1px solid #bee3f8 !important;
+            transition: all 0.2s ease !important;
+        }
+        .portfolio-link-chip:hover {
+            background: #bee3f8 !important;
+            color: #2c5282 !important;
+            transform: translateY(-1px) !important;
+        }
+    </style>
 
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -252,105 +549,139 @@
          ========================================================== -->
     <div class="app-modal-overlay" id="appDetailModal">
         <div class="app-modal-card">
+            <div class="app-modal-accent-bar"></div>
             <div class="app-modal-header">
                 <div>
-                    <span id="mAppOppBadge" style="font-size: 0.75rem; font-weight: 800; color: var(--accent-color); text-transform: uppercase;">Poetry in Motion</span>
+                    <span class="modal-opp-chip" id="mAppOppBadge"><i class="fas fa-film"></i> Poetry in Motion</span>
                     <h2 id="mAppApplicantName">Applicant Details</h2>
                 </div>
-                <button class="app-modal-close" onclick="closeApplicationModal()">&times;</button>
+                <button class="app-modal-close" onclick="closeApplicationModal()" title="Close">&times;</button>
             </div>
 
             <div class="app-modal-body">
                 <!-- Status & Admin Quick Actions -->
                 <div class="modal-admin-controls">
-                    <h4><i class="fas fa-shield-alt"></i> Application Status & Internal Admin Notes</h4>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 15px;">
-                        <label for="mStatusSelect" style="font-weight: 700; font-size: 0.88rem; color: #2d3748;">Current Status:</label>
-                        <select id="mStatusSelect" style="padding: 8px 14px; border-radius: 8px; border: 1.5px solid #cbd5e0; font-weight: 700; font-family: inherit;">
-                            <option value="Pending">Pending</option>
-                            <option value="Under Review">Under Review</option>
-                            <option value="Interview">Interview</option>
-                            <option value="Accepted">Accepted</option>
-                            <option value="Rejected">Rejected</option>
+                    <h4><i class="fas fa-shield-alt" style="color: #3182ce;"></i> Executive Status &amp; Internal Notes</h4>
+                    <div class="status-controls-row">
+                        <label for="mStatusSelect" class="status-label">Application Status:</label>
+                        <select id="mStatusSelect" class="status-select-styled">
+                            <option value="Pending">⏳ Pending Review</option>
+                            <option value="Under Review">🔍 Under Review</option>
+                            <option value="Interview">🎤 Interview Scheduled</option>
+                            <option value="Accepted">✅ Accepted</option>
+                            <option value="Rejected">❌ Rejected</option>
                         </select>
-                        <button class="admin-btn" onclick="saveCurrentAppStatus()" style="padding: 8px 18px; margin: 0; font-size: 0.85rem;">
-                            <i class="fas fa-save"></i> Save Changes
+                        <button class="btn-save-status" onclick="saveCurrentAppStatus()">
+                            <i class="fas fa-save"></i> Save Status
                         </button>
                     </div>
                     <div>
-                        <label for="mAdminNotes" style="display: block; font-weight: 700; font-size: 0.85rem; color: #4a5568; margin-bottom: 6px;">
-                            Private E-Board Notes (Only visible to admins):
+                        <label for="mAdminNotes" style="display: block; font-weight: 700; font-size: 0.82rem; color: #64748b; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">
+                            Internal Admin Notes (Confidential):
                         </label>
-                        <textarea id="mAdminNotes" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0; font-family: inherit; font-size: 0.88rem;" placeholder="Add internal notes, interview feedback, or scheduling comments..."></textarea>
+                        <textarea id="mAdminNotes" rows="2" class="notes-textarea-styled" placeholder="Add interview feedback, notes, or next steps..."></textarea>
                     </div>
                 </div>
 
-                <!-- Applicant Profile -->
+                <!-- Applicant Profile Mini-Cards -->
                 <div>
-                    <h3 class="modal-section-title">Applicant Information</h3>
+                    <div class="modal-section-header">
+                        <i class="fas fa-user-circle" style="color: #3182ce;"></i>
+                        <span>Applicant Information</span>
+                    </div>
                     <div class="modal-info-grid">
-                        <div class="modal-info-item">
-                            <span class="modal-info-label">Full Name</span>
-                            <div class="modal-info-value" id="mInfoName">-</div>
+                        <div class="modal-info-card">
+                            <div class="modal-info-icon"><i class="fas fa-user"></i></div>
+                            <div class="modal-info-text">
+                                <span class="modal-info-label">Full Name</span>
+                                <div class="modal-info-value" id="mInfoName">-</div>
+                            </div>
                         </div>
-                        <div class="modal-info-item">
-                            <span class="modal-info-label">MDC Student Email</span>
-                            <div class="modal-info-value" id="mInfoEmail">-</div>
+                        <div class="modal-info-card">
+                            <div class="modal-info-icon"><i class="fas fa-envelope"></i></div>
+                            <div class="modal-info-text">
+                                <span class="modal-info-label">MDC Student Email</span>
+                                <div class="modal-info-value" id="mInfoEmail">-</div>
+                            </div>
                         </div>
-                        <div class="modal-info-item">
-                            <span class="modal-info-label">Campus</span>
-                            <div class="modal-info-value" id="mInfoCampus">-</div>
+                        <div class="modal-info-card">
+                            <div class="modal-info-icon"><i class="fas fa-building-columns"></i></div>
+                            <div class="modal-info-text">
+                                <span class="modal-info-label">Campus</span>
+                                <div class="modal-info-value" id="mInfoCampus">-</div>
+                            </div>
                         </div>
-                        <div class="modal-info-item">
-                            <span class="modal-info-label">Degree / Major</span>
-                            <div class="modal-info-value" id="mInfoMajor">-</div>
+                        <div class="modal-info-card">
+                            <div class="modal-info-icon"><i class="fas fa-graduation-cap"></i></div>
+                            <div class="modal-info-text">
+                                <span class="modal-info-label">Degree / Major</span>
+                                <div class="modal-info-value" id="mInfoMajor">-</div>
+                            </div>
                         </div>
-                        <div class="modal-info-item">
-                            <span class="modal-info-label">Academic Year</span>
-                            <div class="modal-info-value" id="mInfoYear">-</div>
+                        <div class="modal-info-card">
+                            <div class="modal-info-icon"><i class="fas fa-calendar-alt"></i></div>
+                            <div class="modal-info-text">
+                                <span class="modal-info-label">Academic Year</span>
+                                <div class="modal-info-value" id="mInfoYear">-</div>
+                            </div>
                         </div>
-                        <div class="modal-info-item">
-                            <span class="modal-info-label">Phone</span>
-                            <div class="modal-info-value" id="mInfoPhone">-</div>
+                        <div class="modal-info-card">
+                            <div class="modal-info-icon"><i class="fas fa-phone"></i></div>
+                            <div class="modal-info-text">
+                                <span class="modal-info-label">Phone</span>
+                                <div class="modal-info-value" id="mInfoPhone">-</div>
+                            </div>
                         </div>
-                        <div class="modal-info-item" style="grid-column: 1 / -1;">
-                            <span class="modal-info-label">General Availability</span>
-                            <div class="modal-info-value" id="mInfoAvailability">-</div>
+                        <div class="modal-info-card full-width">
+                            <div class="modal-info-icon"><i class="fas fa-clock"></i></div>
+                            <div class="modal-info-text">
+                                <span class="modal-info-label">Weekly Availability</span>
+                                <div class="modal-info-value" id="mInfoAvailability">-</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Roles Applied -->
                 <div>
-                    <h3 class="modal-section-title">Selected Roles</h3>
-                    <div id="mRolesBadgesList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                    <div class="modal-section-header">
+                        <i class="fas fa-award" style="color: #d4af37;"></i>
+                        <span>Selected Creative Roles</span>
+                    </div>
+                    <div id="mRolesBadgesList" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
                 </div>
 
                 <!-- General Motivation & Contribution -->
                 <div>
-                    <h3 class="modal-section-title">General Project Motivation</h3>
+                    <div class="modal-section-header">
+                        <i class="fas fa-compass" style="color: #3182ce;"></i>
+                        <span>General Project Motivation</span>
+                    </div>
                     <div class="modal-answer-card">
-                        <div class="modal-answer-q">Why are you interested in Poetry in Motion?</div>
+                        <div class="modal-answer-q"><i class="fas fa-quote-left" style="color: #3182ce; font-size: 0.8rem;"></i> Why are you interested in Poetry in Motion?</div>
                         <div class="modal-answer-a" id="mAnswerWhy">-</div>
                     </div>
                     <div class="modal-answer-card">
-                        <div class="modal-answer-q">What do you hope to contribute to the project?</div>
+                        <div class="modal-answer-q"><i class="fas fa-lightbulb" style="color: #d4af37; font-size: 0.8rem;"></i> What do you hope to contribute to the project?</div>
                         <div class="modal-answer-a" id="mAnswerContribute">-</div>
                     </div>
                 </div>
 
                 <!-- Dynamic Role-Specific Answers Container -->
-                <div id="mRoleSpecificAnswersSection"></div>
+                <div id="mRoleSpecificAnswersSection" style="display: flex; flex-direction: column; gap: 20px;"></div>
 
                 <!-- Portfolio & Attachments -->
                 <div>
-                    <h3 class="modal-section-title">Portfolio & Attachments</h3>
+                    <div class="modal-section-header">
+                        <i class="fas fa-folder-open" style="color: #805ad5;"></i>
+                        <span>Portfolio &amp; Attachments</span>
+                    </div>
                     <div class="modal-answer-card">
-                        <div class="modal-answer-q">Portfolio / Online Showcase Link</div>
+                        <div class="modal-answer-q"><i class="fas fa-link" style="color: #3182ce; font-size: 0.8rem;"></i> Portfolio / Online Showcase Link</div>
                         <div class="modal-answer-a" id="mAnswerPortfolio">-</div>
                     </div>
                     <div class="modal-answer-card">
-                        <div class="modal-answer-q">Additional Comments for E-Board</div>
+                        <div class="modal-answer-q"><i class="fas fa-comment-dots" style="color: #718096; font-size: 0.8rem;"></i> Additional Comments for E-Board</div>
                         <div class="modal-answer-a" id="mAnswerComments">-</div>
                     </div>
                 </div>
@@ -537,6 +868,16 @@
             }).join('');
         }
 
+        function escapeAppHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         // --- Application Modal Handlers ---
         window.openApplicationModal = function (appId) {
             const app = allApplications.find(a => a.id === appId);
@@ -561,9 +902,9 @@
             const opp = typeof getOpportunityById === 'function' ? getOpportunityById(app.opportunityId) : null;
             const rolesHtml = (app.selectedRoles || []).map(rId => {
                 const r = opp?.roles?.find(item => item.id === rId);
-                return `<span style="background: var(--primary-color); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700;"><i class="fas ${r ? r.icon : 'fa-star'}"></i> ${r ? r.title : rId}</span>`;
+                return `<span class="role-pill-badge"><i class="fas ${r ? r.icon : 'fa-star'}"></i> ${r ? r.title : rId}</span>`;
             }).join('');
-            document.getElementById('mRolesBadgesList').innerHTML = rolesHtml || 'No roles selected';
+            document.getElementById('mRolesBadgesList').innerHTML = rolesHtml || '<span style="color:#94a3b8; font-style:italic;">No roles selected</span>';
 
             // General Motivation
             document.getElementById('mAnswerWhy').textContent = app.generalAnswers?.why || '-';
@@ -579,34 +920,49 @@
                 const roleAnswers = (app.roleAnswers && app.roleAnswers[roleId]) || {};
 
                 let questionsListHtml = '';
-                roleQuestions.forEach(q => {
-                    const answer = roleAnswers[q.id];
-                    let displayVal = '-';
-                    if (Array.isArray(answer)) {
-                        displayVal = answer.join(', ');
-                    } else if (answer && typeof answer === 'object' && answer.base64) {
-                        displayVal = `
-                            <div style="margin-top: 8px;">
-                                <span>Attached File: <strong>${answer.name}</strong> (${answer.size})</span><br>
-                                ${answer.type && answer.type.startsWith('image/') ? `<img src="${answer.base64}" alt="Artwork Preview" style="max-width: 250px; max-height: 200px; border-radius: 8px; margin-top: 8px; border: 1px solid #cbd5e0;">` : ''}
+                if (roleQuestions.length > 0) {
+                    roleQuestions.forEach(q => {
+                        const answer = roleAnswers[q.id];
+                        let displayVal = '-';
+                        if (Array.isArray(answer)) {
+                            displayVal = answer.join(', ');
+                        } else if (answer && typeof answer === 'object' && answer.base64) {
+                            displayVal = `
+                                <div style="margin-top: 8px;">
+                                    <span style="font-weight:700; color:#1e293b;">Attached File:</span> <strong style="color:#2b6cb0;">${escapeAppHtml(answer.name)}</strong> (${escapeAppHtml(answer.size)})<br>
+                                    ${answer.type && answer.type.startsWith('image/') ? `<img src="${answer.base64}" alt="Artwork Preview" style="max-width: 280px; max-height: 200px; border-radius: 10px; margin-top: 10px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.06);">` : ''}
+                                </div>
+                            `;
+                        } else if (answer) {
+                            displayVal = escapeAppHtml(answer);
+                        }
+
+                        questionsListHtml += `
+                            <div class="modal-answer-card">
+                                <div class="modal-answer-q"><i class="fas fa-question-circle" style="color: #3182ce; font-size: 0.82rem; margin-top: 2px;"></i> <span>${escapeAppHtml(q.label)}</span></div>
+                                <div class="modal-answer-a">${displayVal}</div>
                             </div>
                         `;
-                    } else if (answer) {
-                        displayVal = answer;
+                    });
+                } else if (Object.keys(roleAnswers).length > 0) {
+                    for (const [qKey, answer] of Object.entries(roleAnswers)) {
+                        let displayVal = typeof answer === 'object' && answer?.name ? answer.name : String(answer);
+                        questionsListHtml += `
+                            <div class="modal-answer-card">
+                                <div class="modal-answer-q"><i class="fas fa-question-circle" style="color: #3182ce; font-size: 0.82rem; margin-top: 2px;"></i> <span>${escapeAppHtml(qKey)}</span></div>
+                                <div class="modal-answer-a">${escapeAppHtml(displayVal)}</div>
+                            </div>
+                        `;
                     }
-
-                    questionsListHtml += `
-                        <div class="modal-answer-card">
-                            <div class="modal-answer-q">${q.label}</div>
-                            <div class="modal-answer-a">${displayVal}</div>
-                        </div>
-                    `;
-                });
+                }
 
                 roleSectionsHtml += `
-                    <div style="margin-top: 15px;">
-                        <h3 class="modal-section-title"><i class="fas ${role ? role.icon : 'fa-check'}"></i> ${role ? role.title : roleId} Questions</h3>
-                        ${questionsListHtml || '<p style="color:#a0aec0;">No questions defined.</p>'}
+                    <div>
+                        <div class="modal-section-header">
+                            <i class="fas ${role ? role.icon : 'fa-paint-brush'}" style="color: #1d0c8d;"></i>
+                            <span>${role ? role.title : roleId} Questions</span>
+                        </div>
+                        ${questionsListHtml || '<p style="color:#94a3b8; font-style:italic;">No questions answered.</p>'}
                     </div>
                 `;
             });
@@ -615,7 +971,18 @@
 
             // Portfolio & Comments
             const portfolio = app.generalAnswers?.consolidatedPortfolio;
-            document.getElementById('mAnswerPortfolio').innerHTML = portfolio ? `<a href="${portfolio}" target="_blank" style="color: var(--accent-color); font-weight:700;">${portfolio} <i class="fas fa-external-link-alt" style="font-size:0.75rem;"></i></a>` : 'Not provided';
+            if (portfolio && portfolio.trim()) {
+                const cleanHref = portfolio.startsWith('http') ? portfolio : `https://${portfolio}`;
+                document.getElementById('mAnswerPortfolio').innerHTML = `
+                    <a href="${escapeAppHtml(cleanHref)}" target="_blank" class="portfolio-link-chip">
+                        <i class="fas fa-external-link-alt"></i>
+                        <span>${escapeAppHtml(portfolio)}</span>
+                    </a>
+                `;
+            } else {
+                document.getElementById('mAnswerPortfolio').innerHTML = '<span style="color:#94a3b8; font-style:italic;">No portfolio link provided</span>';
+            }
+
             document.getElementById('mAnswerComments').textContent = app.generalAnswers?.finalComments || 'None';
 
             document.getElementById('appDetailModal').style.display = 'flex';
