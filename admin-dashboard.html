@@ -367,38 +367,32 @@
         <!-- TAB: Member Management -->
         <div class="tab-panel" id="tab-members-manage">
             <section class="admin-card">
-                <h2><i class="fas fa-users"></i> Member Management</h2>
-                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Review and manage active community members.</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <h2><i class="fas fa-users"></i> Member Management</h2>
+                        <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin: 0;">Review and manage active community members, invitation codes, and system access.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <span id="memberCountBadge" style="background: rgba(49, 130, 206, 0.12); color: #3182ce; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.85rem;">Loading members...</span>
+                        <button class="admin-btn" onclick="loadMembers()" style="padding: 6px 14px; font-size: 0.85rem; background: transparent; border: 1px solid var(--admin-border); color: var(--admin-text);"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    </div>
+                </div>
+
+                <!-- Search and Filter Bar -->
+                <div style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 240px; position: relative;">
+                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--admin-text-muted);"></i>
+                        <input type="text" id="memberSearchInput" placeholder="Search by name, email, code or role..." style="width: 100%; padding: 10px 12px 10px 36px; border: 1px solid var(--admin-border); background: var(--admin-surface, #fff); color: var(--admin-text); box-sizing: border-box; border-radius: 4px; font-family: inherit;">
+                    </div>
+                    <select id="memberStatusFilter" style="padding: 10px 15px; border: 1px solid var(--admin-border); background: var(--admin-surface, #fff); color: var(--admin-text); border-radius: 4px; font-family: inherit;">
+                        <option value="all">All Members</option>
+                        <option value="active" selected>Active Only</option>
+                        <option value="expelled">Expelled Only</option>
+                    </select>
+                </div>
+
                 <div class="member-list" id="memberList">
-                    <!-- Mock Members -->
-                    <div class="member-item">
-                        <div class="member-info">
-                            <strong>Jane Doe</strong>
-                            <span>janedoe@example.com</span>
-                        </div>
-                        <button class="btn-expel" onclick="expelMember(this, 'Jane Doe')">Expel</button>
-                    </div>
-                    <div class="member-item">
-                        <div class="member-info">
-                            <strong>John Smith</strong>
-                            <span>jsmith23@example.com</span>
-                        </div>
-                        <button class="btn-expel" onclick="expelMember(this, 'John Smith')">Expel</button>
-                    </div>
-                    <div class="member-item">
-                        <div class="member-info">
-                            <strong>Maria Garcia</strong>
-                            <span>mgarcia@example.com</span>
-                        </div>
-                        <button class="btn-expel" onclick="expelMember(this, 'Maria Garcia')">Expel</button>
-                    </div>
-                    <div class="member-item">
-                        <div class="member-info">
-                            <strong>Alex Johnson</strong>
-                            <span>alexj@example.com</span>
-                        </div>
-                        <button class="btn-expel" onclick="expelMember(this, 'Alex Johnson')">Expel</button>
-                    </div>
+                    <p style="color: var(--admin-text-muted); padding: 25px; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading members from database...</p>
                 </div>
             </section>
         </div>
@@ -407,16 +401,37 @@
         <div class="tab-panel" id="tab-members-invite">
             <section class="admin-card">
                 <h2><i class="fas fa-envelope"></i> Send Invitations</h2>
+                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Generate unique invitation codes and email direct registration links to future members.</p>
+                
                 <form id="inviteForm" class="admin-form">
                     <div class="form-group" id="emailSlotsContainer">
-                        <label>Recipient Email Addresses</label>
-                        <input type="email" class="invite-email-slot" required placeholder="member1@example.com" style="margin-bottom: 10px;">
-                        <input type="email" class="invite-email-slot" placeholder="member2@example.com" style="margin-bottom: 10px;">
-                        <input type="email" class="invite-email-slot" placeholder="member3@example.com" style="margin-bottom: 10px;">
+                        <label>Recipient Email Address(es)</label>
+                        <input type="email" class="invite-email-slot" required placeholder="member@example.com" style="margin-bottom: 10px;">
                     </div>
                     <button type="button" id="addEmailSlotBtn" class="admin-btn" style="background: transparent; border: 1px solid var(--admin-border); color: var(--admin-text); margin-bottom: 20px;">+ Add another email</button>
-                    <button type="submit" class="admin-btn">Send Invitations</button>
+                    <button type="submit" class="admin-btn"><i class="fas fa-paper-plane"></i> Send Invitations</button>
                 </form>
+
+                <!-- Last Sent Invitation Quick Card (shows after sending) -->
+                <div id="inviteSuccessCard" style="display: none; margin-top: 25px; padding: 18px; border: 1px solid #38a169; background: rgba(56, 161, 105, 0.08); border-radius: 6px;">
+                    <h4 style="margin: 0 0 10px 0; color: #2f855a; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-check-circle"></i> Invitations Generated & Dispatched
+                    </h4>
+                    <div id="inviteSuccessDetails" style="font-size: 0.9rem; line-height: 1.6;"></div>
+                </div>
+
+                <!-- Sent Invitations History -->
+                <div style="margin-top: 35px; border-top: 1px solid var(--admin-border); padding-top: 25px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0; font-size: 1.1rem;"><i class="fas fa-history"></i> Sent Invitations History</h3>
+                        <button type="button" onclick="loadSentInvitations()" class="admin-btn" style="padding: 4px 10px; font-size: 0.8rem; background: transparent; border: 1px solid var(--admin-border); color: var(--admin-text);">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                    <div class="member-list" id="sentInvitationsList" style="max-height: 380px; overflow-y: auto;">
+                        <p style="color: var(--admin-text-muted); font-size: 0.9rem;">Loading sent invitations...</p>
+                    </div>
+                </div>
             </section>
         </div>
 
@@ -498,6 +513,14 @@
 
             if (tabName === 'members-manage' || tabName === 'members-invite') {
                 document.querySelector('.dropbtn').classList.add('active');
+            }
+
+            if (tabName === 'members-manage') {
+                loadMembers();
+            }
+
+            if (tabName === 'members-invite') {
+                loadSentInvitations();
             }
 
             if (tabName === 'events') {
@@ -614,6 +637,122 @@
         });
 
         // --- Invitations ---
+        function generateUniqueInviteCode() {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let code = '';
+            for (let i = 0; i < 8; i++) {
+                code += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return code;
+        }
+
+        function saveLocalInvite(inv) {
+            try {
+                const stored = JSON.parse(localStorage.getItem('verba_sent_invitations') || '[]');
+                stored.unshift(inv);
+                localStorage.setItem('verba_sent_invitations', JSON.stringify(stored.slice(0, 50)));
+            } catch (e) {
+                console.warn(e);
+            }
+        }
+
+        async function loadSentInvitations() {
+            const listEl = document.getElementById('sentInvitationsList');
+            if (!listEl) return;
+
+            let invites = [];
+
+            if (db) {
+                try {
+                    const snap = await db.collection('invitations').orderBy('createdAt', 'desc').limit(40).get();
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        invites.push({
+                            id: doc.id,
+                            code: data.code || doc.id,
+                            email: data.email || 'Unknown',
+                            status: data.status || 'pending',
+                            joinUrl: data.joinUrl || `https://theverbavitae.org/join.html?code=${data.code || doc.id}`,
+                            createdAt: data.createdAt ? (data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdIso || Date.now())) : (data.createdIso ? new Date(data.createdIso) : null)
+                        });
+                    });
+                } catch (e) {
+                    console.warn("Could not load invitations from Firestore (falling back to local cache):", e);
+                }
+            }
+
+            if (invites.length === 0) {
+                try {
+                    invites = JSON.parse(localStorage.getItem('verba_sent_invitations') || '[]');
+                } catch (e) {}
+            }
+
+            if (invites.length === 0) {
+                listEl.innerHTML = '<p style="color: var(--admin-text-muted); font-size: 0.9rem; padding: 15px 0;">No invitations recorded yet.</p>';
+                return;
+            }
+
+            listEl.innerHTML = '';
+            invites.forEach(inv => {
+                const item = document.createElement('div');
+                item.className = 'member-item';
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.style.padding = '12px 15px';
+                item.style.borderBottom = '1px solid var(--admin-border)';
+                item.style.flexWrap = 'wrap';
+                item.style.gap = '10px';
+
+                const isAccepted = inv.status === 'accepted';
+                const statusBadge = isAccepted 
+                    ? '<span style="background: rgba(56, 161, 105, 0.15); color: #2f855a; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-check"></i> Registered</span>'
+                    : '<span style="background: rgba(221, 107, 32, 0.15); color: #c05621; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-clock"></i> Pending</span>';
+
+                const dateStr = inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : '';
+                const codeSafe = (inv.code || '').replace(/'/g, "\\'");
+                const joinUrlSafe = (inv.joinUrl || `https://theverbavitae.org/join.html?code=${inv.code}`).replace(/'/g, "\\'");
+
+                item.innerHTML = `
+                    <div class="member-info" style="display: flex; flex-direction: column; gap: 3px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <strong>${inv.email}</strong>
+                            ${statusBadge}
+                        </div>
+                        <span style="font-size: 0.8rem; color: var(--admin-text-muted);">
+                            Code: <strong style="font-family: monospace; color: #2b6cb0;">${inv.code}</strong> ${dateStr ? `&bull; Sent: ${dateStr}` : ''}
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <button type="button" class="admin-btn" style="padding: 5px 10px; font-size: 0.75rem; background: transparent; border: 1px solid var(--admin-border); color: var(--admin-text);" onclick="navigator.clipboard.writeText('${joinUrlSafe}'); showToast('Invite link copied to clipboard!');">
+                            <i class="fas fa-copy"></i> Copy Link
+                        </button>
+                        <button type="button" class="btn-expel" style="padding: 5px 10px; font-size: 0.75rem;" onclick="deleteInvitation('${codeSafe}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        async function deleteInvitation(code) {
+            if (!confirm(`Are you sure you want to revoke/delete invitation code ${code}?`)) return;
+            try {
+                if (db) {
+                    await db.collection('invitations').doc(code).delete();
+                }
+                const stored = JSON.parse(localStorage.getItem('verba_sent_invitations') || '[]');
+                const filtered = stored.filter(i => i.code !== code);
+                localStorage.setItem('verba_sent_invitations', JSON.stringify(filtered));
+                showToast(`Invitation ${code} deleted.`);
+                loadSentInvitations();
+            } catch (e) {
+                console.error("Error deleting invitation:", e);
+                showToast('Failed to delete invitation.');
+            }
+        }
+
         document.getElementById('addEmailSlotBtn').addEventListener('click', () => {
             const container = document.getElementById('emailSlotsContainer');
             const input = document.createElement('input');
@@ -624,10 +763,16 @@
             container.appendChild(input);
         });
 
+        let isSendingInvites = false;
+
         document.getElementById('inviteForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (isSendingInvites) return;
+
             const inputs = document.querySelectorAll('.invite-email-slot');
-            const emails = Array.from(inputs).map(input => input.value.trim()).filter(val => val !== '');
+            // De-duplicate emails so the exact same email cannot be sent multiple times
+            const rawEmails = Array.from(inputs).map(input => input.value.trim().toLowerCase()).filter(val => val !== '');
+            const emails = [...new Set(rawEmails)];
             const submitBtn = e.target.querySelector('button[type="submit"]');
             
             if (emails.length === 0) {
@@ -635,55 +780,400 @@
                 return;
             }
 
-            submitBtn.textContent = 'Sending...';
+            isSendingInvites = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
             submitBtn.disabled = true;
 
-            try {
-                const serviceID = "service_igfw5aa";
-                const templateID = "template_sbe1x22";
+            const serviceID = "service_igfw5aa";
+            const templateID = "template_sbe1x22";
+            const currentOrigin = (window.location.protocol.startsWith('http') && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1'))
+                ? window.location.origin
+                : 'https://theverbavitae.org';
 
-                const emailPromises = emails.map(email => {
-                    // Genera un código de 8 caracteres alfanuméricos
-                    const uniqueCode = Math.random().toString(36).substring(2, 10).toUpperCase();
-                    const joinUrl = `https://theverbavitae.org/join.html?code=${uniqueCode}`;
-                    
-                    return emailjs.send(serviceID, templateID, {
-                        to_email: email,
-                        email_to: email,
-                        user_email: email,
-                        email: email,
-                        recipient: email,
-                        send_to: email,
-                        to_name: email.split('@')[0],
-                        invite_code: uniqueCode,
-                        code: uniqueCode,
-                        invitation_code: uniqueCode,
-                        join_link: joinUrl,
-                        link: joinUrl,
-                        url: joinUrl
-                    });
+            const results = [];
+            let emailErrors = 0;
+
+            for (const email of emails) {
+                const uniqueCode = generateUniqueInviteCode();
+                const joinUrl = `${currentOrigin}/join.html?code=${uniqueCode}`;
+
+                // 1. Save invitation to Firestore
+                const inviteRecord = {
+                    code: uniqueCode,
+                    email: email,
+                    status: 'pending',
+                    createdAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date(),
+                    createdIso: new Date().toISOString(),
+                    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    joinUrl: joinUrl,
+                    sentBy: (auth && auth.currentUser && auth.currentUser.email) ? auth.currentUser.email : 'Admin'
+                };
+
+                try {
+                    if (db) {
+                        await db.collection('invitations').doc(uniqueCode).set(inviteRecord);
+                    }
+                } catch (dbErr) {
+                    console.warn("Could not save invite to Firestore:", dbErr);
+                }
+
+                // 2. Cache in local storage list
+                saveLocalInvite({
+                    code: uniqueCode,
+                    email: email,
+                    status: 'pending',
+                    createdIso: new Date().toISOString(),
+                    joinUrl: joinUrl
                 });
 
-                await Promise.all(emailPromises);
-                
-                showToast(`Invitations successfully sent to ${emails.length} recipient(s).`);
-                e.target.reset();
-            } catch (error) {
-                console.error('EmailJS Error:', error);
-                showToast('Failed to send invitations. Check console.');
-            } finally {
-                submitBtn.textContent = 'Send Invitations';
-                submitBtn.disabled = false;
+                // 3. Dispatch email via EmailJS with comprehensive template aliases
+                const publicKey = "T2RRIBrs9d6zqacLR";
+                const templateParams = {
+                    to_email: email,
+                    email_to: email,
+                    user_email: email,
+                    email: email,
+                    recipient: email,
+                    send_to: email,
+                    to_name: email.split('@')[0],
+                    invite_code: uniqueCode,
+                    code: uniqueCode,
+                    invitation_code: uniqueCode,
+                    join_link: joinUrl,
+                    link: joinUrl,
+                    url: joinUrl,
+                    message: `You are invited to join Verba Vitae! Your unique invitation code is ${uniqueCode}. Click here to register: ${joinUrl}`
+                };
+
+                console.log(`[EmailJS] Enviando invitación a: "${email}" con código: "${uniqueCode}". Parámetros:`, templateParams);
+
+                let emailSentOk = false;
+                let errorDetails = null;
+
+                try {
+                    // Try SDK first with explicit public key
+                    if (typeof emailjs !== 'undefined' && emailjs.send) {
+                        const sdkRes = await emailjs.send(serviceID, templateID, templateParams, publicKey);
+                        console.log(`EmailJS SDK response for ${email}:`, sdkRes);
+                        emailSentOk = true;
+                    } else {
+                        throw new Error("EmailJS SDK not available");
+                    }
+                } catch (sdkErr) {
+                    console.warn(`EmailJS SDK failed for ${email}:`, sdkErr, "Attempting direct REST API call...");
+                    // Try direct REST API fallback
+                    try {
+                        const apiRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                service_id: serviceID,
+                                template_id: templateID,
+                                user_id: publicKey,
+                                template_params: templateParams
+                            })
+                        });
+                        if (apiRes.ok) {
+                            emailSentOk = true;
+                        } else {
+                            const errBody = await apiRes.text();
+                            throw new Error(`EmailJS API ${apiRes.status}: ${errBody}`);
+                        }
+                    } catch (fetchErr) {
+                        console.error(`Direct EmailJS fetch failed for ${email}:`, fetchErr);
+                        errorDetails = fetchErr.message || (sdkErr && sdkErr.text) || (sdkErr && sdkErr.message) || 'Delivery failed';
+                        emailErrors++;
+                    }
+                }
+
+                results.push({ email, code: uniqueCode, joinUrl, success: emailSentOk, error: errorDetails });
             }
+
+            // Show summary card
+            const successCard = document.getElementById('inviteSuccessCard');
+            const successDetails = document.getElementById('inviteSuccessDetails');
+            if (successCard && successDetails) {
+                successCard.style.display = 'block';
+                successDetails.innerHTML = `
+                    <div style="margin-bottom: 12px; padding: 10px; background: #fffaf0; border: 1px solid #feebc8; border-radius: 4px; color: #744210; font-size: 0.85rem;">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Importante:</strong> Si el destinatario no ve el correo en su bandeja principal en 1-2 minutos, <strong>debe revisar su carpeta de Spam / Correo no deseado</strong> o la pestaña de "Promociones". También puedes enviarle el enlace directo copiado abajo.
+                    </div>
+                ` + results.map(r => `
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 10px 14px; background: #fff; border-radius: 4px; border: 1px solid var(--admin-border); flex-wrap: wrap; gap: 8px;">
+                        <div>
+                            <strong>${r.email}</strong> &nbsp;&bull;&nbsp; Código: <span style="font-family: monospace; font-weight: 700; color: #2b6cb0; background: #ebf8ff; padding: 2px 6px; border-radius: 3px;">${r.code}</span>
+                            ${r.success ? '<span style="color: #38a169; font-weight: 600; font-size: 0.8rem; margin-left: 8px;"><i class="fas fa-check-circle"></i> Enviado por EmailJS</span>' : `<span style="color: #e53e3e; font-weight: 600; font-size: 0.8rem; margin-left: 8px;"><i class="fas fa-times-circle"></i> Error de entrega (${r.error || 'Verifica EmailJS'})</span>`}
+                        </div>
+                        <button type="button" class="admin-btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="navigator.clipboard.writeText('${r.joinUrl}'); showToast('¡Enlace de invitación copiado!');">
+                            <i class="fas fa-copy"></i> Copiar Link
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            if (emailErrors === 0) {
+                showToast(`Invitations successfully sent to ${emails.length} recipient(s).`);
+            } else if (emailErrors < emails.length) {
+                showToast(`Invitations created! Some emails encountered issues, but invite links are ready to copy.`);
+            } else {
+                showToast(`Invitation codes generated successfully and saved! Links can be copied directly.`);
+            }
+
+            e.target.reset();
+            const container = document.getElementById('emailSlotsContainer');
+            if (container) {
+                container.innerHTML = `
+                    <label>Recipient Email Address(es)</label>
+                    <input type="email" class="invite-email-slot" required placeholder="member@example.com" style="margin-bottom: 10px;">
+                `;
+            }
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Invitations';
+            submitBtn.disabled = false;
+            isSendingInvites = false;
+            loadSentInvitations();
         });
 
-        // --- Members ---
-        function expelMember(btn, name) {
-            if (confirm(`Are you sure you want to expel ${name} from Verba Vitae?`)) {
-                btn.parentElement.remove();
+        // --- Members Management (Real Firestore Integration) ---
+        let allMembersCache = [];
+
+        async function loadMembers() {
+            const listEl = document.getElementById('memberList');
+            const badgeEl = document.getElementById('memberCountBadge');
+            if (!listEl) return;
+
+            listEl.innerHTML = '<p style="color: var(--admin-text-muted); padding: 25px; text-align: center;"><i class="fas fa-spinner fa-spin"></i> Loading members from database...</p>';
+
+            allMembersCache = [];
+
+            if (db) {
+                try {
+                    const snap = await db.collection('users').get();
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        allMembersCache.push({
+                            id: doc.id,
+                            firstName: data.firstName || '',
+                            lastName: data.lastName || '',
+                            displayName: (data.firstName || data.lastName) ? `${data.firstName || ''} ${data.lastName || ''}`.trim() : (data.email ? data.email.split('@')[0] : 'Member'),
+                            email: data.email || 'No email',
+                            phone: data.phone || '',
+                            major: data.major || '',
+                            role: data.role || 'member',
+                            status: data.status || (data.role === 'expelled' ? 'expelled' : 'active'),
+                            invitationCode: data.invitationCode || data.code || '',
+                            createdAt: data.createdAt ? (data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt)) : null
+                        });
+                    });
+                } catch (e) {
+                    console.warn("Could not fetch users from Firestore:", e);
+                }
+            }
+
+            // Fallback backup if offline
+            if (allMembersCache.length === 0) {
+                try {
+                    const localUsers = JSON.parse(localStorage.getItem('verba_users_backup') || '[]');
+                    if (localUsers.length > 0) {
+                        allMembersCache = localUsers;
+                    }
+                } catch (e) {}
+            }
+
+            renderMemberList();
+        }
+
+        function renderMemberList() {
+            const listEl = document.getElementById('memberList');
+            const badgeEl = document.getElementById('memberCountBadge');
+            const searchVal = (document.getElementById('memberSearchInput')?.value || '').toLowerCase().trim();
+            const statusFilter = document.getElementById('memberStatusFilter')?.value || 'active';
+
+            if (!listEl) return;
+
+            // Filter
+            const filtered = allMembersCache.filter(m => {
+                // Status match
+                if (statusFilter === 'active' && m.status === 'expelled') return false;
+                if (statusFilter === 'expelled' && m.status !== 'expelled') return false;
+
+                // Search match
+                if (searchVal) {
+                    const matchName = m.displayName.toLowerCase().includes(searchVal);
+                    const matchEmail = m.email.toLowerCase().includes(searchVal);
+                    const matchRole = m.role.toLowerCase().includes(searchVal);
+                    const matchCode = (m.invitationCode || '').toLowerCase().includes(searchVal);
+                    const matchMajor = (m.major || '').toLowerCase().includes(searchVal);
+                    return matchName || matchEmail || matchRole || matchCode || matchMajor;
+                }
+                return true;
+            });
+
+            // Update badge stats
+            const totalCount = allMembersCache.length;
+            const activeCount = allMembersCache.filter(m => m.status !== 'expelled').length;
+            const expelledCount = totalCount - activeCount;
+            if (badgeEl) {
+                badgeEl.textContent = `${totalCount} Members (${activeCount} Active${expelledCount > 0 ? `, ${expelledCount} Expelled` : ''})`;
+            }
+
+            if (allMembersCache.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; padding: 40px 20px;">
+                        <i class="fas fa-users-slash" style="font-size: 2.5rem; color: var(--admin-text-muted); margin-bottom: 15px; display: block;"></i>
+                        <h4 style="margin: 0 0 8px 0; color: var(--admin-text);">No members registered yet</h4>
+                        <p style="color: var(--admin-text-muted); font-size: 0.9rem; max-width: 450px; margin: 0 auto 20px auto;">
+                            Members who register via the registration page will automatically appear here. You can send invitations using the "Send Invitations" tab.
+                        </p>
+                        <button class="admin-btn" onclick="switchTab('members-invite')"><i class="fas fa-envelope"></i> Send Invitations</button>
+                    </div>
+                `;
+                return;
+            }
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = `
+                    <p style="color: var(--admin-text-muted); text-align: center; padding: 30px;">
+                        No members match the current filter or search criteria.
+                    </p>
+                `;
+                return;
+            }
+
+            listEl.innerHTML = '';
+            filtered.forEach(m => {
+                const item = document.createElement('div');
+                item.className = 'member-item';
+                item.style.display = 'flex';
+                item.style.justifyContent = 'space-between';
+                item.style.alignItems = 'center';
+                item.style.padding = '14px 18px';
+                item.style.borderBottom = '1px solid var(--admin-border)';
+                item.style.flexWrap = 'wrap';
+                item.style.gap = '15px';
+
+                const isExpelled = m.status === 'expelled';
+
+                const roleBadgeStyle = m.role === 'admin' 
+                    ? 'background: #9b2c2c; color: #fff;' 
+                    : (m.role === 'eboard' ? 'background: #2b6cb0; color: #fff;' : 'background: #edf2f7; color: #4a5568;');
+
+                const statusBadge = isExpelled 
+                    ? '<span style="background: rgba(229, 62, 62, 0.15); color: #c53030; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-ban"></i> Expelled</span>'
+                    : '<span style="background: rgba(56, 161, 105, 0.15); color: #276749; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-check-circle"></i> Active</span>';
+
+                const formattedDate = m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '';
+                const nameSafe = m.displayName.replace(/'/g, "\\'");
+                const emailSafe = m.email.replace(/'/g, "\\'");
+
+                item.innerHTML = `
+                    <div class="member-info" style="display: flex; align-items: center; gap: 15px;">
+                        <div style="width: 44px; height: 44px; border-radius: 50%; background: ${isExpelled ? '#fed7d7' : '#e2e8f0'}; color: ${isExpelled ? '#c53030' : '#2d3748'}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; border: 2px solid ${isExpelled ? '#feb2b2' : '#cbd5e0'};">
+                            ${(m.displayName ? m.displayName.charAt(0) : 'M').toUpperCase()}
+                        </div>
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <strong style="font-size: 1rem; color: var(--admin-text);">${m.displayName}</strong>
+                                <span style="padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; ${roleBadgeStyle}">${m.role}</span>
+                                ${statusBadge}
+                            </div>
+                            <div style="font-size: 0.85rem; color: var(--admin-text-muted); margin-top: 3px; display: flex; gap: 12px; flex-wrap: wrap;">
+                                <span><i class="fas fa-envelope" style="font-size: 0.75rem;"></i> ${m.email}</span>
+                                ${m.invitationCode ? `<span><i class="fas fa-ticket-alt" style="font-size: 0.75rem;"></i> Code: <strong style="color: #2b6cb0;">${m.invitationCode}</strong></span>` : ''}
+                                ${m.major ? `<span><i class="fas fa-graduation-cap" style="font-size: 0.75rem;"></i> ${m.major}</span>` : ''}
+                                ${formattedDate ? `<span><i class="fas fa-calendar-alt" style="font-size: 0.75rem;"></i> Joined: ${formattedDate}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        ${isExpelled ? `
+                            <button type="button" class="admin-btn" style="padding: 6px 14px; font-size: 0.8rem; background: #38a169; color: white; border: none; border-radius: 4px;" onclick="reactivateMember('${m.id}', '${nameSafe}')">
+                                <i class="fas fa-undo"></i> Reactivate
+                            </button>
+                            <button type="button" class="btn-expel" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteMemberPermanently('${m.id}', '${nameSafe}')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        ` : `
+                            <button type="button" class="btn-expel" onclick="expelMember('${m.id}', '${nameSafe}', '${emailSafe}')">
+                                <i class="fas fa-user-slash"></i> Expel
+                            </button>
+                        `}
+                    </div>
+                `;
+
+                listEl.appendChild(item);
+            });
+        }
+
+        async function expelMember(userId, name, email) {
+            if (!confirm(`Are you sure you want to expel "${name}" (${email}) from Verba Vitae?\n\nThis will revoke their membership and block them from logging in.`)) {
+                return;
+            }
+
+            try {
+                if (db && userId) {
+                    await db.collection('users').doc(userId).update({
+                        status: 'expelled',
+                        role: 'expelled',
+                        expelledAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date()
+                    });
+                }
+                
+                const found = allMembersCache.find(m => m.id === userId);
+                if (found) {
+                    found.status = 'expelled';
+                    found.role = 'expelled';
+                }
+                renderMemberList();
                 showToast(`${name} has been expelled.`);
+            } catch (error) {
+                console.error("Error expelling member:", error);
+                showToast(`Failed to expel member: ${error.message}`);
             }
         }
+
+        async function reactivateMember(userId, name) {
+            if (!confirm(`Reactivate membership for "${name}"?`)) return;
+
+            try {
+                if (db && userId) {
+                    await db.collection('users').doc(userId).update({
+                        status: 'active',
+                        role: 'member',
+                        reactivatedAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date()
+                    });
+                }
+
+                const found = allMembersCache.find(m => m.id === userId);
+                if (found) {
+                    found.status = 'active';
+                    found.role = 'member';
+                }
+                renderMemberList();
+                showToast(`${name} has been reactivated.`);
+            } catch (error) {
+                console.error("Error reactivating member:", error);
+                showToast(`Failed to reactivate member: ${error.message}`);
+            }
+        }
+
+        async function deleteMemberPermanently(userId, name) {
+            if (!confirm(`Permanently delete user record for "${name}"?\n\nThis cannot be undone.`)) return;
+
+            try {
+                if (db && userId) {
+                    await db.collection('users').doc(userId).delete();
+                }
+                allMembersCache = allMembersCache.filter(m => m.id !== userId);
+                renderMemberList();
+                showToast(`Member record for ${name} has been deleted.`);
+            } catch (error) {
+                console.error("Error deleting member doc:", error);
+                showToast(`Failed to delete record: ${error.message}`);
+            }
+        }
+
+        document.getElementById('memberSearchInput')?.addEventListener('input', renderMemberList);
+        document.getElementById('memberStatusFilter')?.addEventListener('change', renderMemberList);
 
         // --- Banner Updater ---
         const savedTitle = localStorage.getItem('verba_banner_title') || 'Welcome to your new Dashboard!';
@@ -1640,6 +2130,8 @@
                         loadBookPickups();
                         loadPrintWindows();
                         loadPrintRequests();
+                        loadMembers();
+                        loadSentInvitations();
                     } catch (e) {
                         console.warn("Error loading admin data:", e);
                     }

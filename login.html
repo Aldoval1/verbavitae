@@ -111,14 +111,27 @@
                 
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (userDoc.exists && userDoc.data().role) {
-                        role = userDoc.data().role;
+                    if (userDoc.exists) {
+                        const uData = userDoc.data();
+                        if (uData.status === 'expelled' || uData.role === 'expelled') {
+                            await auth.signOut();
+                            localStorage.removeItem('verba_logged_in');
+                            errorEl.textContent = 'This account has been expelled from Verba Vitae. Access is revoked. Please contact administration.';
+                            errorEl.style.display = 'block';
+                            submitBtn.textContent = 'Sign In';
+                            submitBtn.disabled = false;
+                            return;
+                        }
+                        if (uData.role) {
+                            role = uData.role;
+                        }
                     } else if (isAdminEmail) {
                         role = 'admin';
                         // Auto-create user document in Firestore if missing
                         db.collection('users').doc(user.uid).set({
                             email: email,
                             role: 'admin',
+                            status: 'active',
                             createdAt: firebase.firestore.FieldValue.serverTimestamp()
                         }, { merge: true }).catch(e => console.warn("Auto-doc creation warning:", e));
                     }

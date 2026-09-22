@@ -164,14 +164,32 @@
                         major: major,
                         invitationCode: code,
                         role: 'member', // Default role
+                        status: 'active',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                 } catch (dbErr) {
                     console.warn("Could not save user profile to Firestore (permissions issue):", dbErr);
                 }
 
+                // 3. Update Invitation Status in Firestore
+                try {
+                    if (db && code) {
+                        const invDoc = await db.collection('invitations').doc(code).get();
+                        if (invDoc.exists) {
+                            await db.collection('invitations').doc(code).update({
+                                status: 'accepted',
+                                acceptedByEmail: email,
+                                acceptedByUid: user.uid,
+                                acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    }
+                } catch (invErr) {
+                    console.warn("Could not update invitation doc:", invErr);
+                }
+
                 alert('Registration completed! Welcome to Verba Vitae.');
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
             } catch (error) {
                 console.error("Error registering user:", error);
                 if (error.code === 'auth/email-already-in-use') {
@@ -192,7 +210,11 @@
             const urlParams = new URLSearchParams(window.location.search);
             const codeParam = urlParams.get('code');
             if (codeParam) {
-                inviteCodeInput.value = codeParam;
+                inviteCodeInput.value = codeParam.trim();
+                // Automatically proceed to registration form when coming via invite link
+                setTimeout(() => {
+                    btnVerify.click();
+                }, 350);
             }
         });
     </script>

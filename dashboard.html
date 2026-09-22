@@ -226,12 +226,22 @@
                             }
                             if (typeof db !== 'undefined' && db) {
                                 const userDoc = await db.collection('users').doc(user.uid).get();
-                                if (userDoc.exists && userDoc.data().profilePic && !userDoc.data().profilePic.includes('cover1.png')) {
-                                    applyProfilePic(userDoc.data().profilePic);
-                                    localStorage.setItem('verba_profile_pic_' + user.uid, userDoc.data().profilePic);
-                                    localStorage.setItem('verba_profile_pic', userDoc.data().profilePic);
-                                } else if (!userPic) {
-                                    applyProfilePic(null);
+                                if (userDoc.exists) {
+                                    const uData = userDoc.data();
+                                    if (uData.status === 'expelled' || uData.role === 'expelled') {
+                                        alert('Your account has been expelled from Verba Vitae. Access is revoked.');
+                                        await auth.signOut();
+                                        localStorage.removeItem('verba_logged_in');
+                                        window.location.href = 'login.html';
+                                        return;
+                                    }
+                                    if (uData.profilePic && !uData.profilePic.includes('cover1.png')) {
+                                        applyProfilePic(uData.profilePic);
+                                        localStorage.setItem('verba_profile_pic_' + user.uid, uData.profilePic);
+                                        localStorage.setItem('verba_profile_pic', uData.profilePic);
+                                    } else if (!userPic) {
+                                        applyProfilePic(null);
+                                    }
                                 }
                             }
                         } catch (e) {
