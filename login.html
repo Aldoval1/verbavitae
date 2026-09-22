@@ -106,8 +106,8 @@
                 localStorage.setItem('verba_logged_in', 'true');
 
                 // 2. Fetch User Role from Firestore (with automatic admin detection)
-                let role = 'member';
-                const isAdminEmail = email.includes('admin') || email.includes('verbavitae') || email === 'aaronbacallao06@gmail.com';
+                const isAdminEmail = email.includes('admin') || email.includes('verbavitae') || email.endsWith('@theverbavitae.org') || email === 'aaronbacallao06@gmail.com';
+                let role = isAdminEmail ? 'admin' : 'member';
                 
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
