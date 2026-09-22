@@ -17,6 +17,7 @@
     
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="js/firebase-init.js"></script>
     <style>
@@ -181,6 +182,28 @@
 
         let eventsData = [];
         let currentIndex = 0;
+        let currentUser = null;
+
+        function isUserLoggedIn() {
+            return !!(currentUser || (typeof auth !== 'undefined' && auth && auth.currentUser) || localStorage.getItem('verba_logged_in') === 'true');
+        }
+
+        if (typeof auth !== 'undefined' && auth) {
+            auth.onAuthStateChanged(user => {
+                currentUser = user;
+                if (user) {
+                    localStorage.setItem('verba_logged_in', 'true');
+                    const loginBtns = document.querySelectorAll('.btn-login, .mobile-nav a[href="login.html"]');
+                    loginBtns.forEach(b => {
+                        b.textContent = 'DASHBOARD';
+                        b.href = 'dashboard.html';
+                    });
+                }
+                if (eventsData.length > 0) {
+                    selectEvent(currentIndex);
+                }
+            });
+        }
 
         const monthNames = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
@@ -314,11 +337,20 @@
         }
 
         function registerForEvent(eventId) {
+            if (!isUserLoggedIn()) {
+                alert('You must be registered and logged into Verba Vitae to sign up for events.');
+                window.location.href = 'login.html';
+                return;
+            }
+
             const ev = eventsData.find(e => e.id === eventId);
             if (!ev) return;
 
             let registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
             if (!registered.some(r => r.id === eventId)) {
+                const userEmail = currentUser ? currentUser.email : (localStorage.getItem('verba_user_email') || '');
+                const userUid = currentUser ? currentUser.uid : '';
+
                 registered.push({
                     id: ev.id,
                     title: ev.title,
@@ -326,9 +358,23 @@
                     time: ev.time,
                     location: ev.location,
                     serviceHours: ev.serviceHours,
+                    userEmail: userEmail,
+                    userId: userUid,
                     registeredAt: new Date().toISOString()
                 });
                 localStorage.setItem('verba_registered_events', JSON.stringify(registered));
+
+                if (typeof db !== 'undefined' && db && userUid) {
+                    db.collection('users').doc(userUid).collection('registered_events').doc(ev.id).set({
+                        eventId: ev.id,
+                        eventTitle: ev.title,
+                        date: ev.dateStr,
+                        time: ev.time,
+                        location: ev.location,
+                        serviceHours: ev.serviceHours,
+                        registeredAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true }).catch(err => console.warn("Firestore event registration warning:", err));
+                }
             }
 
             alert(`Successfully registered for "${ev.title}"! You will earn ${ev.serviceHours} volunteer service hours upon completion.`);
@@ -425,7 +471,15 @@
                 const btn = document.getElementById('e-link');
                 btn.style.display = 'inline-block';
                 
-                if (isEventRegistered(event.id)) {
+                if (!isUserLoggedIn()) {
+                    btn.innerHTML = `<i class="fas fa-lock"></i> LOG IN TO REGISTER (${event.serviceHours} HOURS)`;
+                    btn.style.backgroundColor = '#d97706';
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        alert('You must be logged into your Verba Vitae account to register for events. Redirecting to login...');
+                        window.location.href = 'login.html';
+                    };
+                } else if (isEventRegistered(event.id)) {
                     btn.innerText = '✓ REGISTERED';
                     btn.style.backgroundColor = '#38a169';
                     btn.onclick = (e) => { e.preventDefault(); alert('You are already registered for this event!'); };
