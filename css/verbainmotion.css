@@ -210,11 +210,29 @@ body {
 }
 
 .hero-main-logo {
-    width: 160px;
+    width: clamp(220px, 30vw, 360px);
     height: auto;
+    max-height: 48vh;
     object-fit: contain;
-    filter: drop-shadow(0 0 45px rgba(41, 151, 255, 0.45));
-    transition: filter 0.3s ease;
+    filter: drop-shadow(0 0 50px rgba(41, 151, 255, 0.45)) drop-shadow(0 15px 35px rgba(0, 0, 0, 0.8));
+    transition: filter 0.4s ease;
+    animation: clayLogoAlive 4s cubic-bezier(0.45, 0, 0.55, 1) infinite alternate;
+    will-change: transform;
+}
+
+@keyframes clayLogoAlive {
+    0% {
+        transform: translateY(0px) scale(1) rotate(0deg);
+    }
+    35% {
+        transform: translateY(-8px) scale(1.025) rotate(-1deg);
+    }
+    70% {
+        transform: translateY(-16px) scale(1.045) rotate(1deg);
+    }
+    100% {
+        transform: translateY(-22px) scale(1.06) rotate(0deg);
+    }
 }
 
 /* Scroll indicator cue shown initially */
