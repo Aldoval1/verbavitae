@@ -403,6 +403,14 @@
             });
         }
     </script>
-    <script src="js/voice.js"></script>
+    <script>
+        // Force-clear any legacy mock discussions from localStorage immediately
+        try {
+            ['verba_voice_discussions', 'verba_voice_voices', 'verba_voice_replies', 'verba_voice_notifications'].forEach(function(key) {
+                localStorage.removeItem(key);
+            });
+        } catch(e) {}
+    </script>
+    <script src="js/voice.js?v=20260921_clean_final"></script>
 </body>
 </html>
