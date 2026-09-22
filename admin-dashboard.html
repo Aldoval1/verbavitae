@@ -26,6 +26,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
     <script src="js/firebase-init.js"></script>
+    <script src="js/opportunities-data.js?v=20260921"></script>
 </head>
 <body>
     <!-- Top Nav -->
@@ -50,7 +51,8 @@
 
     <!-- Tab Navigation -->
     <nav class="admin-top-nav">
-        <a href="#" class="tab-link active" data-tab="store">Store</a>
+        <a href="#" class="tab-link active" data-tab="opportunities"><i class="fas fa-file-signature"></i> Opportunities &amp; Applications <span class="tab-badge" id="adminAppsCountBadge">0</span></a>
+        <a href="#" class="tab-link" data-tab="store">Store</a>
         <a href="#" class="tab-link" data-tab="events">Add Events</a>
         <a href="#" class="tab-link" data-tab="services">Verba Services</a>
         <div class="nav-dropdown">
@@ -70,8 +72,82 @@
             <p>Manage community operations, members, and resources from your executive dashboard.</p>
         </div>
 
+        <!-- TAB: Opportunities & Applications -->
+        <div class="tab-panel active" id="tab-opportunities">
+            <section class="admin-card">
+                <div class="apps-header-row">
+                    <div>
+                        <h2><i class="fas fa-file-signature" style="color: var(--admin-accent);"></i> Opportunities &amp; Applications Review</h2>
+                        <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin: 4px 0 0 0;">
+                            Review student project applications, filter by creative roles, evaluate portfolios, and update candidate statuses.
+                        </p>
+                    </div>
+                    <div>
+                        <a href="opportunities.html" target="_blank" class="btn-view-app" style="text-decoration:none; padding: 10px 18px; font-size: 0.88rem; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-external-link-alt"></i> View Public Opportunities
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Filters & Search Bar -->
+                <div class="apps-filter-bar">
+                    <div class="apps-search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="adminAppSearchInput" placeholder="Search applicant name, email, major..." oninput="filterAdminApplications()">
+                    </div>
+
+                    <select class="apps-filter-select" id="adminAppOpportunityFilter" onchange="filterAdminApplications()">
+                        <option value="all">All Opportunities</option>
+                        <option value="poetry-in-motion">Poetry in Motion</option>
+                    </select>
+
+                    <select class="apps-filter-select" id="adminAppRoleFilter" onchange="filterAdminApplications()">
+                        <option value="all">All Roles</option>
+                        <option value="project-lead">Project Lead</option>
+                        <option value="claymation-animator">Claymation Animator</option>
+                        <option value="illustration-artist">Illustration &amp; Motion Artist</option>
+                        <option value="video-editor">Video Editor &amp; Post-Production</option>
+                    </select>
+
+                    <select class="apps-filter-select" id="adminAppStatusFilter" onchange="filterAdminApplications()">
+                        <option value="all">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Under Review">Under Review</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Accepted">Accepted</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <!-- Applications Table -->
+                <div class="apps-table-container">
+                    <table class="apps-table">
+                        <thead>
+                            <tr>
+                                <th>Applicant</th>
+                                <th>Opportunity</th>
+                                <th>Roles Applied</th>
+                                <th>Campus &amp; Major</th>
+                                <th>Submitted</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminApplicationsTableBody">
+                            <!-- Injected dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="adminAppsEmptyState" class="empty-state" style="display:none; padding: 50px 20px;">
+                    <i class="fas fa-inbox" style="font-size: 2.5rem; color: #cbd5e0; margin-bottom: 12px; display: block;"></i>
+                    <p style="font-weight: 600; color: #718096;">No applications found matching your current filters.</p>
+                </div>
+            </section>
+        </div>
+
         <!-- TAB: Store -->
-        <div class="tab-panel active" id="tab-store">
+        <div class="tab-panel" id="tab-store">
             <section class="admin-card">
                 <h2><i class="fas fa-cart-shopping"></i> Store Inventory Management</h2>
                 <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 25px;">Add new items or remove existing stock from the storefront.</p>
@@ -513,6 +589,10 @@
 
             if (tabName === 'members-manage' || tabName === 'members-invite') {
                 document.querySelector('.dropbtn').classList.add('active');
+            }
+
+            if (tabName === 'opportunities') {
+                fetchAdminApplications();
             }
 
             if (tabName === 'members-manage') {
@@ -2132,6 +2212,7 @@
                         loadPrintRequests();
                         loadMembers();
                         loadSentInvitations();
+                        fetchAdminApplications();
                     } catch (e) {
                         console.warn("Error loading admin data:", e);
                     }
@@ -2262,7 +2343,393 @@
             }
         };
 
+        // --- Executive Applications Console Logic ---
+        let adminAllApplications = [];
+        let currentAdminViewingApp = null;
+        let adminAppsListenerUnsubscribe = null;
+
+        function escapeAdminHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        async function fetchAdminApplications() {
+            let localApps = [];
+            try {
+                localApps = JSON.parse(localStorage.getItem('verba_submitted_applications') || '[]');
+            } catch (e) {
+                console.warn(e);
+            }
+
+            adminAllApplications = [...localApps];
+            adminAllApplications.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+            const badge = document.getElementById('adminAppsCountBadge');
+            if (badge) badge.textContent = adminAllApplications.length;
+            renderAdminApplicationsTable(adminAllApplications);
+
+            // Fetch from Firestore & setup real-time listener
+            if (typeof db !== 'undefined' && db) {
+                try {
+                    if (typeof adminAppsListenerUnsubscribe === 'function') {
+                        adminAppsListenerUnsubscribe();
+                    }
+
+                    adminAppsListenerUnsubscribe = db.collection('applications').onSnapshot(snap => {
+                        const fsApps = [];
+                        snap.forEach(doc => {
+                            fsApps.push({ id: doc.id, ...doc.data() });
+                        });
+
+                        // Merge Firestore apps with localApps
+                        const mergedMap = new Map();
+                        localApps.forEach(app => mergedMap.set(app.id, app));
+                        fsApps.forEach(app => mergedMap.set(app.id, app));
+
+                        adminAllApplications = Array.from(mergedMap.values());
+                        adminAllApplications.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+                        if (badge) badge.textContent = adminAllApplications.length;
+                        filterAdminApplications();
+                    }, err => {
+                        console.warn('Firestore applications onSnapshot warning:', err);
+                    });
+                } catch (err) {
+                    console.warn('Firestore applications listener setup warning:', err);
+                }
+            }
+        }
+
+        function filterAdminApplications() {
+            const query = (document.getElementById('adminAppSearchInput')?.value || '').toLowerCase().trim();
+            const oppFilter = document.getElementById('adminAppOpportunityFilter')?.value || 'all';
+            const roleFilter = document.getElementById('adminAppRoleFilter')?.value || 'all';
+            const statusFilter = document.getElementById('adminAppStatusFilter')?.value || 'all';
+
+            const filtered = adminAllApplications.filter(app => {
+                if (query) {
+                    const name = (app.applicant?.name || '').toLowerCase();
+                    const email = (app.applicant?.email || '').toLowerCase();
+                    const major = (app.applicant?.major || '').toLowerCase();
+                    if (!name.includes(query) && !email.includes(query) && !major.includes(query)) {
+                        return false;
+                    }
+                }
+
+                if (oppFilter !== 'all' && app.opportunityId !== oppFilter) {
+                    return false;
+                }
+
+                if (roleFilter !== 'all') {
+                    if (!app.selectedRoles || !app.selectedRoles.includes(roleFilter)) {
+                        return false;
+                    }
+                }
+
+                if (statusFilter !== 'all') {
+                    if ((app.status || 'Pending') !== statusFilter) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderAdminApplicationsTable(filtered);
+        }
+
+        function renderAdminApplicationsTable(appsList) {
+            const tbody = document.getElementById('adminApplicationsTableBody');
+            const emptyEl = document.getElementById('adminAppsEmptyState');
+            if (!tbody) return;
+
+            if (!appsList || appsList.length === 0) {
+                tbody.innerHTML = '';
+                if (emptyEl) emptyEl.style.display = 'block';
+                return;
+            }
+
+            if (emptyEl) emptyEl.style.display = 'none';
+
+            tbody.innerHTML = appsList.map(app => {
+                const appDate = app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                }) : 'Recently';
+
+                const rolesPills = (app.selectedRoles || []).map(rId => {
+                    const opp = typeof getOpportunityById === 'function' ? getOpportunityById(app.opportunityId) : null;
+                    const r = opp?.roles?.find(item => item.id === rId);
+                    const title = r ? r.title : rId;
+                    return `<span style="background: #edf2f7; color: #2d3748; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; margin-right: 4px; display: inline-block; margin-bottom: 2px;">${title}</span>`;
+                }).join('');
+
+                const status = app.status || 'Pending';
+                let statusClass = 'status-pending';
+                if (status === 'Under Review') statusClass = 'status-review';
+                if (status === 'Interview') statusClass = 'status-interview';
+                if (status === 'Accepted') statusClass = 'status-accepted';
+                if (status === 'Rejected') statusClass = 'status-rejected';
+
+                return `
+                    <tr>
+                        <td>
+                            <strong style="color: var(--admin-primary); display: block;">${app.applicant?.name || 'Applicant'}</strong>
+                            <span style="color: var(--admin-text-muted); font-size: 0.8rem;">${app.applicant?.email || ''}</span>
+                        </td>
+                        <td>
+                            <span style="font-weight: 600; color: var(--admin-accent);">${app.opportunityTitle || 'Poetry in Motion'}</span>
+                        </td>
+                        <td>${rolesPills || '<span style="color:#a0aec0;">None</span>'}</td>
+                        <td>
+                            <span style="display: block; font-weight: 600;">${app.applicant?.campus || 'MDC'}</span>
+                            <span style="color: var(--admin-text-muted); font-size: 0.78rem;">${app.applicant?.major || ''}</span>
+                        </td>
+                        <td style="color: var(--admin-text-muted); font-size: 0.85rem;">${appDate}</td>
+                        <td>
+                            <span class="status-badge ${statusClass}">${status}</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <button class="btn-view-app" onclick="openAdminApplicationModal('${app.id}')">
+                                <i class="fas fa-eye"></i> Review
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        window.openAdminApplicationModal = function (appId) {
+            const app = adminAllApplications.find(a => a.id === appId);
+            if (!app) return;
+            currentAdminViewingApp = app;
+
+            document.getElementById('mAdminAppOppBadge').textContent = app.opportunityTitle || 'Poetry in Motion';
+            document.getElementById('mAdminAppApplicantName').textContent = app.applicant?.name || 'Applicant';
+
+            document.getElementById('mAdminStatusSelect').value = app.status || 'Pending';
+            document.getElementById('mAdminInternalNotes').value = app.adminNotes || '';
+
+            document.getElementById('mAdminInfoName').textContent = app.applicant?.name || '-';
+            document.getElementById('mAdminInfoEmail').textContent = app.applicant?.email || '-';
+            document.getElementById('mAdminInfoCampus').textContent = app.applicant?.campus || '-';
+            document.getElementById('mAdminInfoMajor').textContent = app.applicant?.major || '-';
+            document.getElementById('mAdminInfoYear').textContent = app.applicant?.year || '-';
+            document.getElementById('mAdminInfoPhone').textContent = app.applicant?.phone || 'Not provided';
+            document.getElementById('mAdminInfoAvailability').textContent = app.applicant?.availability || '-';
+
+            const opp = typeof getOpportunityById === 'function' ? getOpportunityById(app.opportunityId) : null;
+            const rolesHtml = (app.selectedRoles || []).map(rId => {
+                const r = opp?.roles?.find(item => item.id === rId);
+                return `<span style="background: var(--admin-primary); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700;"><i class="fas ${r ? r.icon : 'fa-star'}"></i> ${r ? r.title : rId}</span>`;
+            }).join('');
+            document.getElementById('mAdminRolesBadgesList').innerHTML = rolesHtml || 'No roles selected';
+
+            document.getElementById('mAdminAnswerWhy').textContent = app.generalAnswers?.why || '-';
+            document.getElementById('mAdminAnswerContribute').textContent = app.generalAnswers?.contribute || '-';
+
+            const answersContainer = document.getElementById('mAdminRoleSpecificAnswersSection');
+            let roleSectionsHtml = '';
+
+            (app.selectedRoles || []).forEach(roleId => {
+                const role = opp?.roles?.find(item => item.id === roleId);
+                const roleQuestions = (opp?.customQuestions && opp?.customQuestions[roleId]) || [];
+                const roleAnswers = (app.roleAnswers && app.roleAnswers[roleId]) || {};
+
+                let questionsListHtml = '';
+                roleQuestions.forEach(q => {
+                    const answer = roleAnswers[q.id];
+                    let displayVal = '-';
+                    if (Array.isArray(answer)) {
+                        displayVal = answer.join(', ');
+                    } else if (answer && typeof answer === 'object' && answer.base64) {
+                        displayVal = `
+                            <div style="margin-top: 8px;">
+                                <span>Attached File: <strong>${answer.name}</strong> (${answer.size})</span><br>
+                                ${answer.type && answer.type.startsWith('image/') ? `<img src="${answer.base64}" alt="Artwork Preview" style="max-width: 250px; max-height: 200px; border-radius: 8px; margin-top: 8px; border: 1px solid #cbd5e0;">` : ''}
+                            </div>
+                        `;
+                    } else if (answer) {
+                        displayVal = answer;
+                    }
+
+                    questionsListHtml += `
+                        <div class="modal-answer-card">
+                            <div class="modal-answer-q">${q.label}</div>
+                            <div class="modal-answer-a">${displayVal}</div>
+                        </div>
+                    `;
+                });
+
+                roleSectionsHtml += `
+                    <div style="margin-top: 15px;">
+                        <h3 class="modal-section-title"><i class="fas ${role ? role.icon : 'fa-check'}"></i> ${role ? role.title : roleId} Questions</h3>
+                        ${questionsListHtml || '<p style="color:#a0aec0;">No questions defined.</p>'}
+                    </div>
+                `;
+            });
+
+            answersContainer.innerHTML = roleSectionsHtml;
+
+            const portfolio = app.generalAnswers?.consolidatedPortfolio;
+            document.getElementById('mAdminAnswerPortfolio').innerHTML = portfolio ? `<a href="${portfolio}" target="_blank" style="color: var(--admin-accent); font-weight:700;">${portfolio} <i class="fas fa-external-link-alt" style="font-size:0.75rem;"></i></a>` : 'Not provided';
+            document.getElementById('mAdminAnswerComments').textContent = app.generalAnswers?.finalComments || 'None';
+
+            document.getElementById('adminAppDetailModal').style.display = 'flex';
+        };
+
+        window.closeAdminApplicationModal = function () {
+            document.getElementById('adminAppDetailModal').style.display = 'none';
+            currentAdminViewingApp = null;
+        };
+
+        window.saveAdminCurrentAppStatus = async function () {
+            if (!currentAdminViewingApp) return;
+
+            const newStatus = document.getElementById('mAdminStatusSelect').value;
+            const newNotes = document.getElementById('mAdminInternalNotes').value.trim();
+
+            currentAdminViewingApp.status = newStatus;
+            currentAdminViewingApp.adminNotes = newNotes;
+
+            try {
+                localStorage.setItem('verba_submitted_applications', JSON.stringify(adminAllApplications));
+            } catch (e) {
+                console.warn(e);
+            }
+
+            if (typeof db !== 'undefined' && db) {
+                try {
+                    await db.collection('applications').doc(currentAdminViewingApp.id).update({
+                        status: newStatus,
+                        adminNotes: newNotes
+                    });
+                } catch (e) {
+                    console.warn(e);
+                }
+            }
+
+            filterAdminApplications();
+            showToast(`Application updated: ${newStatus}`);
+        };
+
+        // Init applications on load
+        fetchAdminApplications();
+
     </script>
+
+    <!-- Admin Application Detail Modal -->
+    <div class="app-modal-overlay" id="adminAppDetailModal">
+        <div class="app-modal-card">
+            <div class="app-modal-header">
+                <div>
+                    <span id="mAdminAppOppBadge" style="font-size: 0.75rem; font-weight: 800; color: var(--admin-accent); text-transform: uppercase;">Poetry in Motion</span>
+                    <h2 id="mAdminAppApplicantName">Applicant Details</h2>
+                </div>
+                <button class="app-modal-close" onclick="closeAdminApplicationModal()">&times;</button>
+            </div>
+
+            <div class="app-modal-body">
+                <!-- Status & Admin Quick Actions -->
+                <div class="modal-admin-controls">
+                    <h4><i class="fas fa-shield-alt"></i> Application Status &amp; Internal Admin Notes</h4>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 15px;">
+                        <label for="mAdminStatusSelect" style="font-weight: 700; font-size: 0.88rem; color: #2d3748;">Current Status:</label>
+                        <select id="mAdminStatusSelect" style="padding: 8px 14px; border-radius: 8px; border: 1.5px solid #cbd5e0; font-weight: 700; font-family: inherit;">
+                            <option value="Pending">Pending</option>
+                            <option value="Under Review">Under Review</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Accepted">Accepted</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                        <button class="admin-btn" onclick="saveAdminCurrentAppStatus()" style="padding: 8px 18px; margin: 0; font-size: 0.85rem;">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                    <div>
+                        <label for="mAdminInternalNotes" style="display: block; font-weight: 700; font-size: 0.85rem; color: #4a5568; margin-bottom: 6px;">
+                            Private E-Board Notes (Only visible to admins):
+                        </label>
+                        <textarea id="mAdminInternalNotes" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0; font-family: inherit; font-size: 0.88rem;" placeholder="Add internal notes, interview feedback, or scheduling comments..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Applicant Profile -->
+                <div>
+                    <h3 class="modal-section-title">Applicant Information</h3>
+                    <div class="modal-info-grid">
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Full Name</span>
+                            <div class="modal-info-value" id="mAdminInfoName">-</div>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">MDC Student Email</span>
+                            <div class="modal-info-value" id="mAdminInfoEmail">-</div>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Campus</span>
+                            <div class="modal-info-value" id="mAdminInfoCampus">-</div>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Degree / Major</span>
+                            <div class="modal-info-value" id="mAdminInfoMajor">-</div>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Academic Year</span>
+                            <div class="modal-info-value" id="mAdminInfoYear">-</div>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Phone</span>
+                            <div class="modal-info-value" id="mAdminInfoPhone">-</div>
+                        </div>
+                        <div class="modal-info-item" style="grid-column: 1 / -1;">
+                            <span class="modal-info-label">General Availability</span>
+                            <div class="modal-info-value" id="mAdminInfoAvailability">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roles Applied -->
+                <div>
+                    <h3 class="modal-section-title">Selected Roles</h3>
+                    <div id="mAdminRolesBadgesList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                </div>
+
+                <!-- General Motivation & Contribution -->
+                <div>
+                    <h3 class="modal-section-title">General Project Motivation</h3>
+                    <div class="modal-answer-card">
+                        <div class="modal-answer-q">Why are you interested in Poetry in Motion?</div>
+                        <div class="modal-answer-a" id="mAdminAnswerWhy">-</div>
+                    </div>
+                    <div class="modal-answer-card">
+                        <div class="modal-answer-q">What do you hope to contribute to the project?</div>
+                        <div class="modal-answer-a" id="mAdminAnswerContribute">-</div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Role-Specific Answers Container -->
+                <div id="mAdminRoleSpecificAnswersSection"></div>
+
+                <!-- Portfolio & Attachments -->
+                <div>
+                    <h3 class="modal-section-title">Portfolio &amp; Attachments</h3>
+                    <div class="modal-answer-card">
+                        <div class="modal-answer-q">Portfolio / Online Showcase Link</div>
+                        <div class="modal-answer-a" id="mAdminAnswerPortfolio">-</div>
+                    </div>
+                    <div class="modal-answer-card">
+                        <div class="modal-answer-q">Additional Comments for E-Board</div>
+                        <div class="modal-answer-a" id="mAdminAnswerComments">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Registered Event Attendees Modal -->
     <div id="attendeesModal" class="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,27,42,0.7); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px);">

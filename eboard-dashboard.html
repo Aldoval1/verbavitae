@@ -386,6 +386,8 @@
         let allApplications = [];
         let currentViewingApp = null;
 
+        let appsListenerUnsubscribe = null;
+
         async function fetchApplications() {
             // 1. Fetch from LocalStorage
             let localApps = [];
@@ -396,35 +398,41 @@
             }
 
             allApplications = [...localApps];
-
-            // 2. Fetch from Firestore if available
-            if (typeof db !== 'undefined' && db) {
-                try {
-                    const snap = await db.collection('applications').get();
-                    if (!snap.empty) {
-                        snap.forEach(doc => {
-                            const data = doc.data();
-                            const existingIndex = allApplications.findIndex(a => a.id === doc.id);
-                            if (existingIndex > -1) {
-                                allApplications[existingIndex] = { id: doc.id, ...data };
-                            } else {
-                                allApplications.push({ id: doc.id, ...data });
-                            }
-                        });
-                    }
-                } catch (err) {
-                    console.warn('Firestore fetch warning:', err);
-                }
-            }
-
-            // Sort newest first
             allApplications.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
-            // Update badge
             const badge = document.getElementById('appsCountBadge');
             if (badge) badge.textContent = allApplications.length;
-
             renderApplicationsTable(allApplications);
+
+            // 2. Fetch & Listen to Firestore Realtime
+            if (typeof db !== 'undefined' && db) {
+                try {
+                    if (typeof appsListenerUnsubscribe === 'function') {
+                        appsListenerUnsubscribe();
+                    }
+
+                    appsListenerUnsubscribe = db.collection('applications').onSnapshot(snap => {
+                        const fsApps = [];
+                        snap.forEach(doc => {
+                            fsApps.push({ id: doc.id, ...doc.data() });
+                        });
+
+                        const mergedMap = new Map();
+                        localApps.forEach(app => mergedMap.set(app.id, app));
+                        fsApps.forEach(app => mergedMap.set(app.id, app));
+
+                        allApplications = Array.from(mergedMap.values());
+                        allApplications.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+                        if (badge) badge.textContent = allApplications.length;
+                        filterApplications();
+                    }, err => {
+                        console.warn('Firestore onSnapshot warning:', err);
+                    });
+                } catch (err) {
+                    console.warn('Firestore listener setup warning:', err);
+                }
+            }
         }
 
         function filterApplications() {
