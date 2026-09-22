@@ -23,225 +23,38 @@
     let currentSort = 'newest'; // 'newest', 'discussed', 'featured'
     let searchQuery = '';
 
-    // Seed Data for Initial Launch
-    const SEED_DISCUSSIONS = [
-        {
-            id: 'disc_dorian_gray',
-            title: 'The Picture of Dorian Gray',
-            author: 'Oscar Wilde',
-            question: 'Can art ever truly be separated from morality?',
-            description: 'In the preface to The Picture of Dorian Gray, Oscar Wilde famously writes that "There is no such thing as a moral or an immoral book. Books are well written, or badly written. That is all." Yet the novel itself traces the catastrophic moral degeneration of a man whose sins are mirrored on a hidden canvas. As we delve into the opening chapters, consider Lord Henry\'s aesthetic philosophies: Does art exist solely for pleasure and beauty, or does every aesthetic choice carry an inescapable ethical consequence?',
-            type: 'Book Discussion',
-            coverImage: 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&w=800&q=80',
-            chapterRange: 'Chapters 1 – 6',
-            status: 'active',
-            isPinned: true,
-            isLocked: false,
-            openDate: '2026-09-15',
-            closeDate: '2026-10-15',
-            createdBy: { name: 'Aaron Bacallao', role: 'President & Admin' },
-            createdAt: '2026-09-15T14:00:00.000Z',
-            fromTheConversation: []
-        },
-        {
-            id: 'disc_1984',
-            title: '1984',
-            author: 'George Orwell',
-            question: 'Is rebellion meaningful if memory and history can be systematically rewritten?',
-            description: 'Winston Smith writes in his secret diary: "Freedom is the freedom to say that two plus two make four. If that is granted, all else follows." In Oceania, the Ministry of Truth alters historical records so completely that the past exists only in memory—and memory is fallible. When reality is dictated by collective compliance, what constitutes authentic resistance? Can a private thought truly remain sacred?',
-            type: 'Book Discussion',
-            coverImage: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&w=800&q=80',
-            chapterRange: 'Part One',
-            status: 'active',
-            isPinned: false,
-            isLocked: false,
-            openDate: '2026-09-18',
-            closeDate: '2026-10-20',
-            createdBy: { name: 'Aaron Bacallao', role: 'President & Admin' },
-            createdAt: '2026-09-18T16:30:00.000Z',
-            fromTheConversation: []
-        },
-        {
-            id: 'disc_quiroga',
-            title: 'Tales of Love, Madness, and Death',
-            author: 'Horacio Quiroga',
-            question: 'How does Quiroga capture human vulnerability in the face of untamed nature and psychological dread?',
-            description: 'Horacio Quiroga\'s short stories—steeped in the jungle atmosphere of Misiones, Argentina—frequently pit human pride against relentless wilderness and visceral obsessions. In stories like "El almohadón de plumas" and "A la deriva," mortality arrives with cold inevitability. Let\'s explore Quiroga\'s gothic realism: What makes his depiction of fate feel so chilling and uniquely Latin American?',
-            type: 'Open Question',
-            coverImage: 'https://images.unsplash.com/photo-1476275466078-4007374efbbe?auto=format&fit=crop&w=800&q=80',
-            chapterRange: 'Selected Short Stories',
-            status: 'active',
-            isPinned: false,
-            isLocked: false,
-            openDate: '2026-09-20',
-            closeDate: '2026-10-30',
-            createdBy: { name: 'Marilennis Naranjo', role: 'Vice President & Admin' },
-            createdAt: '2026-09-20T10:15:00.000Z',
-            fromTheConversation: []
-        },
-        {
-            id: 'disc_frankenstein',
-            title: 'Frankenstein',
-            author: 'Mary Shelley',
-            question: 'Who is the true monster: the creator who abandons, or the creature who retaliates?',
-            description: 'Mary Shelley\'s masterpiece explores ambition, alienation, and parental responsibility. Victor Frankenstein defies nature to animate life, only to flee in horror upon witnessing his creation. Cast into a world that violently rejects him for his hideous visage, the creature discovers language, literature (Milton, Goethe, Plutarch), and ultimately cruelty. This archived discussion preserves our club\'s deep dive into empathy, justice, and the consequences of reckless discovery.',
-            type: 'Debate',
-            coverImage: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=800&q=80',
-            chapterRange: 'Full Novel',
-            status: 'archived',
-            isPinned: false,
-            isLocked: true,
-            openDate: '2026-08-01',
-            closeDate: '2026-08-31',
-            createdBy: { name: 'Melany Dorta', role: 'Secretary & Admin' },
-            createdAt: '2026-08-01T12:00:00.000Z',
-            fromTheConversation: [
-                {
-                    author: 'Melany Dorta',
-                    role: 'Secretary',
-                    quote: 'The creature learned what tenderness was through Milton\'s Paradise Lost before he ever experienced human malice. He was molded by abandonment, not by malice at birth.'
-                },
-                {
-                    author: 'Aaron Bacallao',
-                    role: 'President',
-                    quote: 'Victor\'s failure is not scientific curiosity; it is moral cowardice. The moment he ran from the bedside, the tragedy was set in motion.'
-                },
-                {
-                    author: 'Liz Valdivia',
-                    role: 'Treasurer',
-                    quote: 'The creature\'s demand for a companion mirrors the universal human requirement for mutual recognition. Solitude without choice becomes vengeance.'
-                }
-            ]
-        },
-        {
-            id: 'disc_soledad',
-            title: 'One Hundred Years of Solitude',
-            author: 'Gabriel García Márquez',
-            question: 'Does cyclical time condemn the Buendía family, or give Macondo an eternal mythical life?',
-            description: 'Coming next month! Join our bilingual reading celebration as we explore Macondo, magical realism, memory, and political violence in Gabriel García Márquez\'s timeless epic.',
-            type: 'Creative Response',
-            coverImage: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?auto=format&fit=crop&w=800&q=80',
-            chapterRange: 'Chapters 1 – 5',
-            status: 'upcoming',
-            isPinned: false,
-            isLocked: false,
-            openDate: '2026-10-01',
-            closeDate: '2026-11-01',
-            createdBy: { name: 'Aaron Bacallao', role: 'President & Admin' },
-            createdAt: '2026-09-21T09:00:00.000Z',
-            fromTheConversation: []
-        }
-    ];
-
-    const SEED_VOICES = [
-        {
-            id: 'voice_dorian_1',
-            discussionId: 'disc_dorian_gray',
-            userId: 'user_aaron',
-            userName: 'Aaron Bacallao',
-            userAvatar: 'images/aaron_bacallao.png',
-            userRole: 'admin',
-            content: 'Wilde\'s paradox is brilliant: by claiming art is completely divorced from morality, he crafts a narrative where art becomes the ultimate moral ledger. Dorian doesn\'t escape ethics; the portrait becomes his conscience made visible and festering.',
-            quote: {
-                text: 'All art is quite useless.',
-                author: 'Oscar Wilde, Preface'
-            },
-            image: null,
-            link: null,
-            createdAt: '2026-09-16T18:42:00.000Z',
-            isFeatured: true,
-            isHidden: false,
-            reactions: {
-                love: ['u2', 'u3', 'u4', 'u5'],
-                interesting: ['u2', 'u6'],
-                thought: ['u3', 'u7', 'u8']
-            }
-        },
-        {
-            id: 'voice_dorian_2',
-            discussionId: 'disc_dorian_gray',
-            userId: 'user_melany',
-            userName: 'Melany Dorta',
-            userAvatar: 'images/melany_dorta.png',
-            userRole: 'eboard',
-            content: 'What struck me most is Lord Henry\'s influence. He treats Dorian as an experimental canvas—whispering toxic aesthetic ideals while remaining comfortably insulated in his own aristocratic safety. Can influence be considered an artistic creation, or is it pure manipulation?',
-            quote: {
-                text: 'There is no such thing as a good influence, Mr. Gray. All influence is immoral—immoral from the scientific point of view.',
-                author: 'Lord Henry Wotton, Chapter 2'
-            },
-            image: null,
-            link: null,
-            createdAt: '2026-09-17T11:15:00.000Z',
-            isFeatured: false,
-            isHidden: false,
-            reactions: {
-                love: ['user_aaron', 'u2'],
-                interesting: ['user_aaron', 'u3', 'u4'],
-                thought: ['u5']
-            }
-        },
-        {
-            id: 'voice_dorian_3',
-            discussionId: 'disc_dorian_gray',
-            userId: 'user_marilennis',
-            userName: 'Marilennis Naranjo',
-            userAvatar: 'images/marilennis_lazo.png',
-            userRole: 'admin',
-            content: 'From a modern lens, the portrait functions almost like an early conceptualization of digital identity versus biological decay: presenting a flawless frozen image to society while the hidden reality accumulates every toxic transaction. Fascinating how 19th-century aesthetics anticipate our modern dilemmas.',
-            quote: null,
-            image: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=800&q=80',
-            link: null,
-            createdAt: '2026-09-18T15:20:00.000Z',
-            isFeatured: true,
-            isHidden: false,
-            reactions: {
-                love: ['user_aaron', 'user_melany', 'u9'],
-                interesting: ['user_melany', 'u4', 'u5', 'u6'],
-                thought: ['user_aaron', 'u7']
-            }
-        }
-    ];
-
-    const SEED_REPLIES = [
-        {
-            id: 'reply_1',
-            voiceId: 'voice_dorian_2',
-            discussionId: 'disc_dorian_gray',
-            userId: 'user_aaron',
-            userName: 'Aaron Bacallao',
-            userAvatar: 'images/aaron_bacallao.png',
-            userRole: 'admin',
-            content: 'Spot on, Melany. Lord Henry describes himself as a spectator of life. He wants to experience the thrill of sin by proxy through Dorian, which makes him arguably more culpable than Dorian himself.',
-            createdAt: '2026-09-17T14:30:00.000Z'
-        },
-        {
-            id: 'reply_2',
-            voiceId: 'voice_dorian_3',
-            discussionId: 'disc_dorian_gray',
-            userId: 'user_melany',
-            userName: 'Melany Dorta',
-            userAvatar: 'images/melany_dorta.png',
-            userRole: 'eboard',
-            content: 'That comparison to digital profiles vs hidden reality is mind-blowing, Marilennis! We curate perfection while burying the internal rot.',
-            createdAt: '2026-09-18T16:05:00.000Z'
-        }
-    ];
+    // Seed Data (Empty - Ready for live community discussions)
+    const SEED_DISCUSSIONS = [];
+    const SEED_VOICES = [];
+    const SEED_REPLIES = [];
 
     // --- Persistence & Initialization ---
     function loadLocalData() {
+        // Clean out any legacy mock/example data so platform starts completely fresh
+        if (!localStorage.getItem('verba_voice_cleared_examples_v2')) {
+            localStorage.removeItem('verba_voice_discussions');
+            localStorage.removeItem('verba_voice_voices');
+            localStorage.removeItem('verba_voice_replies');
+            localStorage.removeItem('verba_voice_notifications');
+            localStorage.setItem('verba_voice_cleared_examples_v2', 'true');
+        }
+
         const storedDiscussions = localStorage.getItem('verba_voice_discussions');
-        discussions = storedDiscussions ? JSON.parse(storedDiscussions) : SEED_DISCUSSIONS;
+        discussions = storedDiscussions ? JSON.parse(storedDiscussions) : [];
+        // Filter out any legacy example IDs if they somehow persisted
+        discussions = discussions.filter(d => !['disc_dorian_gray', 'disc_1984', 'disc_quiroga', 'disc_frankenstein', 'disc_soledad'].includes(d.id));
 
         const storedVoices = localStorage.getItem('verba_voice_voices');
-        voices = storedVoices ? JSON.parse(storedVoices) : SEED_VOICES;
+        voices = storedVoices ? JSON.parse(storedVoices) : [];
+        voices = voices.filter(v => !['disc_dorian_gray', 'disc_1984', 'disc_quiroga', 'disc_frankenstein', 'disc_soledad'].includes(v.discussionId));
 
         const storedReplies = localStorage.getItem('verba_voice_replies');
-        replies = storedReplies ? JSON.parse(storedReplies) : SEED_REPLIES;
+        replies = storedReplies ? JSON.parse(storedReplies) : [];
+        replies = replies.filter(r => !['disc_dorian_gray', 'disc_1984', 'disc_quiroga', 'disc_frankenstein', 'disc_soledad'].includes(r.discussionId));
 
         const storedNotifs = localStorage.getItem('verba_voice_notifications');
         notifications = storedNotifs ? JSON.parse(storedNotifs) : [];
 
-        // Always save seed if first time
         saveLocalData();
     }
 
