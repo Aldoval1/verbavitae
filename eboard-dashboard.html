@@ -5,8 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verba Vitae - E-Board Admin Console</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
-    <link rel="stylesheet" href="css/eboard-dashboard.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/eboard-dashboard.css?v=20260921">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-init.js"></script>
+    <script src="js/opportunities-data.js?v=20260921"></script>
 </head>
 <body>
     <!-- Top Nav -->
@@ -29,128 +37,620 @@
     </header>
 
     <main class="dash-main">
-        <div class="admin-grid">
-            
-            <!-- Event Manager Section -->
-            <section class="admin-card">
-                <h2>Add Calendar Event</h2>
-                <form id="eventForm" class="admin-form">
-                    <div class="form-group">
-                        <label for="eventTitle">Event Title</label>
-                        <input type="text" id="eventTitle" required placeholder="e.g. Community Service Outreach">
-                    </div>
-                    <div class="form-group" style="display: flex; gap: 15px;">
-                        <div style="flex: 1;">
-                            <label for="eventDate">Date</label>
-                            <input type="date" id="eventDate" required>
-                        </div>
-                        <div style="flex: 1;">
-                            <label for="eventTime">Hours of Event (Time)</label>
-                            <input type="text" id="eventTime" required placeholder="e.g. 10:00 AM - 2:00 PM">
-                        </div>
-                    </div>
-                    <div class="form-group" style="display: flex; gap: 15px;">
-                        <div style="flex: 1;">
-                            <label for="eventLocation">Location / Google Maps Place</label>
-                            <input type="text" id="eventLocation" required placeholder="e.g. FIU Campus Quad, Miami FL">
-                        </div>
-                        <div style="flex: 1;">
-                            <label for="eventServiceHours">Service Hours Provided</label>
-                            <input type="number" id="eventServiceHours" required placeholder="e.g. 4" min="0" step="0.5">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="eventDescription">Event Description</label>
-                        <textarea id="eventDescription" rows="3" required placeholder="Description of the event and volunteer goals..." style="width: 100%; padding: 10px; font-family: inherit; border: 1px solid var(--border-color);"></textarea>
-                    </div>
-                    <button type="submit" class="admin-btn">Add Event</button>
-                </form>
-            </section>
+        
+        <!-- Tab Navigation Bar -->
+        <div class="admin-nav-tabs">
+            <button class="admin-tab-btn active" id="tabBtnApps" onclick="switchAdminTab('applications')">
+                <i class="fas fa-file-signature"></i> Opportunities & Applications
+                <span class="tab-badge" id="appsCountBadge">0</span>
+            </button>
+            <button class="admin-tab-btn" id="tabBtnEvents" onclick="switchAdminTab('events')">
+                <i class="fas fa-calendar-alt"></i> Events & Store Management
+            </button>
+        </div>
 
-            <!-- Shop Manager Section -->
-            <section class="admin-card">
-                <h2>Add Shop Product</h2>
-                <form id="productForm" class="admin-form">
-                    <div class="form-group">
-                        <label for="productName">Product Name</label>
-                        <input type="text" id="productName" required placeholder="e.g. Advanced Calculus Book">
+        <!-- ==========================================================
+             TAB 1: OPPORTUNITIES & APPLICATIONS CONSOLE
+             ========================================================== -->
+        <div id="tabApplicationsSection">
+            <section class="apps-management-card">
+                <div class="apps-header-row">
+                    <div>
+                        <h2>Opportunities & Applications Review</h2>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; margin-top: 4px;">
+                            Review student project applications, filter by creative roles, evaluate portfolios, and update candidate statuses.
+                        </p>
                     </div>
-                    <div class="form-group">
-                        <label for="productCategory">Category (Page)</label>
-                        <select id="productCategory" required>
-                            <option value="books">Books (shop.html)</option>
-                            <option value="accessories">Accessories</option>
-                            <option value="snacks">Snacks</option>
-                            <option value="technology">Technology</option>
-                        </select>
+                    <div>
+                        <a href="opportunities.html" target="_blank" class="btn-view-app" style="text-decoration:none; padding: 10px 16px; font-size: 0.85rem;">
+                            <i class="fas fa-external-link-alt"></i> View Public Opportunities
+                        </a>
                     </div>
-                    <div id="bookExtraFields" style="border-left: 3px solid var(--accent-color); padding-left: 15px; margin-bottom: 20px;">
-                        <div class="form-group">
-                            <label for="bookSubCategory">Sub-category</label>
-                            <input type="text" id="bookSubCategory" placeholder="e.g. Fantasy, Romance">
-                        </div>
-                        <div class="form-group" style="display: flex; gap: 15px;">
-                            <div style="flex: 1;">
-                                <label for="bookCondition">Condition</label>
-                                <select id="bookCondition">
-                                    <option value="New">New</option>
-                                    <option value="Like New">Like New</option>
-                                    <option value="Good">Good</option>
-                                    <option value="Fair">Fair</option>
-                                </select>
-                            </div>
-                            <div style="flex: 1;">
-                                <label for="bookPages">Pages</label>
-                                <input type="number" id="bookPages" placeholder="e.g. 350">
-                            </div>
-                        </div>
-                        <div class="form-group" style="display: flex; gap: 15px;">
-                            <div style="flex: 1;">
-                                <label for="bookISBN">ISBN</label>
-                                <input type="text" id="bookISBN" placeholder="e.g. 978-...">
-                            </div>
-                            <div style="flex: 1;">
-                                <label for="bookPublisher">Publisher</label>
-                                <input type="text" id="bookPublisher" placeholder="e.g. Penguin">
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="bookSynopsis">Synopsis</label>
-                            <textarea id="bookSynopsis" rows="3" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); font-family: inherit; resize: vertical;" placeholder="A brief summary..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="bookGoodreads">Goodreads Link (Optional)</label>
-                            <input type="url" id="bookGoodreads" placeholder="https://www.goodreads.com/book/show/...">
-                            <small style="color: var(--text-muted); display: block; margin-top: 5px;">We'll try to fetch the rating automatically!</small>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="productPrice">Price ($)</label>
-                        <input type="number" id="productPrice" step="0.01" required placeholder="25.00">
-                    </div>
-                    <div class="form-group">
-                        <label for="productImage">Image URL</label>
-                        <input type="text" id="productImage" required placeholder="https://example.com/image.jpg">
-                    </div>
-                    <button type="submit" class="admin-btn">Add Product to Store</button>
-                </form>
-            </section>
+                </div>
 
-            <!-- Pending Orders Section -->
-            <section class="admin-card orders-section">
-                <h2>Pending Receipts</h2>
-                <div id="ordersList" class="orders-list">
-                    <!-- Orders will be injected here via JS -->
-                    <p class="empty-state">No pending orders at this time.</p>
+                <!-- Filters & Search Bar -->
+                <div class="apps-filter-bar">
+                    <div class="apps-search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="appSearchInput" placeholder="Search applicant name, email, major..." oninput="filterApplications()">
+                    </div>
+
+                    <select class="apps-filter-select" id="appOpportunityFilter" onchange="filterApplications()">
+                        <option value="all">All Opportunities</option>
+                        <option value="poetry-in-motion">Poetry in Motion</option>
+                    </select>
+
+                    <select class="apps-filter-select" id="appRoleFilter" onchange="filterApplications()">
+                        <option value="all">All Roles</option>
+                        <option value="project-lead">Project Lead</option>
+                        <option value="claymation-animator">Claymation Animator</option>
+                        <option value="illustration-artist">Illustration & Motion Artist</option>
+                        <option value="video-editor">Video Editor & Post-Production</option>
+                    </select>
+
+                    <select class="apps-filter-select" id="appStatusFilter" onchange="filterApplications()">
+                        <option value="all">All Statuses</option>
+                        <option value="Pending">Pending</option>
+                        <option value="Under Review">Under Review</option>
+                        <option value="Interview">Interview</option>
+                        <option value="Accepted">Accepted</option>
+                        <option value="Rejected">Rejected</option>
+                    </select>
+                </div>
+
+                <!-- Applications Table -->
+                <div class="apps-table-container">
+                    <table class="apps-table">
+                        <thead>
+                            <tr>
+                                <th>Applicant</th>
+                                <th>Opportunity</th>
+                                <th>Roles Applied</th>
+                                <th>Campus & Major</th>
+                                <th>Submitted</th>
+                                <th>Status</th>
+                                <th style="text-align: right;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="applicationsTableBody">
+                            <!-- Injected dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="appsEmptyState" class="empty-state" style="display:none; padding: 50px 20px;">
+                    <i class="fas fa-inbox" style="font-size: 2.5rem; color: #cbd5e0; margin-bottom: 12px; display: block;"></i>
+                    <p style="font-weight: 600; color: #718096;">No applications found matching your current filters.</p>
                 </div>
             </section>
         </div>
+
+        <!-- ==========================================================
+             TAB 2: EVENTS & STORE MANAGEMENT
+             ========================================================== -->
+        <div id="tabEventsSection" style="display: none;">
+            <div class="admin-grid">
+                <!-- Event Manager Section -->
+                <section class="admin-card">
+                    <h2>Add Calendar Event</h2>
+                    <form id="eventForm" class="admin-form">
+                        <div class="form-group">
+                            <label for="eventTitle">Event Title</label>
+                            <input type="text" id="eventTitle" required placeholder="e.g. Community Service Outreach">
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 15px;">
+                            <div style="flex: 1;">
+                                <label for="eventDate">Date</label>
+                                <input type="date" id="eventDate" required>
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="eventTime">Hours of Event (Time)</label>
+                                <input type="text" id="eventTime" required placeholder="e.g. 10:00 AM - 2:00 PM">
+                            </div>
+                        </div>
+                        <div class="form-group" style="display: flex; gap: 15px;">
+                            <div style="flex: 1;">
+                                <label for="eventLocation">Location / Google Maps Place</label>
+                                <input type="text" id="eventLocation" required placeholder="e.g. FIU Campus Quad, Miami FL">
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="eventServiceHours">Service Hours Provided</label>
+                                <input type="number" id="eventServiceHours" required placeholder="e.g. 4" min="0" step="0.5">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="eventDescription">Event Description</label>
+                            <textarea id="eventDescription" rows="3" required placeholder="Description of the event and volunteer goals..." style="width: 100%; padding: 10px; font-family: inherit; border: 1px solid var(--border-color);"></textarea>
+                        </div>
+                        <button type="submit" class="admin-btn">Add Event</button>
+                    </form>
+                </section>
+
+                <!-- Shop Manager Section -->
+                <section class="admin-card">
+                    <h2>Add Shop Product</h2>
+                    <form id="productForm" class="admin-form">
+                        <div class="form-group">
+                            <label for="productName">Product Name</label>
+                            <input type="text" id="productName" required placeholder="e.g. Advanced Calculus Book">
+                        </div>
+                        <div class="form-group">
+                            <label for="productCategory">Category (Page)</label>
+                            <select id="productCategory" required>
+                                <option value="books">Books (shop.html)</option>
+                                <option value="accessories">Accessories</option>
+                                <option value="snacks">Snacks</option>
+                                <option value="technology">Technology</option>
+                            </select>
+                        </div>
+                        <div id="bookExtraFields" style="border-left: 3px solid var(--accent-color); padding-left: 15px; margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label for="bookSubCategory">Sub-category</label>
+                                <input type="text" id="bookSubCategory" placeholder="e.g. Fantasy, Romance">
+                            </div>
+                            <div class="form-group" style="display: flex; gap: 15px;">
+                                <div style="flex: 1;">
+                                    <label for="bookCondition">Condition</label>
+                                    <select id="bookCondition">
+                                        <option value="New">New</option>
+                                        <option value="Like New">Like New</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Fair">Fair</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="bookPages">Pages</label>
+                                    <input type="number" id="bookPages" placeholder="e.g. 350">
+                                </div>
+                            </div>
+                            <div class="form-group" style="display: flex; gap: 15px;">
+                                <div style="flex: 1;">
+                                    <label for="bookISBN">ISBN</label>
+                                    <input type="text" id="bookISBN" placeholder="e.g. 978-...">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="bookPublisher">Publisher</label>
+                                    <input type="text" id="bookPublisher" placeholder="e.g. Penguin">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="bookSynopsis">Synopsis</label>
+                                <textarea id="bookSynopsis" rows="3" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); font-family: inherit; resize: vertical;" placeholder="A brief summary..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="bookGoodreads">Goodreads Link (Optional)</label>
+                                <input type="url" id="bookGoodreads" placeholder="https://www.goodreads.com/book/show/...">
+                                <small style="color: var(--text-muted); display: block; margin-top: 5px;">We'll try to fetch the rating automatically!</small>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="productPrice">Price ($)</label>
+                            <input type="number" id="productPrice" step="0.01" required placeholder="25.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="productImage">Image URL</label>
+                            <input type="text" id="productImage" required placeholder="https://example.com/image.jpg">
+                        </div>
+                        <button type="submit" class="admin-btn">Add Product to Store</button>
+                    </form>
+                </section>
+
+                <!-- Pending Orders Section -->
+                <section class="admin-card orders-section">
+                    <h2>Pending Receipts</h2>
+                    <div id="ordersList" class="orders-list">
+                        <p class="empty-state">No pending orders at this time.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+
     </main>
+
+    <!-- ==========================================================
+         APPLICATION DETAIL MODAL (Admin Review)
+         ========================================================== -->
+    <div class="app-modal-overlay" id="appDetailModal">
+        <div class="app-modal-card">
+            <div class="app-modal-header">
+                <div>
+                    <span id="mAppOppBadge" style="font-size: 0.75rem; font-weight: 800; color: var(--accent-color); text-transform: uppercase;">Poetry in Motion</span>
+                    <h2 id="mAppApplicantName">Applicant Details</h2>
+                </div>
+                <button class="app-modal-close" onclick="closeApplicationModal()">&times;</button>
+            </div>
+
+            <div class="app-modal-body">
+                <!-- Status & Admin Quick Actions -->
+                <div class="modal-admin-controls">
+                    <h4><i class="fas fa-shield-alt"></i> Application Status & Internal Admin Notes</h4>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center; margin-bottom: 15px;">
+                        <label for="mStatusSelect" style="font-weight: 700; font-size: 0.88rem; color: #2d3748;">Current Status:</label>
+                        <select id="mStatusSelect" style="padding: 8px 14px; border-radius: 8px; border: 1.5px solid #cbd5e0; font-weight: 700; font-family: inherit;">
+                            <option value="Pending">Pending</option>
+                            <option value="Under Review">Under Review</option>
+                            <option value="Interview">Interview</option>
+                            <option value="Accepted">Accepted</option>
+                            <option value="Rejected">Rejected</option>
+                        </select>
+                        <button class="admin-btn" onclick="saveCurrentAppStatus()" style="padding: 8px 18px; margin: 0; font-size: 0.85rem;">
+                            <i class="fas fa-save"></i> Save Changes
+                        </button>
+                    </div>
+                    <div>
+                        <label for="mAdminNotes" style="display: block; font-weight: 700; font-size: 0.85rem; color: #4a5568; margin-bottom: 6px;">
+                            Private E-Board Notes (Only visible to admins):
+                        </label>
+                        <textarea id="mAdminNotes" rows="2" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0; font-family: inherit; font-size: 0.88rem;" placeholder="Add internal notes, interview feedback, or scheduling comments..."></textarea>
+                    </div>
+                </div>
+
+                <!-- Applicant Profile -->
+                <div>
+                    <h3 class="modal-section-title">Applicant Information</h3>
+                    <div class="modal-info-grid">
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Full Name</span>
+                            <div class="modal-info-value" id="mInfoName">-</div>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">MDC Student Email</span>
+                            <div class="modal-info-value" id="mInfoEmail">-</div>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Campus</span>
+                            <div class="modal-info-value" id="mInfoCampus">-</div>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Degree / Major</span>
+                            <div class="modal-info-value" id="mInfoMajor">-</div>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Academic Year</span>
+                            <div class="modal-info-value" id="mInfoYear">-</div>
+                        </div>
+                        <div class="modal-info-item">
+                            <span class="modal-info-label">Phone</span>
+                            <div class="modal-info-value" id="mInfoPhone">-</div>
+                        </div>
+                        <div class="modal-info-item" style="grid-column: 1 / -1;">
+                            <span class="modal-info-label">General Availability</span>
+                            <div class="modal-info-value" id="mInfoAvailability">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Roles Applied -->
+                <div>
+                    <h3 class="modal-section-title">Selected Roles</h3>
+                    <div id="mRolesBadgesList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                </div>
+
+                <!-- General Motivation & Contribution -->
+                <div>
+                    <h3 class="modal-section-title">General Project Motivation</h3>
+                    <div class="modal-answer-card">
+                        <div class="modal-answer-q">Why are you interested in Poetry in Motion?</div>
+                        <div class="modal-answer-a" id="mAnswerWhy">-</div>
+                    </div>
+                    <div class="modal-answer-card">
+                        <div class="modal-answer-q">What do you hope to contribute to the project?</div>
+                        <div class="modal-answer-a" id="mAnswerContribute">-</div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Role-Specific Answers Container -->
+                <div id="mRoleSpecificAnswersSection"></div>
+
+                <!-- Portfolio & Attachments -->
+                <div>
+                    <h3 class="modal-section-title">Portfolio & Attachments</h3>
+                    <div class="modal-answer-card">
+                        <div class="modal-answer-q">Portfolio / Online Showcase Link</div>
+                        <div class="modal-answer-a" id="mAnswerPortfolio">-</div>
+                    </div>
+                    <div class="modal-answer-card">
+                        <div class="modal-answer-q">Additional Comments for E-Board</div>
+                        <div class="modal-answer-a" id="mAnswerComments">-</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Global Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <script>
+        // Tab switching
+        function switchAdminTab(tabName) {
+            const tabApps = document.getElementById('tabApplicationsSection');
+            const tabEvents = document.getElementById('tabEventsSection');
+            const btnApps = document.getElementById('tabBtnApps');
+            const btnEvents = document.getElementById('tabBtnEvents');
+
+            if (tabName === 'applications') {
+                tabApps.style.display = 'block';
+                tabEvents.style.display = 'none';
+                btnApps.classList.add('active');
+                btnEvents.classList.remove('active');
+            } else {
+                tabApps.style.display = 'none';
+                tabEvents.style.display = 'block';
+                btnApps.classList.remove('active');
+                btnEvents.classList.add('active');
+            }
+        }
+
+        // --- Applications Management Logic ---
+        let allApplications = [];
+        let currentViewingApp = null;
+
+        async function fetchApplications() {
+            // 1. Fetch from LocalStorage
+            let localApps = [];
+            try {
+                localApps = JSON.parse(localStorage.getItem('verba_submitted_applications') || '[]');
+            } catch (e) {
+                console.warn(e);
+            }
+
+            allApplications = [...localApps];
+
+            // 2. Fetch from Firestore if available
+            if (typeof db !== 'undefined' && db) {
+                try {
+                    const snap = await db.collection('applications').get();
+                    if (!snap.empty) {
+                        snap.forEach(doc => {
+                            const data = doc.data();
+                            const existingIndex = allApplications.findIndex(a => a.id === doc.id);
+                            if (existingIndex > -1) {
+                                allApplications[existingIndex] = { id: doc.id, ...data };
+                            } else {
+                                allApplications.push({ id: doc.id, ...data });
+                            }
+                        });
+                    }
+                } catch (err) {
+                    console.warn('Firestore fetch warning:', err);
+                }
+            }
+
+            // Sort newest first
+            allApplications.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+            // Update badge
+            const badge = document.getElementById('appsCountBadge');
+            if (badge) badge.textContent = allApplications.length;
+
+            renderApplicationsTable(allApplications);
+        }
+
+        function filterApplications() {
+            const query = (document.getElementById('appSearchInput').value || '').toLowerCase().trim();
+            const oppFilter = document.getElementById('appOpportunityFilter').value;
+            const roleFilter = document.getElementById('appRoleFilter').value;
+            const statusFilter = document.getElementById('appStatusFilter').value;
+
+            const filtered = allApplications.filter(app => {
+                // Search
+                if (query) {
+                    const name = (app.applicant?.name || '').toLowerCase();
+                    const email = (app.applicant?.email || '').toLowerCase();
+                    const major = (app.applicant?.major || '').toLowerCase();
+                    if (!name.includes(query) && !email.includes(query) && !major.includes(query)) {
+                        return false;
+                    }
+                }
+
+                // Opportunity
+                if (oppFilter !== 'all' && app.opportunityId !== oppFilter) {
+                    return false;
+                }
+
+                // Role
+                if (roleFilter !== 'all') {
+                    if (!app.selectedRoles || !app.selectedRoles.includes(roleFilter)) {
+                        return false;
+                    }
+                }
+
+                // Status
+                if (statusFilter !== 'all') {
+                    if ((app.status || 'Pending') !== statusFilter) {
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            renderApplicationsTable(filtered);
+        }
+
+        function renderApplicationsTable(appsList) {
+            const tbody = document.getElementById('applicationsTableBody');
+            const emptyEl = document.getElementById('appsEmptyState');
+            if (!tbody) return;
+
+            if (!appsList || appsList.length === 0) {
+                tbody.innerHTML = '';
+                if (emptyEl) emptyEl.style.display = 'block';
+                return;
+            }
+
+            if (emptyEl) emptyEl.style.display = 'none';
+
+            tbody.innerHTML = appsList.map(app => {
+                const appDate = app.createdAt ? new Date(app.createdAt).toLocaleDateString('en-US', {
+                    month: 'short', day: 'numeric', year: 'numeric'
+                }) : 'Recently';
+
+                const rolesPills = (app.selectedRoles || []).map(rId => {
+                    const opp = typeof getOpportunityById === 'function' ? getOpportunityById(app.opportunityId) : null;
+                    const r = opp?.roles?.find(item => item.id === rId);
+                    const title = r ? r.title : rId;
+                    return `<span style="background: #edf2f7; color: #2d3748; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; margin-right: 4px; display: inline-block; margin-bottom: 2px;">${title}</span>`;
+                }).join('');
+
+                const status = app.status || 'Pending';
+                let statusClass = 'status-pending';
+                if (status === 'Under Review') statusClass = 'status-review';
+                if (status === 'Interview') statusClass = 'status-interview';
+                if (status === 'Accepted') statusClass = 'status-accepted';
+                if (status === 'Rejected') statusClass = 'status-rejected';
+
+                return `
+                    <tr>
+                        <td>
+                            <strong style="color: #1a202c; display: block;">${app.applicant?.name || 'Applicant'}</strong>
+                            <span style="color: #718096; font-size: 0.8rem;">${app.applicant?.email || ''}</span>
+                        </td>
+                        <td>
+                            <span style="font-weight: 600; color: var(--primary-color);">${app.opportunityTitle || 'Poetry in Motion'}</span>
+                        </td>
+                        <td>${rolesPills || '<span style="color:#a0aec0;">None</span>'}</td>
+                        <td>
+                            <span style="display: block; font-weight: 600;">${app.applicant?.campus || 'MDC'}</span>
+                            <span style="color: #718096; font-size: 0.78rem;">${app.applicant?.major || ''}</span>
+                        </td>
+                        <td style="color: #718096; font-size: 0.85rem;">${appDate}</td>
+                        <td>
+                            <span class="status-badge ${statusClass}">${status}</span>
+                        </td>
+                        <td style="text-align: right;">
+                            <button class="btn-view-app" onclick="openApplicationModal('${app.id}')">
+                                <i class="fas fa-eye"></i> Review
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // --- Application Modal Handlers ---
+        window.openApplicationModal = function (appId) {
+            const app = allApplications.find(a => a.id === appId);
+            if (!app) return;
+            currentViewingApp = app;
+
+            document.getElementById('mAppOppBadge').textContent = app.opportunityTitle || 'Poetry in Motion';
+            document.getElementById('mAppApplicantName').textContent = app.applicant?.name || 'Applicant';
+
+            document.getElementById('mStatusSelect').value = app.status || 'Pending';
+            document.getElementById('mAdminNotes').value = app.adminNotes || '';
+
+            document.getElementById('mInfoName').textContent = app.applicant?.name || '-';
+            document.getElementById('mInfoEmail').textContent = app.applicant?.email || '-';
+            document.getElementById('mInfoCampus').textContent = app.applicant?.campus || '-';
+            document.getElementById('mInfoMajor').textContent = app.applicant?.major || '-';
+            document.getElementById('mInfoYear').textContent = app.applicant?.year || '-';
+            document.getElementById('mInfoPhone').textContent = app.applicant?.phone || 'Not provided';
+            document.getElementById('mInfoAvailability').textContent = app.applicant?.availability || '-';
+
+            // Selected roles badges
+            const opp = typeof getOpportunityById === 'function' ? getOpportunityById(app.opportunityId) : null;
+            const rolesHtml = (app.selectedRoles || []).map(rId => {
+                const r = opp?.roles?.find(item => item.id === rId);
+                return `<span style="background: var(--primary-color); color: #fff; padding: 6px 14px; border-radius: 20px; font-size: 0.85rem; font-weight: 700;"><i class="fas ${r ? r.icon : 'fa-star'}"></i> ${r ? r.title : rId}</span>`;
+            }).join('');
+            document.getElementById('mRolesBadgesList').innerHTML = rolesHtml || 'No roles selected';
+
+            // General Motivation
+            document.getElementById('mAnswerWhy').textContent = app.generalAnswers?.why || '-';
+            document.getElementById('mAnswerContribute').textContent = app.generalAnswers?.contribute || '-';
+
+            // Role specific questions & answers
+            const answersContainer = document.getElementById('mRoleSpecificAnswersSection');
+            let roleSectionsHtml = '';
+
+            (app.selectedRoles || []).forEach(roleId => {
+                const role = opp?.roles?.find(item => item.id === roleId);
+                const roleQuestions = (opp?.customQuestions && opp?.customQuestions[roleId]) || [];
+                const roleAnswers = (app.roleAnswers && app.roleAnswers[roleId]) || {};
+
+                let questionsListHtml = '';
+                roleQuestions.forEach(q => {
+                    const answer = roleAnswers[q.id];
+                    let displayVal = '-';
+                    if (Array.isArray(answer)) {
+                        displayVal = answer.join(', ');
+                    } else if (answer && typeof answer === 'object' && answer.base64) {
+                        displayVal = `
+                            <div style="margin-top: 8px;">
+                                <span>Attached File: <strong>${answer.name}</strong> (${answer.size})</span><br>
+                                ${answer.type && answer.type.startsWith('image/') ? `<img src="${answer.base64}" alt="Artwork Preview" style="max-width: 250px; max-height: 200px; border-radius: 8px; margin-top: 8px; border: 1px solid #cbd5e0;">` : ''}
+                            </div>
+                        `;
+                    } else if (answer) {
+                        displayVal = answer;
+                    }
+
+                    questionsListHtml += `
+                        <div class="modal-answer-card">
+                            <div class="modal-answer-q">${q.label}</div>
+                            <div class="modal-answer-a">${displayVal}</div>
+                        </div>
+                    `;
+                });
+
+                roleSectionsHtml += `
+                    <div style="margin-top: 15px;">
+                        <h3 class="modal-section-title"><i class="fas ${role ? role.icon : 'fa-check'}"></i> ${role ? role.title : roleId} Questions</h3>
+                        ${questionsListHtml || '<p style="color:#a0aec0;">No questions defined.</p>'}
+                    </div>
+                `;
+            });
+
+            answersContainer.innerHTML = roleSectionsHtml;
+
+            // Portfolio & Comments
+            const portfolio = app.generalAnswers?.consolidatedPortfolio;
+            document.getElementById('mAnswerPortfolio').innerHTML = portfolio ? `<a href="${portfolio}" target="_blank" style="color: var(--accent-color); font-weight:700;">${portfolio} <i class="fas fa-external-link-alt" style="font-size:0.75rem;"></i></a>` : 'Not provided';
+            document.getElementById('mAnswerComments').textContent = app.generalAnswers?.finalComments || 'None';
+
+            document.getElementById('appDetailModal').style.display = 'flex';
+        };
+
+        window.closeApplicationModal = function () {
+            document.getElementById('appDetailModal').style.display = 'none';
+            currentViewingApp = null;
+        };
+
+        window.saveCurrentAppStatus = async function () {
+            if (!currentViewingApp) return;
+
+            const newStatus = document.getElementById('mStatusSelect').value;
+            const newNotes = document.getElementById('mAdminNotes').value.trim();
+
+            currentViewingApp.status = newStatus;
+            currentViewingApp.adminNotes = newNotes;
+
+            // 1. Save to LocalStorage
+            try {
+                localStorage.setItem('verba_submitted_applications', JSON.stringify(allApplications));
+            } catch (e) {
+                console.warn(e);
+            }
+
+            // 2. Save to Firestore
+            if (typeof db !== 'undefined' && db) {
+                try {
+                    await db.collection('applications').doc(currentViewingApp.id).update({
+                        status: newStatus,
+                        adminNotes: newNotes
+                    });
+                } catch (e) {
+                    console.warn(e);
+                }
+            }
+
+            filterApplications();
+            showToast(`Application updated: ${newStatus}`);
+        };
+
+        // --- Core Page Load ---
         document.addEventListener('DOMContentLoaded', () => {
             // Protect Route
             const isLoggedIn = localStorage.getItem('verba_logged_in');
@@ -163,7 +663,8 @@
             } else if (isLoggedIn !== 'true') {
                 window.location.href = 'login.html';
             }
-            // Profile Picture Logic
+
+            // Profile Picture
             const picContainer = document.getElementById('navProfilePicContainer');
             const picImg = document.getElementById('navProfilePic');
             const savedPic = localStorage.getItem('verba_profile_pic');
@@ -173,8 +674,11 @@
                 picContainer.style.display = 'block';
             }
 
-            // Toast Notification System
-            function showToast(message) {
+            // Fetch Applications
+            fetchApplications();
+
+            // Toast System
+            window.showToast = function (message) {
                 const container = document.getElementById('toastContainer');
                 const toast = document.createElement('div');
                 toast.className = 'toast';
@@ -184,9 +688,9 @@
                     toast.classList.add('fade-out');
                     setTimeout(() => toast.remove(), 300);
                 }, 3000);
-            }
+            };
 
-            // --- Event Manager Logic ---
+            // Event Form logic
             const eventForm = document.getElementById('eventForm');
             if (eventForm) {
                 eventForm.addEventListener('submit', async (e) => {
@@ -198,107 +702,75 @@
                     const serviceHours = parseFloat(document.getElementById('eventServiceHours').value) || 0;
                     const description = document.getElementById('eventDescription').value.trim();
 
-                    const eventData = {
-                        title,
-                        date,
-                        time,
-                        location,
-                        serviceHours,
-                        description,
-                        createdAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+                    const newEvent = {
+                        id: Date.now(),
+                        title, date, time, location, serviceHours, description,
+                        createdAt: new Date().toISOString()
                     };
 
-                    try {
-                        if (typeof db !== 'undefined' && db) {
-                            await db.collection('events').add(eventData);
-                        }
-                    } catch(err) { console.warn(err); }
-
                     const events = JSON.parse(localStorage.getItem('verba_events')) || [];
-                    events.unshift({ id: 'evt_' + Date.now(), ...eventData });
+                    events.push(newEvent);
                     localStorage.setItem('verba_events', JSON.stringify(events));
-                    
+
+                    if (typeof db !== 'undefined' && db) {
+                        try {
+                            await db.collection('events').add(newEvent);
+                        } catch(err) {
+                            console.warn("Firestore error adding event:", err);
+                        }
+                    }
+
                     showToast('Event added successfully!');
                     eventForm.reset();
                 });
             }
 
-            // --- Shop Manager Logic ---
+            // Product Form logic
             const productForm = document.getElementById('productForm');
             const catSelect = document.getElementById('productCategory');
             const bookFields = document.getElementById('bookExtraFields');
-            const submitBtn = productForm.querySelector('button[type="submit"]');
 
-            catSelect.addEventListener('change', (e) => {
-                if (e.target.value === 'books') {
-                    bookFields.style.display = 'block';
-                } else {
-                    bookFields.style.display = 'none';
-                }
-            });
+            if (catSelect && bookFields) {
+                catSelect.addEventListener('change', () => {
+                    bookFields.style.display = catSelect.value === 'books' ? 'block' : 'none';
+                });
+            }
 
-            productForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Processing...';
+            if (productForm) {
+                productForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const submitBtn = productForm.querySelector('button[type="submit"]');
+                    submitBtn.disabled = true;
 
-                const name = document.getElementById('productName').value;
-                const category = document.getElementById('productCategory').value;
-                const price = document.getElementById('productPrice').value;
-                const image = document.getElementById('productImage').value;
-                
-                let productData = { id: Date.now(), name, category, price, image };
+                    const name = document.getElementById('productName').value.trim();
+                    const category = catSelect.value;
+                    const price = parseFloat(document.getElementById('productPrice').value) || 0;
+                    const image = document.getElementById('productImage').value.trim();
 
-                if (category === 'books') {
-                    productData.subCategory = document.getElementById('bookSubCategory').value;
-                    productData.condition = document.getElementById('bookCondition').value;
-                    productData.pages = document.getElementById('bookPages').value;
-                    productData.isbn = document.getElementById('bookISBN').value;
-                    productData.publisher = document.getElementById('bookPublisher').value;
-                    productData.synopsis = document.getElementById('bookSynopsis').value;
-                    productData.goodreadsLink = document.getElementById('bookGoodreads').value;
-                    productData.rating = null;
+                    let productData = { id: Date.now(), name, category, price, image };
 
-                    if (productData.goodreadsLink) {
-                        submitBtn.textContent = 'Fetching Rating...';
-                        try {
-                            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(productData.goodreadsLink)}`;
-                            const response = await fetch(proxyUrl);
-                            if (response.ok) {
-                                const data = await response.json();
-                                const html = data.contents;
-                                let match = html.match(/class="RatingStatistics__rating">([\d.]+)<\/div>/);
-                                if (!match) match = html.match(/<span itemprop="ratingValue">([\d.]+)<\/span>/);
-                                if (!match) match = html.match(/Rating ([\d.]+) out of 5/);
-                                if (!match) match = html.match(/aria-label="([\d.]+) out of 5/);
-                                
-                                if (match && match[1]) {
-                                    productData.rating = match[1];
-                                    showToast('Fetched Goodreads rating: ' + productData.rating);
-                                } else {
-                                    productData.rating = prompt("Could not fetch rating automatically. Enter rating manually (e.g. 4.28):", "4.00") || "4.00";
-                                }
-                            } else {
-                                productData.rating = prompt("Proxy error fetching rating. Enter manually:", "4.00") || "4.00";
-                            }
-                        } catch(err) {
-                            productData.rating = prompt("Network error. Enter rating manually:", "4.00") || "4.00";
-                        }
+                    if (category === 'books') {
+                        productData.subCategory = document.getElementById('bookSubCategory').value;
+                        productData.condition = document.getElementById('bookCondition').value;
+                        productData.pages = document.getElementById('bookPages').value;
+                        productData.isbn = document.getElementById('bookISBN').value;
+                        productData.publisher = document.getElementById('bookPublisher').value;
+                        productData.synopsis = document.getElementById('bookSynopsis').value;
+                        productData.goodreadsLink = document.getElementById('bookGoodreads').value;
                     }
-                }
-                
-                const products = JSON.parse(localStorage.getItem('verba_products')) || [];
-                products.push(productData);
-                localStorage.setItem('verba_products', JSON.stringify(products));
-                
-                showToast('Product added successfully!');
-                productForm.reset();
-                if (catSelect.value === 'books') bookFields.style.display = 'block';
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Add Product to Store';
-            });
+                    
+                    const products = JSON.parse(localStorage.getItem('verba_products')) || [];
+                    products.push(productData);
+                    localStorage.setItem('verba_products', JSON.stringify(products));
+                    
+                    showToast('Product added successfully!');
+                    productForm.reset();
+                    if (catSelect.value === 'books') bookFields.style.display = 'block';
+                    submitBtn.disabled = false;
+                });
+            }
 
-            // --- Orders Logic ---
+            // Orders Logic
             function loadOrders() {
                 const ordersList = document.getElementById('ordersList');
                 const orders = JSON.parse(localStorage.getItem('verba_orders')) || [];
@@ -313,12 +785,12 @@
                     const orderCard = document.createElement('div');
                     orderCard.className = 'order-card';
                     
-                    let itemsHtml = order.items.map(item => `<li>${item.quantity}x ${item.title}</li>`).join('');
+                    let itemsHtml = (order.items || []).map(item => `<li>${item.quantity}x ${item.title}</li>`).join('');
                     
                     orderCard.innerHTML = `
                         <div class="order-header">
                             <h4>${order.customerName}</h4>
-                            <span class="order-total">$${parseFloat(order.total).toFixed(2)}</span>
+                            <span class="order-total">$${parseFloat(order.total || 0).toFixed(2)}</span>
                         </div>
                         <p class="order-email">${order.customerEmail}</p>
                         <p class="order-date">${new Date(order.date).toLocaleString()}</p>
@@ -328,7 +800,6 @@
                     ordersList.appendChild(orderCard);
                 });
 
-                // Attach resolve events
                 document.querySelectorAll('.resolve-btn').forEach(btn => {
                     btn.addEventListener('click', (e) => {
                         const index = e.target.getAttribute('data-index');

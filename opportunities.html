@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Explore Student Opportunities, Scholarships, and Internships at Verba Vitae">
+    <meta name="description" content="Explore Internal Projects, Creative Collaborations, and Student Opportunities at Verba Vitae">
     <title>Verba Vitae - Opportunities</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
-    <link rel="stylesheet" href="css/style.css?v=20260819">
-    <link rel="stylesheet" href="css/opportunities.css?v=20260819">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css?v=20260921">
+    <link rel="stylesheet" href="css/opportunities.css?v=20260921_notags">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -40,8 +40,7 @@
         <!-- Desktop Navigation (Visible only on desktop) -->
         <div class="desktop-nav">
             <div class="top-bar">
-                <div class="nav-links left-links">
-                </div>
+                <div class="nav-links left-links"></div>
                 <div class="nav-links right-links" style="justify-content: flex-end; padding-right: 5%;">
                     <a href="login.html" class="btn-login">LOG IN</a>
                 </div>
@@ -80,27 +79,22 @@
 
     <main class="opp-container">
         <div class="opp-hero">
-            <h1>Student Opportunities Hub</h1>
-            <p>Discover scholarships, internships, research fellowships, and leadership roles designed to accelerate your growth and success.</p>
+            <span class="opp-hero-badge"><i class="fas fa-sparkles"></i> Verba Vitae Projects & Initiatives</span>
+            <h1>Creative Opportunities</h1>
+            <p>Join internal creative productions, collaborative initiatives, and student leadership roles designed to bring literature, art, and storytelling to life.</p>
         </div>
 
-        <!-- Search & Filter Controls -->
+        <!-- Search Controls (Tags removed completely) -->
         <div class="controls-bar">
             <div class="opp-search-box">
                 <i class="fas fa-search opp-search-icon"></i>
-                <input type="text" id="oppSearch" placeholder="Search opportunities, keywords, or organizations..." oninput="filterOpportunities()">
-            </div>
-            <div class="opp-filters">
-                <button class="opp-filter-btn active" onclick="setCategory('all', this)">All Types</button>
-                <button class="opp-filter-btn" onclick="setCategory('scholarship', this)">Scholarships</button>
-                <button class="opp-filter-btn" onclick="setCategory('internship', this)">Internships</button>
-                <button class="opp-filter-btn" onclick="setCategory('leadership', this)">Leadership</button>
+                <input type="text" id="oppSearch" placeholder="Search opportunities, creative roles, or projects..." oninput="renderOpportunities()">
             </div>
         </div>
 
         <!-- Opportunities Grid -->
         <div class="opp-grid" id="oppGrid">
-            <p style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: #666; font-size: 1.1rem;">No opportunities available at the moment. Check back soon!</p>
+            <!-- Dynamically populated from opportunities-data.js -->
         </div>
     </main>
 
@@ -122,6 +116,9 @@
         </div>
     </footer>
 
+    <!-- Opportunities Registry -->
+    <script src="js/opportunities-data.js?v=20260921"></script>
+
     <script>
         // Burger Menu Toggle
         const burgerMenu = document.getElementById('burger-menu');
@@ -132,32 +129,87 @@
             });
         }
 
-        let activeCategory = 'all';
+        // Render Opportunities (No tags, clean search)
+        function renderOpportunities() {
+            const grid = document.getElementById('oppGrid');
+            if (!grid) return;
 
-        function setCategory(cat, btn) {
-            activeCategory = cat;
-            document.querySelectorAll('.opp-filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            filterOpportunities();
-        }
+            const query = (document.getElementById('oppSearch').value || '').toLowerCase().trim();
+            const allOpps = typeof getAllOpportunities === 'function' ? getAllOpportunities() : [];
 
-        function filterOpportunities() {
-            const query = document.getElementById('oppSearch').value.toLowerCase();
-            const cards = document.querySelectorAll('.opp-card');
-
-            cards.forEach(card => {
-                const category = card.dataset.category;
-                const text = card.innerText.toLowerCase();
-                const matchesCategory = (activeCategory === 'all' || category === activeCategory);
-                const matchesQuery = text.includes(query);
-
-                if (matchesCategory && matchesQuery) {
-                    card.style.display = 'flex';
-                } else {
-                    card.style.display = 'none';
-                }
+            const filtered = allOpps.filter(opp => {
+                if (!query) return true;
+                const matchTitle = (opp.title || '').toLowerCase().includes(query);
+                const matchTagline = (opp.tagline || '').toLowerCase().includes(query);
+                const matchDesc = (opp.shortDescription || '').toLowerCase().includes(query);
+                const matchRoles = (opp.roles || []).some(r => (r.title || '').toLowerCase().includes(query));
+                return matchTitle || matchTagline || matchDesc || matchRoles;
             });
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="opp-empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <h3>No Opportunities Found</h3>
+                        <p>No creative opportunities matched your search. Check back soon for upcoming Verba Vitae projects!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(opp => {
+                const rolesHtml = (opp.roles || []).map(r => `
+                    <span class="opp-role-pill">
+                        <i class="fas ${r.icon || 'fa-star'}"></i> ${r.title}
+                    </span>
+                `).join('');
+
+                const statusLabel = opp.status === 'open' ? 'Open Application' : (opp.status === 'reviewing' ? 'Under Review' : 'Closed');
+
+                return `
+                    <article class="opp-card">
+                        <div class="opp-card-media">
+                            <img src="${opp.heroImage || 'images/slide1.jpg'}" alt="${opp.title}" class="opp-card-img" loading="lazy">
+                            <div class="opp-card-media-overlay">
+                                <span class="opp-card-tagline">${opp.tagline || 'Verba Vitae Initiative'}</span>
+                                <h2 class="opp-card-media-title">${opp.title}</h2>
+                            </div>
+                            <span class="opp-card-status-badge">${statusLabel}</span>
+                        </div>
+
+                        <div class="opp-card-body">
+                            <h3 class="opp-card-subtitle">${opp.subtitle}</h3>
+                            <p class="opp-card-desc">${opp.shortDescription}</p>
+
+                            <div class="opp-card-roles-box">
+                                <div class="opp-card-roles-title">
+                                    <span>Available Roles (${(opp.roles || []).length})</span>
+                                    <span><i class="fas fa-users"></i></span>
+                                </div>
+                                <div class="opp-card-roles-list">
+                                    ${rolesHtml}
+                                </div>
+                            </div>
+
+                            <div class="opp-card-actions">
+                                <a href="opportunity.html?id=${opp.id}" class="btn-view-opp">
+                                    <span>Explore Project & Details</span>
+                                    <i class="fas fa-arrow-right"></i>
+                                </a>
+                                <a href="apply.html?id=${opp.id}" class="btn-apply-direct" title="Apply directly">
+                                    Apply Now
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
         }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            renderOpportunities();
+        });
     </script>
 </body>
 </html>

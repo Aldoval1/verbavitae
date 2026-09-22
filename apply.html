@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Apply for Poetry in Motion and creative opportunities at Verba Vitae.">
+    <title>Application - Verba Vitae Opportunities</title>
+    <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
+    <link rel="stylesheet" href="css/style.css?v=20260921">
+    <link rel="stylesheet" href="css/application.css?v=20260921">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-init.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <!-- Mobile Header -->
+        <div class="mobile-header-bar">
+            <div class="burger-menu" id="burger-menu">
+                <i class="fas fa-bars"></i>
+            </div>
+            <div class="mobile-logo-container">
+                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae" class="mobile-logo-img">
+                <span class="mobile-logo-text">VERBA VITAE</span>
+            </div>
+        </div>
+        
+        <!-- Mobile Navigation Menu -->
+        <div class="mobile-nav" id="mobile-nav">
+            <a href="login.html">Log In</a>
+            <a href="join.html">Join</a>
+            <a href="eboard.html">Our E-Board</a>
+            <a href="opportunities.html" class="active">Opportunities</a>
+            <a href="news.html">News</a>
+            <a href="events.html">Events</a>
+            <a href="shop.html">Shop</a>
+            <a href="voice.html" style="color: #3182ce; font-weight: 700;"><i class="fas fa-comments"></i> Verba Voice</a>
+            <a href="speech.html" style="color: var(--color-orange); font-weight: 700;"><i class="fas fa-volume-up"></i> Speech AI</a>
+        </div>
+
+        <!-- Desktop Navigation -->
+        <div class="desktop-nav">
+            <div class="top-bar">
+                <div class="nav-links left-links"></div>
+                <div class="nav-links right-links" style="justify-content: flex-end; padding-right: 5%;">
+                    <a href="login.html" class="btn-login">LOG IN</a>
+                </div>
+            </div>
+            
+            <div class="secondary-bar">
+                <div class="nav-links left-links">
+                    <a href="join.html">Join</a>
+                    <span class="divider">|</span>
+                    <a href="eboard.html">Our E-Board</a>
+                    <span class="divider">|</span>
+                    <a href="opportunities.html" class="active" style="color: #cccccc;">Opportunities</a>
+                    <span class="divider">|</span>
+                    <a href="voice.html" style="color: #63b3ed; font-weight: 700;"><i class="fas fa-comments"></i> Verba Voice</a>
+                </div>
+                <div class="nav-links right-links">
+                    <a href="news.html">News</a>
+                    <span class="divider">|</span>
+                    <a href="events.html">Events</a>
+                    <span class="divider">|</span>
+                    <a href="shop.html">Shop</a>
+                    <span class="divider">|</span>
+                    <a href="speech.html" style="color: #ffe066; font-weight: 700;"><i class="fas fa-volume-up"></i> Speech AI</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="floating-logo-box">
+        <a href="index.html" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center;">
+            <img src="images/verbavitaelogofill.jpg" alt="Verba Vitae Logo" class="logo-img">
+            <h1 class="logo-title">VERBA VITAE</h1>
+            <p class="logo-subtitle">Organization</p>
+        </a>
+    </div>
+
+    <main class="apply-main">
+        <div class="apply-container">
+            
+            <!-- Application Header -->
+            <div class="apply-header">
+                <span class="apply-pill" id="appOppTagline"><i class="fas fa-sparkles"></i> Verba in Motion</span>
+                <h1 id="appOppTitle">Poetry in Motion Application</h1>
+                <p>Complete this form to apply for our collaborative creative team. Take your time to share your perspective, craft, and enthusiasm.</p>
+            </div>
+
+            <!-- Step Progress Tracker -->
+            <div class="step-tracker" id="stepTracker">
+                <div class="step-tracker-progress" id="stepProgress"></div>
+
+                <div class="step-item active" id="stepItem1">
+                    <div class="step-circle">1</div>
+                    <span class="step-label">About You</span>
+                </div>
+                <div class="step-item" id="stepItem2">
+                    <div class="step-circle">2</div>
+                    <span class="step-label">Select Role</span>
+                </div>
+                <div class="step-item" id="stepItem3">
+                    <div class="step-circle">3</div>
+                    <span class="step-label">Questions</span>
+                </div>
+                <div class="step-item" id="stepItem4">
+                    <div class="step-circle">4</div>
+                    <span class="step-label">Portfolio</span>
+                </div>
+                <div class="step-item" id="stepItem5">
+                    <div class="step-circle">5</div>
+                    <span class="step-label">Review</span>
+                </div>
+            </div>
+
+            <!-- Application Card Form Container -->
+            <div class="apply-card">
+                
+                <!-- ==========================================
+                     STEP 1: APPLICANT PROFILE & GENERAL QUESTIONS
+                     ========================================== -->
+                <div class="step-section active" id="stepSection1">
+                    <h2 class="step-title">Step 1 — Personal & Academic Profile</h2>
+                    <p class="step-desc">Tell us a little bit about yourself and your academic journey at Miami Dade College.</p>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="applicantName">Full Name <span class="required">*</span></label>
+                            <input type="text" id="applicantName" class="form-control" placeholder="e.g. Sofia Rodriguez" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="applicantEmail">MDC Student Email <span class="required">*</span></label>
+                            <input type="email" id="applicantEmail" class="form-control" placeholder="name@mymdc.net" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="applicantCampus">MDC Campus <span class="required">*</span></label>
+                            <select id="applicantCampus" class="form-control" required>
+                                <option value="">-- Select your primary campus --</option>
+                                <option value="Kendall">Kendall Campus</option>
+                                <option value="Wolfson">Wolfson Campus (Downtown)</option>
+                                <option value="North">North Campus</option>
+                                <option value="West">West Campus (Doral)</option>
+                                <option value="Eduardo J. Padrón">Eduardo J. Padrón Campus (Little Havana)</option>
+                                <option value="Homestead">Homestead Campus</option>
+                                <option value="Hialeah">Hialeah Campus</option>
+                                <option value="Medical">Medical Campus</option>
+                                <option value="Online / Multiple">MDC Online / Multiple Campuses</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="applicantMajor">Degree / Major <span class="required">*</span></label>
+                            <input type="text" id="applicantMajor" class="form-control" placeholder="e.g. English Literature, Animation, Film, Biology" required>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="form-group">
+                            <label for="applicantYear">Academic Year <span class="required">*</span></label>
+                            <select id="applicantYear" class="form-control" required>
+                                <option value="">-- Select academic standing --</option>
+                                <option value="Freshman">Freshman (1st Year)</option>
+                                <option value="Sophomore">Sophomore (2nd Year)</option>
+                                <option value="Junior">Junior (3rd Year)</option>
+                                <option value="Senior">Senior (4th Year)</option>
+                                <option value="Dual Enrollment">Dual Enrollment / High School</option>
+                                <option value="Post-Graduate / Alumni">Post-Graduate / Alumni</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="applicantPhone">Phone Number (Optional)</label>
+                            <input type="tel" id="applicantPhone" class="form-control" placeholder="(305) 000-0000">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="applicantStudentId">Student ID Number (Optional)</label>
+                        <input type="text" id="applicantStudentId" class="form-control" placeholder="MDC ID (if available)">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="applicantAvailability">General Weekly Availability <span class="required">*</span></label>
+                        <textarea id="applicantAvailability" class="form-control" placeholder="Describe your general availability during the week (e.g. Mondays and Wednesdays after 2 PM, weekends, approx. 4–6 hours weekly)..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="applicantWhy">Why are you interested in Poetry in Motion? <span class="required">*</span></label>
+                        <textarea id="applicantWhy" class="form-control" placeholder="What draws you to this creative project? What inspires you about blending literature and visual art?" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="applicantContribute">What do you hope to contribute to the project? <span class="required">*</span></label>
+                        <textarea id="applicantContribute" class="form-control" placeholder="Share your strengths, ideas, or what unique perspective or energy you bring..." required></textarea>
+                    </div>
+                </div>
+
+                <!-- ==========================================
+                     STEP 2: ROLE SELECTION
+                     ========================================== -->
+                <div class="step-section" id="stepSection2">
+                    <h2 class="step-title">Step 2 — Which role are you applying for?</h2>
+                    <p class="step-desc">You can apply for one or multiple roles. The following section will dynamically adapt questions to your selections.</p>
+
+                    <div class="role-select-grid" id="roleSelectGrid">
+                        <!-- Populated by JS from opportunities-data.js -->
+                    </div>
+
+                    <div id="roleSelectionError" style="display:none; color: #e53e3e; font-size: 0.9rem; font-weight: 700; margin-top: 10px;">
+                        <i class="fas fa-exclamation-circle"></i> Please select at least one role to proceed.
+                    </div>
+                </div>
+
+                <!-- ==========================================
+                     STEP 3: ROLE-SPECIFIC QUESTIONS
+                     ========================================== -->
+                <div class="step-section" id="stepSection3">
+                    <h2 class="step-title">Step 3 — Role-Specific Questions</h2>
+                    <p class="step-desc">Please answer the questions corresponding to each role you selected.</p>
+
+                    <div id="dynamicRoleQuestionsContainer">
+                        <!-- Injected dynamically by JS based on selected roles -->
+                    </div>
+                </div>
+
+                <!-- ==========================================
+                     STEP 4: PORTFOLIO & FINAL DETAILS
+                     ========================================== -->
+                <div class="step-section" id="stepSection4">
+                    <h2 class="step-title">Step 4 — Portfolio, Links & Notes</h2>
+                    <p class="step-desc">Share any consolidated online portfolios, social media showcases, or additional comments.</p>
+
+                    <div class="form-group">
+                        <label for="consolidatedPortfolio">Consolidated Portfolio / Work Links (Optional)</label>
+                        <input type="url" id="consolidatedPortfolio" class="form-control" placeholder="https://instagram.com/myart, https://artstation.com/..., or Google Drive link">
+                        <span class="form-hint">Ensure Google Drive folders have viewing permissions set to "Anyone with the link".</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="finalComments">Anything else you would like the Verba Vitae team to know? (Optional)</label>
+                        <textarea id="finalComments" class="form-control" placeholder="Any specific literary works or poems you'd love to animate, scheduling constraints, or questions for our E-Board..."></textarea>
+                    </div>
+                </div>
+
+                <!-- ==========================================
+                     STEP 5: REVIEW & SUBMIT
+                     ========================================== -->
+                <div class="step-section" id="stepSection5">
+                    <h2 class="step-title">Step 5 — Review & Submit Application</h2>
+                    <p class="step-desc">Please review your responses before final submission.</p>
+
+                    <div class="review-summary-card" id="reviewSummaryContent">
+                        <!-- Populated by JS -->
+                    </div>
+
+                    <div style="background: #f0f7ff; border-left: 4px solid var(--app-accent); padding: 14px 18px; border-radius: 0 10px 10px 0; margin-bottom: 25px;">
+                        <p style="margin: 0; font-size: 0.88rem; color: #2b6cb0; font-weight: 600;">
+                            <i class="fas fa-shield-alt"></i> Your application will be securely submitted to the Verba Vitae E-Board. We will review all submissions and reach out via your MDC student email.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ==========================================
+                     SUCCESS CONFIRMATION SCREEN
+                     ========================================== -->
+                <div class="success-screen-card" id="successScreenCard">
+                    <div class="success-icon-circle">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h2>Application Submitted</h2>
+                    <p>Thank you for applying to <strong>Poetry in Motion</strong>. Your application has been received and will be reviewed by the Verba Vitae team.</p>
+
+                    <div class="success-meta-box">
+                        <div>
+                            <span>Confirmation ID:</span><br>
+                            <strong id="successAppId">APP-000000</strong>
+                        </div>
+                        <div>
+                            <span>Date Submitted:</span><br>
+                            <strong id="successAppDate">Today</strong>
+                        </div>
+                    </div>
+
+                    <div>
+                        <a href="opportunities.html" class="btn-form-next" style="text-decoration:none;">
+                            <i class="fas fa-arrow-left"></i> Return to Opportunities
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Navigation Action Buttons -->
+                <div class="apply-actions-bar">
+                    <button type="button" class="btn-form-prev" id="btnPrevStep" onclick="goToPrevStep()" style="display:none;">
+                        <i class="fas fa-arrow-left"></i> Previous
+                    </button>
+                    <div></div>
+                    <button type="button" class="btn-form-next" id="btnNextStep" onclick="goToNextStep()">
+                        Continue <i class="fas fa-arrow-right"></i>
+                    </button>
+                    <button type="button" class="btn-form-submit" id="btnSubmitApp" onclick="submitApplication()" style="display:none;">
+                        <i class="fas fa-paper-plane"></i> Submit Application
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer class="main-footer">
+        <div class="footer-container">
+            <div class="footer-left">
+                <img src="images/verbavitaelogoblue.png" alt="Verba Vitae" class="footer-logo">
+            </div>
+            <div class="footer-center">
+                <h4 class="footer-social-title">FOLLOW US</h4>
+                <div class="social-icons">
+                    <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" title="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+            <div class="footer-right"></div>
+        </div>
+    </footer>
+
+    <!-- Logic Scripts -->
+    <script src="js/opportunities-data.js?v=20260921"></script>
+    <script src="js/application.js?v=20260921"></script>
+
+    <script>
+        // Burger Menu Toggle
+        const burgerMenu = document.getElementById('burger-menu');
+        const mobileNav = document.getElementById('mobile-nav');
+        if (burgerMenu && mobileNav) {
+            burgerMenu.addEventListener('click', () => {
+                mobileNav.classList.toggle('active');
+            });
+        }
+
+        // Adjust Next/Submit buttons visibility according to step
+        const origShowStep = window.showStep;
+        setInterval(() => {
+            const step5Active = document.getElementById('stepSection5').classList.contains('active');
+            const step1Active = document.getElementById('stepSection1').classList.contains('active');
+            const btnPrev = document.getElementById('btnPrevStep');
+            const btnNext = document.getElementById('btnNextStep');
+            const btnSubmit = document.getElementById('btnSubmitApp');
+
+            if (btnPrev) btnPrev.style.display = step1Active ? 'none' : 'inline-flex';
+            if (btnNext) btnNext.style.display = step5Active ? 'none' : 'inline-flex';
+            if (btnSubmit) btnSubmit.style.display = step5Active ? 'inline-flex' : 'none';
+        }, 150);
+    </script>
+</body>
+</html>
