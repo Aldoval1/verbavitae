@@ -325,6 +325,12 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
     <script src="js/firebase-init.js"></script>
     <script src="js/opportunities-data.js?v=20260921"></script>
+
+    <!-- jsPDF & Collaborative Mural Engine Suite -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="js/mural-engine.js?v=20261001_v1"></script>
+    <script src="js/mural-realtime.js?v=20261001_v1"></script>
+    <script src="js/mural-export.js?v=20261001_v1"></script>
 </head>
 <body>
     <!-- Top Nav -->
@@ -352,6 +358,7 @@
         <a href="#" class="tab-link active" data-tab="opportunities"><i class="fas fa-file-signature"></i> Opportunities &amp; Applications <span class="tab-badge" id="adminAppsCountBadge">0</span></a>
         <a href="#" class="tab-link" data-tab="store">Store</a>
         <a href="#" class="tab-link" data-tab="events">Add Events</a>
+        <a href="#" class="tab-link" data-tab="murals"><i class="fas fa-palette"></i> Collaborative Murals</a>
         <a href="#" class="tab-link" data-tab="services">Verba Services</a>
         <div class="nav-dropdown">
             <button class="dropbtn">Members <i class="fas fa-caret-down"></i></button>
@@ -852,6 +859,124 @@
             </section>
         </div>
 
+        <!-- TAB: Collaborative Murals -->
+        <div class="tab-panel" id="tab-murals">
+            <section class="admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <h2><i class="fas fa-palette" style="color: #1d0c8d;"></i> Collaborative Whiteboards &amp; Murals</h2>
+                        <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin: 4px 0 0 0;">
+                            Live Promethean whiteboard events, real-time community participation, content moderation, and 72" &times; 24" print export.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="admin-btn" onclick="loadMuralAdminData()" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fas fa-sync-alt"></i> Refresh Data</button>
+                    </div>
+                </div>
+
+                <!-- Featured Event Card: Hispanic in 17 Syllables -->
+                <div class="mural-admin-card" style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                                <h3 style="font-size: 1.35rem; color: #1d0c8d; font-weight: 800; margin: 0;">Hispanic in 17 Syllables</h3>
+                                <span id="adminMuralStatusBadge" class="status-badge" style="padding: 4px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; background: #c6f6d5; color: #22543d;">LIVE</span>
+                            </div>
+                            <p style="color: #4a5568; font-size: 0.92rem; margin: 0;">
+                                72" &times; 24" Landscape Community Haiku Mural &bull; Dual Promethean Interactive Whiteboard Event
+                            </p>
+                        </div>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button id="adminBtnSetLive" class="admin-btn" style="background: #38a169; color: #fff; padding: 8px 16px; font-size: 0.85rem;" onclick="adminSetEventStatus('LIVE')">
+                                <i class="fas fa-play"></i> Open Live Event
+                            </button>
+                            <button id="adminBtnSetClosed" class="admin-btn" style="background: #e53e3e; color: #fff; padding: 8px 16px; font-size: 0.85rem;" onclick="adminPromptCloseEvent()">
+                                <i class="fas fa-lock"></i> Close Event
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 20px 0;">
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
+                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Community Strokes</span>
+                            <div id="adminMuralStrokeCount" style="font-size: 1.6rem; font-weight: 800; color: #1d0c8d; margin-top: 4px;">--</div>
+                        </div>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
+                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Inserted Images</span>
+                            <div id="adminMuralImageCount" style="font-size: 1.6rem; font-weight: 800; color: #d68b2d; margin-top: 4px;">--</div>
+                        </div>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
+                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Aspect Ratio &amp; Dimensions</span>
+                            <div style="font-size: 1.1rem; font-weight: 800; color: #2d3748; margin-top: 8px;">3:1 &bull; 72" &times; 24"</div>
+                        </div>
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
+                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Realtime Status</span>
+                            <div id="adminMuralSyncStatus" style="font-size: 1.1rem; font-weight: 800; color: #3182ce; margin-top: 8px;">Firestore Sync Active</div>
+                        </div>
+                    </div>
+
+                    <!-- Official Public URL & Quick Copy -->
+                    <div style="background: #edf2f7; border-left: 4px solid #1d0c8d; border-radius: 8px; padding: 14px 18px; margin: 18px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+                        <div>
+                            <span style="font-size: 0.75rem; font-weight: 800; color: #4a5568; text-transform: uppercase; letter-spacing: 0.5px; display: block;">Official Public Event URL</span>
+                            <code style="font-size: 1.05rem; font-weight: 700; color: #1d0c8d;">https://theverbavitae.org/hispanicin17</code>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" class="admin-btn" onclick="copyMuralEventUrl()" style="background: #3182ce; color: #fff; padding: 8px 16px; font-size: 0.85rem;">
+                                <i class="fas fa-copy"></i> Copy Link
+                            </button>
+                            <a href="https://theverbavitae.org/hispanicin17" target="_blank" class="admin-btn" style="background: #1d0c8d; color: #fff; text-decoration: none; padding: 8px 16px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-globe"></i> Visit Live URL
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Promethean Launcher Actions Row -->
+                    <div style="border-top: 1px solid #e2e8f0; padding-top: 18px; margin-top: 10px;">
+                        <h4 style="font-size: 0.88rem; font-weight: 800; color: #4a5568; text-transform: uppercase; margin-bottom: 12px;">
+                            Promethean Displays &amp; Live Workspaces
+                        </h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            <a href="hispanicin17.html?device=A" target="_blank" class="admin-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: #1d0c8d;">
+                                <i class="fas fa-display"></i> Open Promethean A (Left Viewport)
+                            </a>
+                            <a href="hispanicin17.html?device=B" target="_blank" class="admin-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: #2b6cb0;">
+                                <i class="fas fa-display"></i> Open Promethean B (Right Viewport)
+                            </a>
+                            <a href="hispanicin17.html?admin=1" target="_blank" class="admin-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: #4a5568;">
+                                <i class="fas fa-pen-to-square"></i> Open in Admin Mode (Moderation)
+                            </a>
+                            <button class="admin-btn" onclick="openAdminMuralPreviewModal()" style="background: #2d3748; color: #fff;">
+                                <i class="fas fa-eye"></i> Full-Board Preview
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Export Suite Row -->
+                    <div style="border-top: 1px solid #e2e8f0; padding-top: 18px; margin-top: 18px;">
+                        <h4 style="font-size: 0.88rem; font-weight: 800; color: #4a5568; text-transform: uppercase; margin-bottom: 12px;">
+                            Large-Format Print Export Suite (72" &times; 24")
+                        </h4>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+                            <button class="admin-btn" onclick="adminExportPDF()" style="background: #c53030; color: #fff;">
+                                <i class="fas fa-file-pdf"></i> Download Print PDF (72" &times; 24")
+                            </button>
+                            <button class="admin-btn" onclick="adminExportPNG()" style="background: #2b6cb0; color: #fff;">
+                                <i class="fas fa-file-image"></i> Download High-Res PNG (7200 &times; 2400)
+                            </button>
+                            <button class="admin-btn" onclick="adminExportSVG()" style="background: #718096; color: #fff;">
+                                <i class="fas fa-bezier-curve"></i> Download SVG Vector
+                            </button>
+                            <button class="admin-btn" onclick="adminConfirmClearCanvas()" style="background: transparent; border: 1.5px solid #e53e3e; color: #e53e3e; margin-left: auto;">
+                                <i class="fas fa-trash-can"></i> Reset Canvas
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
     </main>
 
     <!-- Global Toast Container -->
@@ -906,6 +1031,10 @@
                 setTimeout(() => {
                     if (adminMap) adminMap.invalidateSize();
                 }, 200);
+            }
+
+            if (tabName === 'murals') {
+                loadMuralAdminData();
             }
         }
 
@@ -2511,6 +2640,7 @@
                         loadMembers();
                         loadSentInvitations();
                         fetchAdminApplications();
+                        loadMuralAdminData();
                     } catch (e) {
                         console.warn("Error loading admin data:", e);
                     }
@@ -3101,5 +3231,208 @@
             </div>
         </div>
     </div>
+
+    <!-- Full-Board Interactive Preview Modal for Admin -->
+    <div id="adminMuralPreviewModal" class="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,27,42,0.85); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
+        <div style="background: #ffffff; width: 95%; max-width: 1400px; height: 88vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.5);">
+            <div style="padding: 16px 24px; background: #1d0c8d; color: #fff; display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800;"><i class="fas fa-palette"></i> Full-Board Preview (72" &times; 24" Canonical View)</h3>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <a href="mural.html?event=hispanic-in-17-syllables&admin=1" target="_blank" class="admin-btn" style="padding: 6px 14px; font-size: 0.8rem; background: #3182ce;"><i class="fas fa-external-link-alt"></i> Open Fullscreen</a>
+                    <button onclick="closeAdminMuralPreviewModal()" style="background: rgba(255,255,255,0.2); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; cursor: pointer;">&times;</button>
+                </div>
+            </div>
+            <div style="flex: 1; position: relative; background: #0b1320; overflow: hidden;">
+                <iframe id="adminPreviewIframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Close Event Confirmation Modal -->
+    <div id="adminCloseEventModal" class="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,27,42,0.8); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(6px);">
+        <div style="background: #ffffff; max-width: 480px; width: 90%; border-radius: 12px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); text-align: center;">
+            <i class="fas fa-lock" style="font-size: 2.8rem; color: #e53e3e; margin-bottom: 14px;"></i>
+            <h3 style="font-size: 1.3rem; color: #0d1b2a; margin-bottom: 8px;">Close Community Mural?</h3>
+            <p style="font-size: 0.9rem; color: #4a5568; line-height: 1.5; margin-bottom: 20px;">
+                Closing the event will immediately lock both Promethean displays and all public participants to <strong>read-only mode</strong>. No new ink or images can be added publicly. You can still edit as administrator before printing.
+            </p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button class="admin-btn" onclick="document.getElementById('adminCloseEventModal').style.display = 'none'" style="background: #edf2f7; color: #2d3748;">Cancel</button>
+                <button class="admin-btn" onclick="adminExecuteCloseEvent()" style="background: #e53e3e; color: #ffffff;">Confirm Close Event</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script: Mural Admin Functions -->
+    <script>
+        let adminMuralStrokes = [];
+        let adminMuralImages = [];
+        let adminMuralStatus = 'LIVE';
+
+        async function loadMuralAdminData() {
+            try {
+                if (typeof db !== 'undefined' && db) {
+                    const eventDoc = await db.collection('mural_events').doc('hispanic-in-17-syllables').get();
+                    if (eventDoc.exists) {
+                        const data = eventDoc.data();
+                        adminMuralStatus = data.status || 'LIVE';
+                        updateMuralAdminStatusBadge(adminMuralStatus);
+                    }
+
+                    // Stroke count
+                    const strokesSnap = await db.collection('mural_events').doc('hispanic-in-17-syllables').collection('strokes').get();
+                    let strokeCount = 0;
+                    adminMuralStrokes = [];
+                    strokesSnap.forEach(doc => {
+                        const d = doc.data();
+                        if (!d.deleted) {
+                            strokeCount++;
+                            adminMuralStrokes.push({ id: doc.id, ...d });
+                        }
+                    });
+                    document.getElementById('adminMuralStrokeCount').textContent = strokeCount;
+
+                    // Image count
+                    const imgSnap = await db.collection('mural_events').doc('hispanic-in-17-syllables').collection('images').get();
+                    let imageCount = 0;
+                    adminMuralImages = [];
+                    imgSnap.forEach(doc => {
+                        const d = doc.data();
+                        if (!d.deleted) {
+                            imageCount++;
+                            adminMuralImages.push({ id: doc.id, ...d });
+                        }
+                    });
+                    document.getElementById('adminMuralImageCount').textContent = imageCount;
+                }
+            } catch (err) {
+                console.warn("[Admin Dashboard] loadMuralAdminData warning:", err);
+            }
+        }
+
+        function updateMuralAdminStatusBadge(status) {
+            const badge = document.getElementById('adminMuralStatusBadge');
+            if (!badge) return;
+            badge.textContent = status;
+            if (status === 'LIVE') {
+                badge.style.background = '#c6f6d5';
+                badge.style.color = '#22543d';
+            } else if (status === 'CLOSED') {
+                badge.style.background = '#fed7d7';
+                badge.style.color = '#9b2c2c';
+            } else {
+                badge.style.background = '#feebc8';
+                badge.style.color = '#7b341e';
+            }
+        }
+
+        function copyMuralEventUrl() {
+            const url = 'https://theverbavitae.org/hispanicin17';
+            navigator.clipboard.writeText(url).then(() => {
+                showToast("Copied to clipboard: " + url);
+            }).catch(() => {
+                prompt("Copy URL:", url);
+            });
+        }
+
+        async function adminSetEventStatus(newStatus) {
+            try {
+                if (typeof db !== 'undefined' && db) {
+                    await db.collection('mural_events').doc('hispanic-in-17-syllables').set({
+                        status: newStatus,
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    }, { merge: true });
+                }
+                adminMuralStatus = newStatus;
+                updateMuralAdminStatusBadge(newStatus);
+                showToast("Mural event status set to " + newStatus);
+            } catch (e) {
+                showToast("Failed to update status: " + e.message);
+            }
+        }
+
+        function adminPromptCloseEvent() {
+            document.getElementById('adminCloseEventModal').style.display = 'flex';
+        }
+
+        async function adminExecuteCloseEvent() {
+            document.getElementById('adminCloseEventModal').style.display = 'none';
+            await adminSetEventStatus('CLOSED');
+        }
+
+        function openAdminMuralPreviewModal() {
+            const modal = document.getElementById('adminMuralPreviewModal');
+            const iframe = document.getElementById('adminPreviewIframe');
+            iframe.src = 'hispanicin17.html?admin=1&preview=1';
+            modal.style.display = 'flex';
+        }
+
+        function closeAdminMuralPreviewModal() {
+            const modal = document.getElementById('adminMuralPreviewModal');
+            const iframe = document.getElementById('adminPreviewIframe');
+            iframe.src = '';
+            modal.style.display = 'none';
+        }
+
+        async function adminExportPDF() {
+            showToast("Generating 72\" x 24\" Print PDF...");
+            // Use dummy offscreen engine to render complete artwork
+            const dummyCanvas = document.createElement('canvas');
+            const engine = new MuralEngine(dummyCanvas);
+            engine.loadStrokes(adminMuralStrokes);
+            engine.loadImages(adminMuralImages);
+            const exporter = new MuralExportService(engine);
+            try {
+                await exporter.exportPrintPDF('Hispanic_In_17_Syllables_Print_72x24.pdf');
+                showToast("Print PDF downloaded successfully!");
+            } catch (err) {
+                showToast("Export error: " + err.message);
+            }
+        }
+
+        async function adminExportPNG() {
+            showToast("Generating 7200 x 2400 High-Res PNG...");
+            const dummyCanvas = document.createElement('canvas');
+            const engine = new MuralEngine(dummyCanvas);
+            engine.loadStrokes(adminMuralStrokes);
+            engine.loadImages(adminMuralImages);
+            const exporter = new MuralExportService(engine);
+            await exporter.exportPNG('Hispanic_In_17_Syllables_Mural_7200x2400.png', 1.0);
+            showToast("PNG downloaded successfully!");
+        }
+
+        function adminExportSVG() {
+            const dummyCanvas = document.createElement('canvas');
+            const engine = new MuralEngine(dummyCanvas);
+            engine.loadStrokes(adminMuralStrokes);
+            engine.loadImages(adminMuralImages);
+            const exporter = new MuralExportService(engine);
+            exporter.exportSVG('Hispanic_In_17_Syllables_Mural_Vector.svg');
+            showToast("SVG Vector downloaded successfully!");
+        }
+
+        async function adminConfirmClearCanvas() {
+            if (confirm("Are you sure you want to reset the mural? This will clear all community strokes and images from the database. This action CANNOT be undone.")) {
+                if (confirm("CONFIRM CANVAS WIPE: All participants' work will be deleted permanently. Proceed?")) {
+                    try {
+                        const strokesSnap = await db.collection('mural_events').doc('hispanic-in-17-syllables').collection('strokes').get();
+                        const batch = db.batch();
+                        strokesSnap.forEach(d => batch.delete(d.ref));
+                        await batch.commit();
+
+                        const imgSnap = await db.collection('mural_events').doc('hispanic-in-17-syllables').collection('images').get();
+                        const imgBatch = db.batch();
+                        imgSnap.forEach(d => imgBatch.delete(d.ref));
+                        await imgBatch.commit();
+
+                        showToast("Mural canvas reset successfully.");
+                        loadMuralAdminData();
+                    } catch (e) {
+                        showToast("Failed to reset canvas: " + e.message);
+                    }
+                }
+            }
+        }
+    </script>
 </body>
 </html>

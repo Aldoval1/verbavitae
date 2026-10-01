@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Hispanic in 17 Syllables — Verba Vitae Live Collaborative Community Haiku Mural">
+    <title>Verba Vitae — Hispanic in 17 Syllables</title>
+    
+    <link rel="icon" type="image/png" href="../images/verbavitaelogoblue.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Mural Stylesheet -->
+    <link rel="stylesheet" href="../css/mural.css?v=20261001_v2">
+
+    <!-- jsPDF for 72" x 24" Large Format Print Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Firebase Compat SDKs (Existing Verba Vitae Stack) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+    <script src="../js/firebase-init.js"></script>
+</head>
+<body>
+    <div class="mural-workspace" id="muralWorkspace">
+        
+        <!-- Top App Header / Event Status Bar -->
+        <header class="mural-top-bar">
+            <div class="brand-badge">
+                <a href="../index.html" style="text-decoration: none; display: flex; align-items: center; gap: 10px; color: inherit;">
+                    <img src="../images/verbavitaelogoblue.png" alt="Verba Vitae">
+                    <span class="brand-title">VERBA VITAE</span>
+                </a>
+                <span class="event-tag">Hispanic in 17 Syllables</span>
+            </div>
+
+            <div class="top-actions-cluster">
+                <!-- Realtime Connection Status Pill -->
+                <div class="status-indicator" id="connectionStatusPill">
+                    <span class="status-dot" id="statusDot"></span>
+                    <span id="statusText">Connected</span>
+                </div>
+
+                <!-- Haiku Meter Assistant Button -->
+                <button class="btn-header-action" id="btnToggleHaikuGuide" title="Haiku Syllable Guide">
+                    <i class="fas fa-feather-pointed" style="color: var(--vv-gold);"></i>
+                    <span>Haiku Guide</span>
+                </button>
+
+                <!-- Export Modal Button -->
+                <button class="btn-header-action" id="btnOpenExport" title="Export Print PDF / PNG">
+                    <i class="fas fa-file-export" style="color: #63b3ed;"></i>
+                    <span>Export</span>
+                </button>
+
+                <!-- Fullscreen Toggle Button -->
+                <button class="btn-header-action" id="btnToggleFullscreen" title="Toggle Fullscreen Mode">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Admin Moderation Strip (Visible in Admin Mode) -->
+        <div class="admin-mode-strip" id="adminModeStrip">
+            <i class="fas fa-shield-halved"></i>
+            <span>ADMINISTRATOR MODERATION MODE ACTIVE</span>
+        </div>
+
+        <!-- Event Closed / Read-Only Banner -->
+        <div class="event-closed-banner" id="eventClosedBanner">
+            <i class="fas fa-lock"></i>
+            <div>
+                <strong style="display:block; font-size: 0.95rem;">Live Event Concluded</strong>
+                <span style="font-size: 0.8rem; color: #cbd5e0;">The community haiku mural is now finalized and read-only. You can explore and export the artwork.</span>
+            </div>
+        </div>
+
+        <!-- Haiku Syllable Assistant Drawer -->
+        <div class="haiku-drawer" id="haikuDrawer">
+            <div class="haiku-drawer-header">
+                <h4 style="font-weight: 800; font-size: 0.95rem; color: var(--vv-gold);">
+                    <i class="fas fa-feather-pointed"></i> 17 Syllables Haiku Guide
+                </h4>
+                <button id="btnCloseHaikuDrawer" style="background:none; border:none; color:#cbd5e0; font-size:1.1rem; cursor:pointer;">&times;</button>
+            </div>
+            <p style="font-size: 0.82rem; color: #cbd5e0; line-height: 1.4;">
+                Write your haiku naturally on the mural with the stylus using the classical 3-line meter:
+            </p>
+            <div class="haiku-meter-box">
+                <div class="haiku-line-row">
+                    <span>Line 1: Opening Thought</span>
+                    <span class="syllable-pill">5 Syllables</span>
+                </div>
+                <div class="haiku-line-row">
+                    <span>Line 2: Heart / Pivot</span>
+                    <span class="syllable-pill">7 Syllables</span>
+                </div>
+                <div class="haiku-line-row">
+                    <span>Line 3: Insight / Epiphany</span>
+                    <span class="syllable-pill">5 Syllables</span>
+                </div>
+            </div>
+            <div style="background: rgba(49, 130, 206, 0.12); padding: 8px 12px; border-radius: 8px; font-size: 0.78rem; color: #90cdf4;">
+                <em>“Bajo el sol ardiente,<br>voces de nuestra tierra,<br>versos inmortales.”</em>
+            </div>
+        </div>
+
+        <!-- Canvas Viewport -->
+        <main class="canvas-container" id="canvasContainer">
+            <canvas id="muralCanvas"></canvas>
+        </main>
+
+        <!-- Floating Whiteboard Control Dock (Bottom Center) -->
+        <nav class="mural-dock" id="muralDock">
+            <!-- Pen Tool -->
+            <button class="tool-btn active" id="btnToolPen" title="Stylus Pen (Draw)">
+                <i class="fas fa-pen-nib"></i>
+                <span>Pen</span>
+            </button>
+
+            <!-- Color & Brush Size Popover Trigger -->
+            <button class="tool-btn" id="btnToggleBrushPalette" title="Color & Size">
+                <i class="fas fa-palette"></i>
+                <span>Color</span>
+            </button>
+
+            <!-- Eraser Tool -->
+            <button class="tool-btn" id="btnToolEraser" title="Eraser">
+                <i class="fas fa-eraser"></i>
+                <span>Eraser</span>
+            </button>
+
+            <!-- Hand / Pan Tool -->
+            <button class="tool-btn" id="btnToolHand" title="Pan Canvas (Hand)">
+                <i class="fas fa-hand"></i>
+                <span>Pan</span>
+            </button>
+
+            <div class="dock-divider"></div>
+
+            <!-- Undo -->
+            <button class="tool-btn" id="btnToolUndo" title="Undo Last Stroke">
+                <i class="fas fa-rotate-left"></i>
+                <span>Undo</span>
+            </button>
+
+            <!-- Redo -->
+            <button class="tool-btn" id="btnToolRedo" title="Redo">
+                <i class="fas fa-rotate-right"></i>
+                <span>Redo</span>
+            </button>
+
+            <div class="dock-divider"></div>
+
+            <!-- SPECIAL PLUS BUTTON: Add Illustration / Generate Image with AI -->
+            <button class="tool-btn tool-btn-plus" id="btnPlusImage" title="Add Image or Generate with AI">
+                <i class="fas fa-plus"></i>
+            </button>
+        </nav>
+
+        <!-- Brush Color & Size Popover -->
+        <div class="brush-palette-popover" id="brushPalettePopover">
+            <span style="font-size: 0.75rem; font-weight: 700; color: #cbd5e0; text-transform: uppercase;">Ink Color</span>
+            <div class="palette-row">
+                <div class="color-swatch active" data-color="#1d0c8d" style="background:#1d0c8d;" title="Verba Navy"></div>
+                <div class="color-swatch" data-color="#0b1320" style="background:#0b1320;" title="Charcoal Black"></div>
+                <div class="color-swatch" data-color="#3182ce" style="background:#3182ce;" title="Biscayne Blue"></div>
+                <div class="color-swatch" data-color="#d68b2d" style="background:#d68b2d;" title="Verba Orange"></div>
+                <div class="color-swatch" data-color="#d4af37" style="background:#d4af37;" title="Hispano Gold"></div>
+                <div class="color-swatch" data-color="#9b2c2c" style="background:#9b2c2c;" title="Terracotta Crimson"></div>
+                <div class="color-swatch" data-color="#22543d" style="background:#22543d;" title="Tropical Emerald"></div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+                <span style="font-size: 0.75rem; font-weight: 700; color: #cbd5e0; text-transform: uppercase;">Stroke Width</span>
+                <span id="brushSizeDisplay" style="font-size:0.75rem; color:#d4af37; font-weight:700;">7px</span>
+            </div>
+            <input type="range" id="brushWidthSlider" class="stroke-width-slider" min="3" max="28" value="7">
+        </div>
+
+        <!-- Zoom Controls (Bottom Right) -->
+        <div class="zoom-controls-bar">
+            <button class="zoom-btn" id="btnZoomOut" title="Zoom Out"><i class="fas fa-minus"></i></button>
+            <span class="zoom-label" id="zoomLevelDisplay">100%</span>
+            <button class="zoom-btn" id="btnZoomIn" title="Zoom In"><i class="fas fa-plus"></i></button>
+            <button class="zoom-btn" id="btnFitBoard" title="Fit Entire 72&quot; &times; 24&quot; Mural"><i class="fas fa-arrows-to-eye"></i></button>
+        </div>
+    </div>
+
+    <!-- MODAL: Add Image Workflow (Search, AI Generate, Upload) -->
+    <div class="mural-modal-overlay" id="imageModalOverlay">
+        <div class="mural-modal-card">
+            <div class="modal-header-strip">
+                <h3><i class="fas fa-image"></i> Accompany Your Haiku With Art</h3>
+                <button class="modal-close-btn" id="btnCloseImageModal">&times;</button>
+            </div>
+
+            <div class="modal-tabs">
+                <button class="modal-tab-btn active" data-tab="ai"><i class="fas fa-wand-magic-sparkles"></i> Generate with AI</button>
+                <button class="modal-tab-btn" data-tab="search"><i class="fas fa-magnifying-glass"></i> Search Images</button>
+                <button class="modal-tab-btn" data-tab="upload"><i class="fas fa-cloud-arrow-up"></i> Upload Photo</button>
+            </div>
+
+            <!-- TAB 1: AI Generation -->
+            <div class="modal-body-panel" id="modalTabAI">
+                <p style="font-size: 0.88rem; color: #4a5568; margin-bottom: 14px;">
+                    Describe an illustration to accompany your handwritten haiku:
+                </p>
+                <div style="display: flex; gap: 10px; margin-bottom: 14px;">
+                    <input type="text" id="aiPromptInput" class="prompt-input-box" placeholder="e.g. Cuban coffee cup surrounded by tropical hibiscus flowers">
+                    <button class="btn-primary-action" id="btnGenerateAI">
+                        <i class="fas fa-sparkles"></i> Generate
+                    </button>
+                </div>
+
+                <div id="aiLoadingIndicator" style="display: none; text-align: center; padding: 25px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: var(--vv-blue); margin-bottom: 8px;"></i>
+                    <p style="font-weight: 600; color: #4a5568;">Creating bespoke community artwork...</p>
+                </div>
+
+                <div id="aiPreviewBox" style="display: none; margin-top: 15px; text-align: center;">
+                    <img id="aiPreviewImg" src="" style="max-height: 240px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); margin-bottom: 12px;">
+                    <div>
+                        <button class="btn-primary-action" id="btnInsertAIToMural">
+                            <i class="fas fa-plus"></i> Add to Mural
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 18px; border-top: 1px solid #edf2f7; padding-top: 12px;">
+                    <span style="font-size: 0.76rem; font-weight: 700; color: #718096; text-transform: uppercase;">Quick Ideas for Haikus</span>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+                        <button class="preset-btn" style="background:#edf2f7; color:#2d3748;" onclick="setAIPreset('Small Cuban coffee cup surrounded by tropical hibiscus flowers')">☕ Cuban Coffee &amp; Hibiscus</button>
+                        <button class="preset-btn" style="background:#edf2f7; color:#2d3748;" onclick="setAIPreset('Spanish classical guitar beside a sunny window with palms')">🎸 Spanish Guitar &amp; Sun</button>
+                        <button class="preset-btn" style="background:#edf2f7; color:#2d3748;" onclick="setAIPreset('Monarch butterflies flying across blue Florida skies')">🦋 Monarch Butterflies</button>
+                        <button class="preset-btn" style="background:#edf2f7; color:#2d3748;" onclick="setAIPreset('Bougainvillea flowers trailing over colonial stucco wall')">🌸 Bougainvillea Wall</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: Search Images -->
+            <div class="modal-body-panel" id="modalTabSearch" style="display: none;">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="imageSearchInput" class="prompt-input-box" placeholder="Search flowers, coffee, guitar, Florida, Cuba...">
+                    <button class="btn-primary-action" id="btnExecuteSearch">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+
+                <div id="imageSearchResultsGrid" class="image-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <!-- TAB 3: Upload Photo -->
+            <div class="modal-body-panel" id="modalTabUpload" style="display: none;">
+                <div style="border: 2px dashed #cbd5e1; border-radius: 14px; padding: 40px 20px; text-align: center; cursor: pointer;" id="uploadDropArea">
+                    <i class="fas fa-cloud-arrow-up" style="font-size: 2.5rem; color: #3182ce; margin-bottom: 10px;"></i>
+                    <p style="font-weight: 700; color: #2d3748; margin-bottom: 6px;">Tap or drag an image here to upload</p>
+                    <span style="font-size: 0.8rem; color: #718096;">JPEG, PNG, WebP supported</span>
+                    <input type="file" id="localImageFileInput" accept="image/*" style="display: none;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: Export Large Format Print PDF & PNG -->
+    <div class="mural-modal-overlay" id="exportModalOverlay">
+        <div class="mural-modal-card" style="max-width: 580px;">
+            <div class="modal-header-strip">
+                <h3><i class="fas fa-print"></i> Export Complete Mural Artwork</h3>
+                <button class="modal-close-btn" id="btnCloseExportModal">&times;</button>
+            </div>
+            <div class="modal-body-panel">
+                <p style="font-size: 0.88rem; color: #4a5568; margin-bottom: 16px;">
+                    Generate physical print documents representing the entire <strong>72 inches &times; 24 inches (3:1)</strong> collaborative mural including all handwritten haikus, locked frame, and artwork.
+                </p>
+
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <!-- Option 1: Print PDF -->
+                    <div style="border: 1.5px solid var(--vv-blue); border-radius: 12px; padding: 16px; background: #ebf8ff; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color: #2b6cb0; font-size: 1rem; display: block;">Large-Format Print PDF (72" &times; 24")</strong>
+                            <span style="font-size: 0.8rem; color: #4a5568;">Exact 6-foot landscape mural document for physical printing</span>
+                        </div>
+                        <button class="btn-primary-action" id="btnDownloadPDF" style="white-space: nowrap;">
+                            <i class="fas fa-file-pdf"></i> Download PDF
+                        </button>
+                    </div>
+
+                    <!-- Option 2: High-Res PNG -->
+                    <div style="border: 1px solid var(--vv-border); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color: #2d3748; font-size: 1rem; display: block;">High-Resolution PNG (7200 &times; 2400)</strong>
+                            <span style="font-size: 0.8rem; color: #718096;">Full canvas raster rendering for digital displays</span>
+                        </div>
+                        <button class="btn-primary-action" id="btnDownloadPNG" style="background: #2b6cb0;">
+                            <i class="fas fa-file-image"></i> Download PNG
+                        </button>
+                    </div>
+
+                    <!-- Option 3: SVG Vector -->
+                    <div style="border: 1px solid var(--vv-border); border-radius: 12px; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <strong style="color: #2d3748; font-size: 1rem; display: block;">Pure Vector SVG</strong>
+                            <span style="font-size: 0.8rem; color: #718096;">Scalable vector paths for Adobe Illustrator &amp; vinyl plotters</span>
+                        </div>
+                        <button class="btn-primary-action" id="btnDownloadSVG" style="background: #4a5568;">
+                            <i class="fas fa-bezier-curve"></i> Download SVG
+                        </button>
+                    </div>
+                </div>
+
+                <div id="exportProgressBox" style="display: none; margin-top: 18px; padding: 12px; background: #f7fafc; border-radius: 8px; text-align: center;">
+                    <i class="fas fa-spinner fa-spin" style="color: var(--vv-blue); margin-right: 6px;"></i>
+                    <span id="exportProgressText" style="font-size: 0.85rem; font-weight: 600; color: #4a5568;">Generating print artwork...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Mural Application Scripts -->
+    <script src="../js/mural-engine.js?v=20261001_v2"></script>
+    <script src="../js/mural-realtime.js?v=20261001_v2"></script>
+    <script src="../js/mural-media.js?v=20261001_v2"></script>
+    <script src="../js/mural-export.js?v=20261001_v2"></script>
+
+    <!-- Main Initialization & Controller Script -->
+    <script>
+        (function () {
+            'use strict';
+
+            // Query parameter configuration
+            const urlParams = new URLSearchParams(window.location.search);
+            const eventId = urlParams.get('event') || 'hispanic-in-17-syllables';
+            const deviceParam = urlParams.get('device') || '';
+            const isAdminRequested = urlParams.get('admin') === '1';
+
+            // DOM Elements
+            const canvasEl = document.getElementById('muralCanvas');
+            const connectionStatusPill = document.getElementById('connectionStatusPill');
+            const statusDot = document.getElementById('statusDot');
+            const statusText = document.getElementById('statusText');
+            const eventClosedBanner = document.getElementById('eventClosedBanner');
+            const adminModeStrip = document.getElementById('adminModeStrip');
+            const zoomLevelDisplay = document.getElementById('zoomLevelDisplay');
+            const brushSizeDisplay = document.getElementById('brushSizeDisplay');
+
+            // Initialize Canvas Engine
+            const engine = new MuralEngine(canvasEl, {
+                readOnly: false,
+                adminMode: false,
+                onStrokeComplete: (stroke) => {
+                    realtime.saveStroke(stroke);
+                },
+                onStrokeErased: (strokeId) => {
+                    realtime.deleteStroke(strokeId);
+                },
+                onImageModified: (img) => {
+                    realtime.saveImage(img);
+                },
+                onViewportChange: (vp) => {
+                    zoomLevelDisplay.textContent = Math.round(vp.zoom * 100) + '%';
+                }
+            });
+
+            // If device A/B specified in URL, set initial section focus, otherwise fit board
+            if (deviceParam.toUpperCase() === 'A') {
+                engine.focusSection('A');
+            } else if (deviceParam.toUpperCase() === 'B') {
+                engine.focusSection('B');
+            } else {
+                engine.fitToBoard();
+            }
+
+            // Initialize Realtime Sync Layer (Firestore + Offline Queue)
+            const realtime = new MuralRealtime(eventId, {
+                isAdmin: isAdminRequested,
+                onStrokeReceived: (stroke) => {
+                    engine.addRemoteStroke(stroke);
+                },
+                onStrokeRemoved: (strokeId) => {
+                    engine.removeRemoteStroke(strokeId);
+                },
+                onImageReceived: (img) => {
+                    engine.addRemoteImage(img);
+                },
+                onImageRemoved: (imgId) => {
+                    engine.removeRemoteImage(imgId);
+                },
+                onStatusChange: (status) => {
+                    if (status === 'CLOSED') {
+                        eventClosedBanner.classList.add('visible');
+                        if (!isAdminRequested) {
+                            engine.setReadOnly(true);
+                        }
+                    } else {
+                        eventClosedBanner.classList.remove('visible');
+                        engine.setReadOnly(false);
+                    }
+                },
+                onConnectionStateChange: (state) => {
+                    connectionStatusPill.className = 'status-indicator ' + state;
+                    if (state === 'connected') statusText.textContent = 'Connected';
+                    else if (state === 'saving') statusText.textContent = 'Saving...';
+                    else if (state === 'saved') statusText.textContent = 'Saved ✓';
+                    else if (state === 'offline') statusText.textContent = 'Offline / Queued';
+                }
+            });
+
+            // Admin Authentication Verification
+            if (isAdminRequested && typeof auth !== 'undefined' && auth) {
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        realtime.options.isAdmin = true;
+                        engine.setAdminMode(true);
+                        adminModeStrip.classList.add('visible');
+                    }
+                });
+            }
+
+            // Media & Export Services
+            const mediaService = new MuralMediaService();
+            const exportService = new MuralExportService(engine);
+
+            // --- Tool Dock Event Handlers ---
+            const btnPen = document.getElementById('btnToolPen');
+            const btnEraser = document.getElementById('btnToolEraser');
+            const btnHand = document.getElementById('btnToolHand');
+            const brushPalette = document.getElementById('brushPalettePopover');
+            const btnBrushToggle = document.getElementById('btnToggleBrushPalette');
+
+            function setActiveTool(tool) {
+                engine.activeTool = tool;
+                btnPen.classList.toggle('active', tool === 'pen');
+                btnEraser.classList.toggle('active', tool === 'eraser');
+                btnHand.classList.toggle('active', tool === 'hand');
+                canvasEl.parentElement.className = 'canvas-container tool-' + tool;
+                brushPalette.classList.remove('open');
+            }
+
+            btnPen.addEventListener('click', () => setActiveTool('pen'));
+            btnEraser.addEventListener('click', () => setActiveTool('eraser'));
+            btnHand.addEventListener('click', () => setActiveTool('hand'));
+
+            btnBrushToggle.addEventListener('click', () => {
+                brushPalette.classList.toggle('open');
+            });
+
+            // Color Swatches
+            document.querySelectorAll('.color-swatch').forEach(swatch => {
+                swatch.addEventListener('click', () => {
+                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
+                    swatch.classList.add('active');
+                    engine.brushColor = swatch.dataset.color;
+                    setActiveTool('pen');
+                });
+            });
+
+            // Brush Width Slider
+            const widthSlider = document.getElementById('brushWidthSlider');
+            widthSlider.addEventListener('input', (e) => {
+                const val = parseInt(e.target.value, 10);
+                engine.brushWidth = val;
+                brushSizeDisplay.textContent = val + 'px';
+            });
+
+            // Undo / Redo
+            document.getElementById('btnToolUndo').addEventListener('click', () => engine.undo());
+            document.getElementById('btnToolRedo').addEventListener('click', () => engine.redo());
+
+            // Zoom In / Out / Fit
+            document.getElementById('btnZoomIn').addEventListener('click', () => engine.zoomAtPoint(1.2));
+            document.getElementById('btnZoomOut').addEventListener('click', () => engine.zoomAtPoint(0.83));
+            document.getElementById('btnFitBoard').addEventListener('click', () => engine.fitToBoard());
+
+            // Haiku Drawer
+            const haikuDrawer = document.getElementById('haikuDrawer');
+            document.getElementById('btnToggleHaikuGuide').addEventListener('click', () => {
+                haikuDrawer.classList.toggle('open');
+            });
+            document.getElementById('btnCloseHaikuDrawer').addEventListener('click', () => {
+                haikuDrawer.classList.remove('open');
+            });
+
+            // Fullscreen Toggle
+            document.getElementById('btnToggleFullscreen').addEventListener('click', () => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                } else {
+                    document.exitFullscreen().catch(() => {});
+                }
+            });
+
+            // --- Image Insertion Modal Workflow ---
+            const imageModal = document.getElementById('imageModalOverlay');
+            const btnPlus = document.getElementById('btnPlusImage');
+            const btnCloseImageModal = document.getElementById('btnCloseImageModal');
+
+            btnPlus.addEventListener('click', () => {
+                imageModal.classList.add('open');
+            });
+            btnCloseImageModal.addEventListener('click', () => {
+                imageModal.classList.remove('open');
+            });
+
+            // Modal Tabs
+            document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const tab = btn.dataset.tab;
+                    document.getElementById('modalTabAI').style.display = tab === 'ai' ? 'block' : 'none';
+                    document.getElementById('modalTabSearch').style.display = tab === 'search' ? 'block' : 'none';
+                    document.getElementById('modalTabUpload').style.display = tab === 'upload' ? 'block' : 'none';
+
+                    if (tab === 'search') {
+                        executeImageSearch('');
+                    }
+                });
+            });
+
+            // AI Generation Workflow
+            const aiPromptInput = document.getElementById('aiPromptInput');
+            const btnGenerateAI = document.getElementById('btnGenerateAI');
+            const aiLoadingIndicator = document.getElementById('aiLoadingIndicator');
+            const aiPreviewBox = document.getElementById('aiPreviewBox');
+            const aiPreviewImg = document.getElementById('aiPreviewImg');
+            const btnInsertAIToMural = document.getElementById('btnInsertAIToMural');
+            let generatedImageData = null;
+
+            window.setAIPreset = function (presetText) {
+                aiPromptInput.value = presetText;
+                triggerAIGeneration();
+            };
+
+            btnGenerateAI.addEventListener('click', triggerAIGeneration);
+            aiPromptInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') triggerAIGeneration();
+            });
+
+            async function triggerAIGeneration() {
+                const prompt = aiPromptInput.value.trim();
+                if (!prompt) return;
+
+                aiLoadingIndicator.style.display = 'block';
+                aiPreviewBox.style.display = 'none';
+
+                try {
+                    const result = await mediaService.generateAIImage(prompt);
+                    generatedImageData = result;
+                    aiPreviewImg.src = result.url;
+                    aiLoadingIndicator.style.display = 'none';
+                    aiPreviewBox.style.display = 'block';
+                } catch (err) {
+                    aiLoadingIndicator.style.display = 'none';
+                    alert(err.message || "Failed to generate image.");
+                }
+            }
+
+            btnInsertAIToMural.addEventListener('click', () => {
+                if (!generatedImageData) return;
+                insertImageOntoMural(generatedImageData.url, generatedImageData.prompt, 'ai-art');
+                imageModal.classList.remove('open');
+            });
+
+            // Online Search Workflow
+            const imageSearchInput = document.getElementById('imageSearchInput');
+            const btnExecuteSearch = document.getElementById('btnExecuteSearch');
+            const searchResultsGrid = document.getElementById('imageSearchResultsGrid');
+
+            btnExecuteSearch.addEventListener('click', () => executeImageSearch(imageSearchInput.value));
+            imageSearchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') executeImageSearch(imageSearchInput.value);
+            });
+
+            async function executeImageSearch(query) {
+                searchResultsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; padding:20px; color:#718096;"><i class="fas fa-spinner fa-spin"></i> Searching cultural imagery...</div>';
+                try {
+                    const results = await mediaService.searchImages(query);
+                    searchResultsGrid.innerHTML = '';
+                    results.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = 'image-thumb-card';
+                        card.innerHTML = `
+                            <img src="${item.thumbUrl}" alt="${item.title}">
+                            <div class="caption-tag">${item.title}</div>
+                        `;
+                        card.addEventListener('click', () => {
+                            insertImageOntoMural(item.url, item.title, 'search');
+                            imageModal.classList.remove('open');
+                        });
+                        searchResultsGrid.appendChild(card);
+                    });
+                } catch (e) {
+                    searchResultsGrid.innerHTML = '<div style="grid-column: 1/-1; text-align:center; color:#e53e3e;">Failed to load search results.</div>';
+                }
+            }
+
+            // File Upload Workflow
+            const dropArea = document.getElementById('uploadDropArea');
+            const fileInput = document.getElementById('localImageFileInput');
+
+            dropArea.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', async (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    try {
+                        const uploaded = await mediaService.readLocalImage(e.target.files[0]);
+                        insertImageOntoMural(uploaded.url, uploaded.title, 'upload');
+                        imageModal.classList.remove('open');
+                    } catch (err) {
+                        alert(err.message || "Failed to load image file.");
+                    }
+                }
+            });
+
+            /**
+             * Places an image onto the canonical mural, positioned comfortably
+             * in the center of the user's current viewport!
+             */
+            function insertImageOntoMural(url, caption, sourceType) {
+                const vp = engine.viewport;
+                const canvasRect = canvasEl.getBoundingClientRect();
+
+                // Compute canonical center of current view
+                const centerCanonicalX = (canvasRect.width / 2) / vp.zoom + vp.x;
+                const centerCanonicalY = (canvasRect.height / 2) / vp.zoom + vp.y;
+
+                const defaultWidth = 520;
+                const defaultHeight = 440;
+
+                const imageObj = {
+                    id: 'img_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 6),
+                    sessionId: realtime.sessionId,
+                    url: url,
+                    x: Math.round(centerCanonicalX - defaultWidth / 2),
+                    y: Math.round(centerCanonicalY - defaultHeight / 2),
+                    width: defaultWidth,
+                    height: defaultHeight,
+                    caption: caption || '',
+                    sourceType: sourceType || 'search',
+                    createdAt: Date.now()
+                };
+
+                // Add locally and save to Firestore
+                engine.addRemoteImage(imageObj);
+                engine.selectedImage = imageObj;
+                engine.requestRender();
+                realtime.saveImage(imageObj);
+            }
+
+            // --- Export Large Format Suite Handlers ---
+            const exportModal = document.getElementById('exportModalOverlay');
+            const btnOpenExport = document.getElementById('btnOpenExport');
+            const btnCloseExportModal = document.getElementById('btnCloseExportModal');
+            const exportProgressBox = document.getElementById('exportProgressBox');
+            const exportProgressText = document.getElementById('exportProgressText');
+
+            btnOpenExport.addEventListener('click', () => {
+                exportModal.classList.add('open');
+            });
+            btnCloseExportModal.addEventListener('click', () => {
+                exportModal.classList.remove('open');
+            });
+
+            // Download Print PDF
+            document.getElementById('btnDownloadPDF').addEventListener('click', async () => {
+                exportProgressBox.style.display = 'block';
+                exportProgressText.textContent = 'Rendering 72" × 24" Print PDF...';
+                try {
+                    await exportService.exportPrintPDF('Hispanic_In_17_Syllables_Print_72x24.pdf', (msg) => {
+                        exportProgressText.textContent = msg;
+                    });
+                    exportProgressBox.style.display = 'none';
+                    exportModal.classList.remove('open');
+                } catch (e) {
+                    alert("Export failed: " + e.message);
+                    exportProgressBox.style.display = 'none';
+                }
+            });
+
+            // Download High-Res PNG
+            document.getElementById('btnDownloadPNG').addEventListener('click', async () => {
+                exportProgressBox.style.display = 'block';
+                exportProgressText.textContent = 'Generating 7200 × 2400 High-Resolution PNG...';
+                await exportService.exportPNG('Hispanic_In_17_Syllables_Mural_7200x2400.png', 1.0);
+                exportProgressBox.style.display = 'none';
+                exportModal.classList.remove('open');
+            });
+
+            // Download SVG Vector
+            document.getElementById('btnDownloadSVG').addEventListener('click', () => {
+                exportService.exportSVG('Hispanic_In_17_Syllables_Mural_Vector.svg');
+                exportModal.classList.remove('open');
+            });
+
+        })();
+    </script>
+</body>
+</html>
