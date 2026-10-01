@@ -3271,39 +3271,20 @@
 
         async function loadMuralAdminData() {
             try {
-                if (typeof db !== 'undefined' && db) {
-                    const eventDoc = await db.collection('mural_events').doc('hispanic-in-17-syllables').get();
-                    if (eventDoc.exists) {
-                        const data = eventDoc.data();
+                const res = await fetch('/api/mural?eventId=hispanic-in-17-syllables&t=' + Date.now());
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.success) {
                         adminMuralStatus = data.status || 'LIVE';
                         updateMuralAdminStatusBadge(adminMuralStatus);
+                        adminMuralStrokes = data.strokes || [];
+                        adminMuralImages = data.images || [];
+                        const strokeEl = document.getElementById('adminMuralStrokeCount');
+                        const imgEl = document.getElementById('adminMuralImageCount');
+                        if (strokeEl) strokeEl.textContent = adminMuralStrokes.length;
+                        if (imgEl) imgEl.textContent = adminMuralImages.length;
+                        return;
                     }
-
-                    // Stroke count
-                    const strokesSnap = await db.collection('mural_events').doc('hispanic-in-17-syllables').collection('strokes').get();
-                    let strokeCount = 0;
-                    adminMuralStrokes = [];
-                    strokesSnap.forEach(doc => {
-                        const d = doc.data();
-                        if (!d.deleted) {
-                            strokeCount++;
-                            adminMuralStrokes.push({ id: doc.id, ...d });
-                        }
-                    });
-                    document.getElementById('adminMuralStrokeCount').textContent = strokeCount;
-
-                    // Image count
-                    const imgSnap = await db.collection('mural_events').doc('hispanic-in-17-syllables').collection('images').get();
-                    let imageCount = 0;
-                    adminMuralImages = [];
-                    imgSnap.forEach(doc => {
-                        const d = doc.data();
-                        if (!d.deleted) {
-                            imageCount++;
-                            adminMuralImages.push({ id: doc.id, ...d });
-                        }
-                    });
-                    document.getElementById('adminMuralImageCount').textContent = imageCount;
                 }
             } catch (err) {
                 console.warn("[Admin Dashboard] loadMuralAdminData warning:", err);
@@ -3337,12 +3318,11 @@
 
         async function adminSetEventStatus(newStatus) {
             try {
-                if (typeof db !== 'undefined' && db) {
-                    await db.collection('mural_events').doc('hispanic-in-17-syllables').set({
-                        status: newStatus,
-                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true });
-                }
+                await fetch('/api/mural/status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ eventId: 'hispanic-in-17-syllables', status: newStatus })
+                });
                 adminMuralStatus = newStatus;
                 updateMuralAdminStatusBadge(newStatus);
                 showToast("Mural event status set to " + newStatus);
@@ -3376,7 +3356,6 @@
 
         async function adminExportPDF() {
             showToast("Generating 72\" x 24\" Print PDF...");
-            // Use dummy offscreen engine to render complete artwork
             const dummyCanvas = document.createElement('canvas');
             const engine = new MuralEngine(dummyCanvas);
             engine.loadStrokes(adminMuralStrokes);
@@ -3412,19 +3391,14 @@
         }
 
         async function adminConfirmClearCanvas() {
-            if (confirm("Are you sure you want to reset the mural? This will clear all community strokes and images from the database. This action CANNOT be undone.")) {
+            if (confirm("Are you sure you want to reset the mural? This will clear all community strokes and images from the server. This action CANNOT be undone.")) {
                 if (confirm("CONFIRM CANVAS WIPE: All participants' work will be deleted permanently. Proceed?")) {
                     try {
-                        const strokesSnap = await db.collection('mural_events').doc('hispanic-in-17-syllables').collection('strokes').get();
-                        const batch = db.batch();
-                        strokesSnap.forEach(d => batch.delete(d.ref));
-                        await batch.commit();
-
-                        const imgSnap = await db.collection('mural_events').doc('hispanic-in-17-syllables').collection('images').get();
-                        const imgBatch = db.batch();
-                        imgSnap.forEach(d => imgBatch.delete(d.ref));
-                        await imgBatch.commit();
-
+                        await fetch('/api/mural/clear', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ eventId: 'hispanic-in-17-syllables' })
+                        });
                         showToast("Mural canvas reset successfully.");
                         loadMuralAdminData();
                     } catch (e) {
