@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Join Verba Vitae">
+    <meta name="description" content="Join Verba Vitae - Create your member account">
     <title>Verba Vitae - Join Now</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/style.css">
@@ -15,6 +15,16 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="js/firebase-init.js"></script>
+
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            if (typeof emailjs !== 'undefined') {
+                emailjs.init("T2RRIBrs9d6zqacLR");
+            }
+        })();
+    </script>
 </head>
 <body class="join-page">
     <div class="join-wrapper">
@@ -31,192 +41,368 @@
                 </div>
                 <hr class="join-divider">
 
-                <!-- STEP 1: Code Verification -->
-                <div id="step-1" class="join-step">
-                    <p class="join-instruction">Enter your invitation code or email address to continue.</p>
-                    <div class="input-group">
-                        <div class="label-row">
-                            <label for="invite-code">Invitation Code / Email</label>
+                <!-- REGISTRATION FORM PANEL -->
+                <div id="registration-panel">
+                    <p class="join-instruction" style="font-weight: 600; color: #2d3748; margin-bottom: 20px;">
+                        Create your member account
+                    </p>
+
+                    <div id="reg-msg" class="join-msg-box"></div>
+
+                    <form id="join-form" novalidate>
+                        <div class="form-row">
+                            <div class="input-group half">
+                                <label for="first-name">First Name *</label>
+                                <input type="text" id="first-name" class="input-new" placeholder="First Name" required autocomplete="given-name">
+                            </div>
+                            <div class="input-group half">
+                                <label for="last-name">Last Name *</label>
+                                <input type="text" id="last-name" class="input-new" placeholder="Last Name" required autocomplete="family-name">
+                            </div>
                         </div>
-                        <input type="text" id="invite-code" class="input-new" placeholder="" autocomplete="off">
-                        <div id="code-error" class="error-msg" style="display: none;">Invalid code or email. Please try again.</div>
-                    </div>
-                    <div class="btn-row">
-                        <button id="btn-verify" class="btn-join-new">Continue</button>
+
+                        <div class="input-group">
+                            <label for="email">Email Address *</label>
+                            <input type="email" id="email" class="input-new" placeholder="name@example.com" required autocomplete="email">
+                        </div>
+
+                        <div class="input-group">
+                            <label for="password">Create Password *</label>
+                            <div class="password-wrapper">
+                                <input type="password" id="password" class="input-new" placeholder="At least 6 characters" required autocomplete="new-password">
+                                <button type="button" id="toggle-password" class="password-toggle-btn" aria-label="Toggle password visibility">
+                                    <i class="fas fa-eye" id="toggle-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="input-group half">
+                                <label for="phone">Phone <span style="font-weight: 400; color: #a0aec0; text-transform: none;">(Optional)</span></label>
+                                <input type="tel" id="phone" class="input-new" placeholder="(305) 555-0123" autocomplete="tel">
+                            </div>
+                            <div class="input-group half">
+                                <label for="major">Major / Program <span style="font-weight: 400; color: #a0aec0; text-transform: none;">(Optional)</span></label>
+                                <input type="text" id="major" class="input-new" placeholder="e.g. Arts &amp; Letters">
+                            </div>
+                        </div>
+
+                        <div class="btn-row" style="margin-top: 15px;">
+                            <button type="submit" id="btn-register" class="btn-join-new" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i class="fas fa-user-plus"></i> Create Account
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="join-footer-links">
+                        Already have an account? <a href="login.html">Sign In</a>
                     </div>
                 </div>
 
-                <!-- STEP 2: Registration Info -->
-                <div id="step-2" class="join-step" style="display: none; opacity: 0;">
-                    <p class="join-instruction">Please complete your profile information.</p>
-                    
-                    <div class="form-row">
-                        <div class="input-group half">
-                            <label for="first-name">First Name</label>
-                            <input type="text" id="first-name" class="input-new" placeholder="">
+                <!-- VERIFICATION SUCCESS PANEL -->
+                <div id="verification-panel" style="display: none; opacity: 0; transition: opacity 0.4s ease;">
+                    <div class="verification-card">
+                        <div class="verification-icon-wrap">
+                            <i class="fas fa-envelope-open-text"></i>
                         </div>
-                        <div class="input-group half">
-                            <label for="last-name">Last Name</label>
-                            <input type="text" id="last-name" class="input-new" placeholder="">
+                        <h3 class="verification-title">Verify Your Email</h3>
+                        <p class="verification-desc">
+                            We've sent a verification email to:<br>
+                            <strong id="sent-user-email" style="color: var(--color-dark-blue); font-size: 1.05rem;"></strong>
+                        </p>
+
+                        <div class="verification-info-box">
+                            <div style="font-weight: 700; margin-bottom: 4px; color: #2b6cb0;">
+                                <i class="fas fa-info-circle"></i> Verification Instructions:
+                            </div>
+                            Please open your email inbox and click the verification link to confirm your account. If you don't see the email within a couple of minutes, please check your <strong>Spam</strong>, <strong>Junk</strong>, or <strong>Promotions</strong> folder.
                         </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label for="email">Email Address</label>
-                        <input type="email" id="email" class="input-new" placeholder="">
-                    </div>
 
-                    <div class="input-group">
-                        <label for="phone">Phone Number</label>
-                        <input type="tel" id="phone" class="input-new" placeholder="">
-                    </div>
+                        <div class="verification-actions">
+                            <a href="login.html" class="btn-join-new" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i class="fas fa-sign-in-alt"></i> Proceed to Sign In
+                            </a>
+                            <button type="button" id="btn-resend" class="btn-resend">
+                                <i class="fas fa-redo"></i> Resend Verification Email
+                            </button>
+                        </div>
 
-                    <div class="input-group">
-                        <label for="major">Major / Program</label>
-                        <input type="text" id="major" class="input-new" placeholder="">
-                    </div>
-
-                    <div class="input-group">
-                        <label for="password">Create Password</label>
-                        <input type="password" id="password" class="input-new" placeholder="">
-                    </div>
-
-                    <div class="btn-row">
-                        <button id="btn-register" class="btn-join-new">Complete Registration</button>
+                        <div id="resend-msg" class="join-msg-box" style="margin-top: 15px;"></div>
                     </div>
                 </div>
+
             </div>
             
             <div class="join-bottom-section">
-                <!-- Space for future elements or images -->
+                <!-- Decorative footer container -->
             </div>
         </div>
     </div>
 
     <script>
-        const btnVerify = document.getElementById('btn-verify');
-        const inviteCodeInput = document.getElementById('invite-code');
-        const codeError = document.getElementById('code-error');
-        const step1 = document.getElementById('step-1');
-        const step2 = document.getElementById('step-2');
+        const regPanel = document.getElementById('registration-panel');
+        const verifPanel = document.getElementById('verification-panel');
+        const joinForm = document.getElementById('join-form');
+        const regMsg = document.getElementById('reg-msg');
+        const resendMsg = document.getElementById('resend-msg');
         const btnRegister = document.getElementById('btn-register');
+        const btnResend = document.getElementById('btn-resend');
+        const passwordInput = document.getElementById('password');
+        const togglePassword = document.getElementById('toggle-password');
+        const toggleIcon = document.getElementById('toggle-icon');
+        const sentUserEmailEl = document.getElementById('sent-user-email');
 
-        btnVerify.addEventListener('click', () => {
-            const val = inviteCodeInput.value.trim().toLowerCase();
-            const validCustomCodes = ['peermentorinv', 'testing'];
-            
-            // Accept 'peermentorinv', 'testing', or any dynamically generated code (length >= 8)
-            if (validCustomCodes.includes(val) || val.length >= 8) {
-                codeError.style.display = 'none';
-                
-                // Fade out step 1
-                step1.style.opacity = '0';
-                setTimeout(() => {
-                    step1.style.display = 'none';
-                    
-                    // Fade in step 2
-                    step2.style.display = 'block';
-                    // Trigger reflow for animation
-                    void step2.offsetWidth; 
-                    step2.style.opacity = '1';
-                }, 300);
-            } else {
-                codeError.style.display = 'block';
+        let createdUser = null;
+        let createdEmail = '';
+        let createdFirstName = '';
+        let createdLastName = '';
+
+        // Password visibility toggle
+        if (togglePassword && passwordInput && toggleIcon) {
+            togglePassword.addEventListener('click', () => {
+                const isPassword = passwordInput.getAttribute('type') === 'password';
+                passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                toggleIcon.classList.toggle('fa-eye', !isPassword);
+                toggleIcon.classList.toggle('fa-eye-slash', isPassword);
+            });
+        }
+
+        function showMessage(el, text, isError = true) {
+            el.innerHTML = text;
+            el.className = 'join-msg-box ' + (isError ? 'error' : 'success');
+            el.style.display = 'block';
+        }
+
+        function clearMessage(el) {
+            el.innerHTML = '';
+            el.style.display = 'none';
+        }
+
+        // Email validation helper
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+
+        // Send EmailJS Verification / Welcome Email
+        async function dispatchEmailJSEmail(email, firstName, lastName) {
+            const serviceID = "service_igfw5aa";
+            const templateID = "template_sbe1x22";
+            const publicKey = "T2RRIBrs9d6zqacLR";
+            const fullName = `${firstName} ${lastName}`.trim();
+
+            const currentOrigin = (window.location.protocol.startsWith('http') && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1'))
+                ? window.location.origin
+                : 'https://theverbavitae.org';
+
+            const templateParams = {
+                to_email: email,
+                email_to: email,
+                user_email: email,
+                email: email,
+                recipient: email,
+                send_to: email,
+                to_name: fullName,
+                name: fullName,
+                first_name: firstName,
+                last_name: lastName,
+                message: `¡Bienvenido/a a Verba Vitae, ${firstName}! Tu registro ha sido procesado exitosamente. Por favor verifica tu correo electrónico para activar y confirmar tu membresía. Puedes iniciar sesión en: ${currentOrigin}/login.html`,
+                verification_message: `Hola ${firstName}, confirma tu correo electrónico para completar tu registro en Verba Vitae.`,
+                link: `${currentOrigin}/login.html`,
+                join_link: `${currentOrigin}/login.html`,
+                url: `${currentOrigin}/login.html`
+            };
+
+            console.log(`[EmailJS] Dispatching verification email to ${email}...`);
+
+            try {
+                if (typeof emailjs !== 'undefined' && emailjs.send) {
+                    const res = await emailjs.send(serviceID, templateID, templateParams, publicKey);
+                    console.log("[EmailJS] SDK Send Success:", res);
+                    return true;
+                }
+                throw new Error("EmailJS SDK not available");
+            } catch (sdkErr) {
+                console.warn("[EmailJS] SDK dispatch failed, attempting REST API fallback:", sdkErr);
+                try {
+                    const apiRes = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            service_id: serviceID,
+                            template_id: templateID,
+                            user_id: publicKey,
+                            template_params: templateParams
+                        })
+                    });
+                    if (apiRes.ok) {
+                        console.log("[EmailJS] REST API fallback Success for", email);
+                        return true;
+                    } else {
+                        const errText = await apiRes.text();
+                        console.warn("[EmailJS] REST API response error:", errText);
+                    }
+                } catch (fetchErr) {
+                    console.error("[EmailJS] REST fallback error:", fetchErr);
+                }
             }
-        });
+            return false;
+        }
 
-        // Trigger verify on Enter key
-        inviteCodeInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                btnVerify.click();
-            }
-        });
+        // Form Submit Handler
+        joinForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessage(regMsg);
 
-        btnRegister.addEventListener('click', async () => {
             const firstName = document.getElementById('first-name').value.trim();
             const lastName = document.getElementById('last-name').value.trim();
             const email = document.getElementById('email').value.trim().toLowerCase();
+            const password = document.getElementById('password').value.trim();
             const phone = document.getElementById('phone').value.trim();
             const major = document.getElementById('major').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const code = inviteCodeInput.value.trim().toUpperCase();
 
-            if (!firstName || !lastName || !email || !password) {
-                alert('Please fill out all required fields (First Name, Last Name, Email, Password).');
+            // Client-side validations
+            if (!firstName || !lastName) {
+                showMessage(regMsg, 'Please enter your First Name and Last Name.');
                 return;
             }
 
-            btnRegister.textContent = 'Registering...';
+            if (!email || !isValidEmail(email)) {
+                showMessage(regMsg, 'Please enter a valid email address.');
+                return;
+            }
+
+            if (!password || password.length < 6) {
+                showMessage(regMsg, 'Password must be at least 6 characters long.');
+                return;
+            }
+
+            btnRegister.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
             btnRegister.disabled = true;
 
             try {
-                // 1. Create User in Firebase Auth
+                // 1. Create User in Firebase Authentication
                 const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-                const user = userCredential.user;
+                createdUser = userCredential.user;
+                createdEmail = email;
+                createdFirstName = firstName;
+                createdLastName = lastName;
 
-                // 2. Save User Data in Firestore (with fallback if rules restrict writing)
+                // Update Auth Profile Display Name
                 try {
-                    await db.collection('users').doc(user.uid).set({
-                        firstName: firstName,
-                        lastName: lastName,
-                        email: email,
-                        phone: phone,
-                        major: major,
-                        invitationCode: code,
-                        role: 'member', // Default role
-                        status: 'active',
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    await createdUser.updateProfile({
+                        displayName: `${firstName} ${lastName}`.trim()
                     });
-                } catch (dbErr) {
-                    console.warn("Could not save user profile to Firestore (permissions issue):", dbErr);
+                } catch (pErr) {
+                    console.warn("Could not update auth display name:", pErr);
                 }
 
-                // 3. Update Invitation Status in Firestore
+                // 2. Save User Document in Firestore
                 try {
-                    if (db && code) {
-                        const invDoc = await db.collection('invitations').doc(code).get();
-                        if (invDoc.exists) {
-                            await db.collection('invitations').doc(code).update({
-                                status: 'accepted',
-                                acceptedByEmail: email,
-                                acceptedByUid: user.uid,
-                                acceptedAt: firebase.firestore.FieldValue.serverTimestamp()
-                            });
-                        }
+                    if (db) {
+                        await db.collection('users').doc(createdUser.uid).set({
+                            firstName: firstName,
+                            lastName: lastName,
+                            displayName: `${firstName} ${lastName}`.trim(),
+                            email: email,
+                            phone: phone || '',
+                            major: major || '',
+                            role: 'member',
+                            status: 'active',
+                            emailVerified: false,
+                            createdAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date()
+                        }, { merge: true });
+                        console.log("[Firestore] User document created for UID:", createdUser.uid);
                     }
-                } catch (invErr) {
-                    console.warn("Could not update invitation doc:", invErr);
+                } catch (dbErr) {
+                    console.warn("Could not save user doc in Firestore:", dbErr);
                 }
 
-                alert('Registration completed! Welcome to Verba Vitae.');
-                window.location.href = 'login.html';
-            } catch (error) {
-                console.error("Error registering user:", error);
-                if (error.code === 'auth/email-already-in-use') {
-                    if (confirm('This email is already registered! Would you like to go to the Login page now?')) {
-                        window.location.href = 'login.html';
-                        return;
-                    }
-                } else {
-                    alert('Registration Error: ' + error.message);
+                // 3. Send Native Firebase Email Verification
+                let firebaseEmailSent = false;
+                try {
+                    await createdUser.sendEmailVerification();
+                    firebaseEmailSent = true;
+                    console.log("[Firebase Auth] Verification email sent to:", email);
+                } catch (vErr) {
+                    console.warn("[Firebase Auth] sendEmailVerification warning:", vErr);
                 }
-                btnRegister.textContent = 'Complete Registration';
-                btnRegister.disabled = false;
-            }
-        });
 
-        // Check for URL parameter ?code=...
-        window.addEventListener('DOMContentLoaded', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const codeParam = urlParams.get('code');
-            if (codeParam) {
-                inviteCodeInput.value = codeParam.trim();
-                // Automatically proceed to registration form when coming via invite link
+                // 4. Send EmailJS Verification / Notification
+                await dispatchEmailJSEmail(email, firstName, lastName);
+
+                // 5. Transition smoothly to Verification Success UI
+                sentUserEmailEl.textContent = email;
+                regPanel.style.opacity = '0';
                 setTimeout(() => {
-                    btnVerify.click();
-                }, 350);
+                    regPanel.style.display = 'none';
+                    verifPanel.style.display = 'block';
+                    void verifPanel.offsetWidth;
+                    verifPanel.style.opacity = '1';
+                }, 300);
+
+            } catch (error) {
+                console.error("Registration error:", error);
+                btnRegister.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+                btnRegister.disabled = false;
+
+                if (error.code === 'auth/email-already-in-use') {
+                    showMessage(regMsg, 'This email address is already registered. <a href="login.html" style="color: #3182ce; font-weight: 700; text-decoration: underline;">Sign In here</a> or use a different email.');
+                } else if (error.code === 'auth/weak-password') {
+                    showMessage(regMsg, 'Password is too weak. Please use at least 6 characters with a combination of letters and numbers.');
+                } else if (error.code === 'auth/invalid-email') {
+                    showMessage(regMsg, 'Invalid email address format.');
+                } else {
+                    showMessage(regMsg, error.message || 'An error occurred during registration. Please try again.');
+                }
             }
         });
+
+        // Resend Verification Email Handler
+        if (btnResend) {
+            btnResend.addEventListener('click', async () => {
+                clearMessage(resendMsg);
+                btnResend.disabled = true;
+                btnResend.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resending...';
+
+                let success = false;
+
+                try {
+                    // Try Firebase sendEmailVerification if user instance available
+                    if (createdUser && typeof createdUser.sendEmailVerification === 'function') {
+                        await createdUser.sendEmailVerification();
+                        success = true;
+                    }
+                } catch (fbErr) {
+                    console.warn("Firebase resend error:", fbErr);
+                }
+
+                // Also trigger EmailJS resend
+                if (createdEmail) {
+                    const jsRes = await dispatchEmailJSEmail(createdEmail, createdFirstName, createdLastName);
+                    if (jsRes) success = true;
+                }
+
+                if (success) {
+                    showMessage(resendMsg, 'A new verification email has been dispatched. Please check your inbox and spam folder.', false);
+                } else {
+                    showMessage(resendMsg, 'Could not resend email at this moment. Please wait a few moments and try again.', true);
+                }
+
+                // 30-second cooldown
+                let countdown = 30;
+                btnResend.innerHTML = `<i class="fas fa-clock"></i> Resend available in ${countdown}s`;
+                const timer = setInterval(() => {
+                    countdown--;
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        btnResend.disabled = false;
+                        btnResend.innerHTML = '<i class="fas fa-redo"></i> Resend Verification Email';
+                    } else {
+                        btnResend.innerHTML = `<i class="fas fa-clock"></i> Resend available in ${countdown}s`;
+                    }
+                }, 1000);
+            });
+        }
     </script>
 </body>
 </html>
