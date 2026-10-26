@@ -1,5 +1,7 @@
 :root {
     --color-dark-blue: #1d0c8d;
+    --color-accent-blue: #1d0c8d;
+    --color-white: #ffffff;
     --color-blue-light: #eaebf4; /* For log in button background */
     --color-text-dark: #333333;
     --color-text-light: #ffffff;

@@ -69,17 +69,43 @@
     async function syncFirestore() {
         if (typeof db === 'undefined' || !db) return;
         try {
-            const snap = await db.collection('discussions').get();
-            if (!snap.empty) {
-                const remote = [];
-                snap.forEach(doc => remote.push({ id: doc.id, ...doc.data() }));
-                // Merge remote discussions
-                remote.forEach(r => {
+            const [discSnap, voicesSnap, repliesSnap] = await Promise.all([
+                db.collection('discussions').get().catch(() => null),
+                db.collection('voices').get().catch(() => null),
+                db.collection('replies').get().catch(() => null)
+            ]);
+
+            if (discSnap && !discSnap.empty) {
+                discSnap.forEach(doc => {
+                    const r = { id: doc.id, ...doc.data() };
                     const idx = discussions.findIndex(d => d.id === r.id);
                     if (idx >= 0) discussions[idx] = { ...discussions[idx], ...r };
                     else discussions.unshift(r);
                 });
-                saveLocalData();
+            }
+
+            if (voicesSnap && !voicesSnap.empty) {
+                voicesSnap.forEach(doc => {
+                    const v = { id: doc.id, ...doc.data() };
+                    const idx = voices.findIndex(item => item.id === v.id);
+                    if (idx >= 0) voices[idx] = { ...voices[idx], ...v };
+                    else voices.unshift(v);
+                });
+            }
+
+            if (repliesSnap && !repliesSnap.empty) {
+                repliesSnap.forEach(doc => {
+                    const rep = { id: doc.id, ...doc.data() };
+                    const idx = replies.findIndex(item => item.id === rep.id);
+                    if (idx >= 0) replies[idx] = { ...replies[idx], ...rep };
+                    else replies.push(rep);
+                });
+            }
+
+            saveLocalData();
+            if (currentDiscussionId) {
+                renderDiscussionView(currentDiscussionId);
+            } else {
                 renderDiscussions();
             }
         } catch (e) {
@@ -94,8 +120,11 @@
                 currentUser = user;
                 if (user) {
                     localStorage.setItem('verba_logged_in', 'true');
-                    const email = user.email || '';
-                    isAdmin = email.includes('admin') || email.includes('verbavitae') || email.endsWith('@theverbavitae.org') || email === 'aaronbacallao06@gmail.com';
+                    const email = (user.email || '').trim().toLowerCase();
+                    const rootAdmin = typeof window.isRootAdminEmail === 'function'
+                        ? window.isRootAdminEmail(email)
+                        : (email === 'aaronbacallao06@gmail.com' || email.endsWith('@theverbavitae.org'));
+                    isAdmin = rootAdmin;
                     currentUserRole = isAdmin ? 'admin' : 'member';
                     currentUserName = user.displayName || email.split('@')[0] || 'Member';
 
@@ -105,9 +134,18 @@
                             const userDoc = await db.collection('users').doc(user.uid).get();
                             if (userDoc.exists) {
                                 const uData = userDoc.data();
-                                if (uData.role === 'admin') { isAdmin = true; currentUserRole = 'admin'; }
-                                else if (uData.role === 'eboard') { currentUserRole = 'eboard'; }
-                                if (uData.fullName) currentUserName = uData.fullName;
+                                if (uData.role === 'admin' || rootAdmin) {
+                                    isAdmin = true;
+                                    currentUserRole = 'admin';
+                                } else if (uData.role === 'eboard') {
+                                    isAdmin = false;
+                                    currentUserRole = 'eboard';
+                                } else {
+                                    isAdmin = false;
+                                    currentUserRole = 'member';
+                                }
+                                const resolvedName = uData.displayName || uData.fullName || (uData.firstName ? `${uData.firstName} ${uData.lastName || ''}`.trim() : '');
+                                if (resolvedName) currentUserName = resolvedName;
                                 if (uData.profilePic) currentUserAvatar = uData.profilePic;
                             }
                         } catch (err) {
@@ -146,8 +184,9 @@
 
         const composerAvatar = document.getElementById('composerUserAvatar');
         if (composerAvatar) {
-            if (currentUserAvatar) {
-                composerAvatar.innerHTML = `<img src="${currentUserAvatar}" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+            const safeAvatar = sanitizeUrl(currentUserAvatar);
+            if (safeAvatar) {
+                composerAvatar.innerHTML = `<img src="${escapeHtml(safeAvatar)}" alt="Avatar" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
             } else {
                 composerAvatar.textContent = (currentUserName.charAt(0) || 'U').toUpperCase();
             }
@@ -180,6 +219,18 @@
             .replace(/>/g, "&gt;")
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
+    }
+
+    function sanitizeUrl(url) {
+        if (!url) return '';
+        const trimmed = String(url).trim();
+        if (/^(https?:\/\/|data:image\/|images\/|\/)/i.test(trimmed)) {
+            return trimmed;
+        }
+        if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:/.test(trimmed)) {
+            return 'https://' + trimmed;
+        }
+        return '';
     }
 
     // --- Discussions Catalog View ---
@@ -246,16 +297,16 @@
             const discVoiceCount = discVoices.length;
             const discReplyCount = replies.filter(r => r.discussionId === d.id).length;
 
-            const coverImg = d.coverImage || 'images/slide1.jpg';
+            const coverImg = sanitizeUrl(d.coverImage) || 'images/slide1.jpg';
             const author = d.author ? `by ${escapeHtml(d.author)}` : '';
             const chapterTag = d.chapterRange ? `· ${escapeHtml(d.chapterRange)}` : '';
             const createdByName = d.createdBy ? escapeHtml(d.createdBy.name) : 'Admin';
 
             return `
-                <article class="discussion-card ${d.isPinned ? 'pinned' : ''}" data-id="${d.id}">
+                <article class="discussion-card ${d.isPinned ? 'pinned' : ''}" data-id="${escapeHtml(d.id)}">
                     ${d.isPinned ? `<span class="pinned-badge"><i class="fas fa-thumbtack"></i> Pinned Topic</span>` : ''}
                     <div class="card-cover-container">
-                        <img src="${coverImg}" alt="${escapeHtml(d.title)}" class="card-cover-img" loading="lazy">
+                        <img src="${escapeHtml(coverImg)}" alt="${escapeHtml(d.title)}" class="card-cover-img" loading="lazy">
                         <div class="card-cover-gradient"></div>
                         <div class="card-cover-info">
                             <span class="card-type-tag">${escapeHtml(d.type || 'Book Discussion')}</span>
@@ -278,7 +329,7 @@
                         </div>
                     </div>
                     <div class="card-footer">
-                        <button class="btn-join-discussion" onclick="openDiscussion('${d.id}')">
+                        <button class="btn-join-discussion" onclick="openDiscussion('${escapeHtml(d.id)}')">
                             <i class="fas fa-door-open"></i> Join Discussion
                         </button>
                     </div>
@@ -332,7 +383,7 @@
 
         const coverImgEl = document.getElementById('topicCoverImg');
         if (coverImgEl) {
-            coverImgEl.src = disc.coverImage || 'images/slide1.jpg';
+            coverImgEl.src = sanitizeUrl(disc.coverImage) || 'images/slide1.jpg';
             coverImgEl.alt = disc.title;
         }
 
@@ -342,12 +393,12 @@
             adminControls.style.display = isAdmin ? 'flex' : 'none';
             if (isAdmin) {
                 adminControls.innerHTML = `
-                    <button class="btn-admin-action" onclick="openEditModal('${disc.id}')"><i class="fas fa-edit"></i> Edit Prompt</button>
-                    <button class="btn-admin-action" onclick="togglePinDiscussion('${disc.id}')"><i class="fas fa-thumbtack"></i> ${disc.isPinned ? 'Unpin' : 'Pin'}</button>
-                    <button class="btn-admin-action" onclick="toggleLockDiscussion('${disc.id}')"><i class="fas fa-lock"></i> ${disc.isLocked ? 'Unlock' : 'Lock'}</button>
-                    <button class="btn-admin-action" onclick="toggleArchiveDiscussion('${disc.id}')"><i class="fas fa-archive"></i> ${disc.status === 'archived' ? 'Reopen Discussion' : 'Archive Discussion'}</button>
-                    <button class="btn-admin-action" onclick="openCurateModal('${disc.id}')"><i class="fas fa-star" style="color:#d4af37;"></i> Manage "From the Conversation"</button>
-                    <button class="btn-admin-action danger" onclick="deleteDiscussionPrompt('${disc.id}')"><i class="fas fa-trash-alt"></i> Delete</button>
+                    <button class="btn-admin-action" onclick="openEditModal('${escapeHtml(disc.id)}')"><i class="fas fa-edit"></i> Edit Prompt</button>
+                    <button class="btn-admin-action" onclick="togglePinDiscussion('${escapeHtml(disc.id)}')"><i class="fas fa-thumbtack"></i> ${disc.isPinned ? 'Unpin' : 'Pin'}</button>
+                    <button class="btn-admin-action" onclick="toggleLockDiscussion('${escapeHtml(disc.id)}')"><i class="fas fa-lock"></i> ${disc.isLocked ? 'Unlock' : 'Lock'}</button>
+                    <button class="btn-admin-action" onclick="toggleArchiveDiscussion('${escapeHtml(disc.id)}')"><i class="fas fa-archive"></i> ${disc.status === 'archived' ? 'Reopen Discussion' : 'Archive Discussion'}</button>
+                    <button class="btn-admin-action" onclick="openCurateModal('${escapeHtml(disc.id)}')"><i class="fas fa-star" style="color:#d4af37;"></i> Manage "From the Conversation"</button>
+                    <button class="btn-admin-action danger" onclick="deleteDiscussionPrompt('${escapeHtml(disc.id)}')"><i class="fas fa-trash-alt"></i> Delete</button>
                 `;
             }
         }
@@ -376,6 +427,9 @@
         // Handle locked status for composer
         const composerCard = document.getElementById('voiceComposerCard');
         if (composerCard) {
+            if (!composerCard.dataset.originalHtml) {
+                composerCard.dataset.originalHtml = composerCard.innerHTML;
+            }
             if (disc.isLocked) {
                 composerCard.innerHTML = `
                     <div style="text-align: center; color: #718096; padding: 10px;">
@@ -383,6 +437,8 @@
                         <p style="margin: 0; font-weight: 600;">This discussion is currently locked by the administrator. New Voices cannot be added.</p>
                     </div>
                 `;
+            } else if (composerCard.dataset.originalHtml) {
+                composerCard.innerHTML = composerCard.dataset.originalHtml;
             }
         }
 
@@ -473,10 +529,11 @@
 
         // Avatar
         let avatarHtml = '';
-        if (v.userAvatar) {
-            avatarHtml = `<img src="${v.userAvatar}" alt="${escapeHtml(v.userName)}" class="voice-avatar">`;
+        const safeAvatar = sanitizeUrl(v.userAvatar);
+        if (safeAvatar) {
+            avatarHtml = `<img src="${escapeHtml(safeAvatar)}" alt="${escapeHtml(v.userName)}" class="voice-avatar">`;
         } else {
-            avatarHtml = `<div class="voice-avatar">${(v.userName || 'U').charAt(0).toUpperCase()}</div>`;
+            avatarHtml = `<div class="voice-avatar">${escapeHtml((v.userName || 'U').charAt(0).toUpperCase())}</div>`;
         }
 
         // Role tag
@@ -544,15 +601,15 @@
                 ` : ''}
 
                 <!-- Attached Image -->
-                ${v.image ? `
+                ${sanitizeUrl(v.image) ? `
                     <div class="voice-image-attachment">
-                        <img src="${v.image}" alt="Attachment" onclick="window.open('${v.image}', '_blank')" loading="lazy">
+                        <img src="${escapeHtml(sanitizeUrl(v.image))}" alt="Attachment" loading="lazy">
                     </div>
                 ` : ''}
 
                 <!-- Attached Link -->
-                ${v.link && v.link.url ? `
-                    <a href="${escapeHtml(v.link.url)}" target="_blank" rel="noopener noreferrer" class="voice-link-attachment">
+                ${v.link && sanitizeUrl(v.link.url) ? `
+                    <a href="${escapeHtml(sanitizeUrl(v.link.url))}" target="_blank" rel="noopener noreferrer" class="voice-link-attachment">
                         <i class="fas fa-external-link-alt"></i> ${escapeHtml(v.link.title || v.link.url)}
                     </a>
                 ` : ''}
@@ -560,36 +617,39 @@
                 <!-- Reactions & Reply Footer -->
                 <div class="voice-card-footer">
                     <div class="voice-reactions-bar">
-                        <button class="reaction-pill ${hasLoved ? 'active' : ''}" onclick="toggleReaction('${v.id}', 'love')">
+                        <button class="reaction-pill ${hasLoved ? 'active' : ''}" onclick="toggleReaction('${escapeHtml(v.id)}', 'love')">
                             <span>❤️</span> <span>${loves.length || 0}</span>
                         </button>
-                        <button class="reaction-pill ${hasInteresting ? 'active' : ''}" onclick="toggleReaction('${v.id}', 'interesting')">
+                        <button class="reaction-pill ${hasInteresting ? 'active' : ''}" onclick="toggleReaction('${escapeHtml(v.id)}', 'interesting')">
                             <span>💡</span> <span>${interesting.length || 0}</span>
                         </button>
-                        <button class="reaction-pill ${hasThought ? 'active' : ''}" onclick="toggleReaction('${v.id}', 'thought')">
+                        <button class="reaction-pill ${hasThought ? 'active' : ''}" onclick="toggleReaction('${escapeHtml(v.id)}', 'thought')">
                             <span>🤔</span> <span>${thought.length || 0}</span>
                         </button>
                     </div>
 
-                    <button class="btn-trigger-reply" onclick="toggleReplyBox('${v.id}')">
+                    <button class="btn-trigger-reply" onclick="toggleReplyBox('${escapeHtml(v.id)}')">
                         <i class="fas fa-reply"></i> Reply (${voiceReplies.length})
                     </button>
                 </div>
 
                 <!-- Nested Replies Section -->
-                <div class="replies-thread-container" id="replies_${v.id}">
-                    ${voiceReplies.map(r => `
+                <div class="replies-thread-container" id="replies_${escapeHtml(v.id)}">
+                    ${voiceReplies.map(r => {
+                        const safeReplyAvatar = sanitizeUrl(r.userAvatar);
+                        return `
                         <div class="reply-item">
                             <div class="reply-header">
                                 <div class="reply-user-meta">
-                                    ${r.userAvatar ? `<img src="${r.userAvatar}" class="reply-avatar">` : `<div class="reply-avatar">${(r.userName || 'U').charAt(0).toUpperCase()}</div>`}
+                                    ${safeReplyAvatar ? `<img src="${escapeHtml(safeReplyAvatar)}" class="reply-avatar" alt="${escapeHtml(r.userName)}">` : `<div class="reply-avatar">${escapeHtml((r.userName || 'U').charAt(0).toUpperCase())}</div>`}
                                     <span class="reply-author-name">${escapeHtml(r.userName)}</span>
                                 </div>
                                 <span style="font-size: 0.72rem; color: #a0aec0;">${formatTimeAgo(r.createdAt)}</span>
                             </div>
                             <p class="reply-body-text">${escapeHtml(r.content)}</p>
                         </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
 
                     <!-- Reply Composer (Always visible or toggleable) -->
                     <div class="reply-composer-box" id="reply_box_${v.id}">
@@ -765,6 +825,10 @@
         v.isFeatured = !v.isFeatured;
         saveLocalData();
 
+        if (typeof db !== 'undefined' && db) {
+            db.collection('voices').doc(v.id).update({ isFeatured: v.isFeatured }).catch(e => console.warn(e));
+        }
+
         if (v.isFeatured) {
             createNotification({
                 recipientUid: v.userId,
@@ -786,6 +850,11 @@
         if (!v) return;
         v.isHidden = !v.isHidden;
         saveLocalData();
+
+        if (typeof db !== 'undefined' && db) {
+            db.collection('voices').doc(v.id).update({ isHidden: v.isHidden }).catch(e => console.warn(e));
+        }
+
         renderVoicesFeed();
     }
 
@@ -816,6 +885,9 @@
         if (newText !== null && newText.trim()) {
             v.content = newText.trim();
             saveLocalData();
+            if (typeof db !== 'undefined' && db) {
+                db.collection('voices').doc(v.id).update({ content: v.content }).catch(e => console.warn(e));
+            }
             renderVoicesFeed();
         }
     }
@@ -829,6 +901,9 @@
         if (!d) return;
         d.isPinned = !d.isPinned;
         saveLocalData();
+        if (typeof db !== 'undefined' && db) {
+            db.collection('discussions').doc(d.id).update({ isPinned: d.isPinned }).catch(e => console.warn(e));
+        }
         renderDiscussionView(discId);
     }
 
@@ -840,6 +915,9 @@
         if (!d) return;
         d.isLocked = !d.isLocked;
         saveLocalData();
+        if (typeof db !== 'undefined' && db) {
+            db.collection('discussions').doc(d.id).update({ isLocked: d.isLocked }).catch(e => console.warn(e));
+        }
         renderDiscussionView(discId);
     }
 
@@ -851,6 +929,9 @@
         if (!d) return;
         d.status = (d.status === 'archived') ? 'active' : 'archived';
         saveLocalData();
+        if (typeof db !== 'undefined' && db) {
+            db.collection('discussions').doc(d.id).update({ status: d.status }).catch(e => console.warn(e));
+        }
         renderDiscussionView(discId);
     }
 
@@ -952,6 +1033,20 @@
                 d.type = type;
                 d.status = status;
                 d.isPinned = isPinned;
+
+                if (typeof db !== 'undefined' && db) {
+                    db.collection('discussions').doc(d.id).update({
+                        title: d.title,
+                        author: d.author,
+                        question: d.question,
+                        description: d.description,
+                        coverImage: d.coverImage,
+                        chapterRange: d.chapterRange,
+                        type: d.type,
+                        status: d.status,
+                        isPinned: d.isPinned
+                    }).catch(e => console.warn(e));
+                }
             }
         } else {
             // Create new
@@ -1053,6 +1148,11 @@
 
             d.fromTheConversation = selected;
             saveLocalData();
+            if (typeof db !== 'undefined' && db) {
+                db.collection('discussions').doc(d.id).update({
+                    fromTheConversation: selected
+                }).catch(e => console.warn(e));
+            }
             modalOverlay.remove();
             renderDiscussionView(discId);
         });
@@ -1061,6 +1161,11 @@
     window.openCurateModal = openCurateModal;
 
     // --- Notifications System ---
+    function getMyNotifications() {
+        const uid = currentUser ? currentUser.uid : null;
+        return notifications.filter(n => !n.recipientUid || (uid && n.recipientUid === uid));
+    }
+
     function createNotification({ recipientUid, title, message, discussionId, voiceId }) {
         const notif = {
             id: 'notif_' + Date.now(),
@@ -1080,7 +1185,7 @@
     function updateNotificationBadge() {
         const badge = document.getElementById('voiceNotifBadge');
         if (!badge) return;
-        const unreadCount = notifications.filter(n => !n.read).length;
+        const unreadCount = getMyNotifications().filter(n => !n.read).length;
         badge.textContent = unreadCount;
         badge.style.display = unreadCount > 0 ? 'flex' : 'none';
     }
@@ -1107,13 +1212,14 @@
         const listEl = document.getElementById('notifList');
         if (!listEl) return;
 
-        if (notifications.length === 0) {
+        const myNotifs = getMyNotifications();
+        if (myNotifs.length === 0) {
             listEl.innerHTML = '<div style="padding: 24px; text-align: center; color: #a0aec0; font-size: 0.9rem;">No notifications right now.</div>';
             return;
         }
 
-        listEl.innerHTML = notifications.map(n => `
-            <div class="notif-item ${n.read ? '' : 'unread'}" onclick="clickNotification('${n.id}')">
+        listEl.innerHTML = myNotifs.map(n => `
+            <div class="notif-item ${n.read ? '' : 'unread'}" onclick="clickNotification('${escapeHtml(n.id)}')">
                 <span class="notif-title">${escapeHtml(n.title)}</span>
                 <span class="notif-text">${escapeHtml(n.message)}</span>
                 <span class="notif-time">${formatTimeAgo(n.createdAt)}</span>
@@ -1151,8 +1257,9 @@
         const box = document.getElementById(`reply_box_${voiceId}`);
         const input = document.getElementById(`reply_input_${voiceId}`);
         if (box && input) {
-            box.style.display = (box.style.display === 'none') ? 'flex' : 'flex';
-            input.focus();
+            const isHidden = box.style.display === 'none' || getComputedStyle(box).display === 'none';
+            box.style.display = isHidden ? 'flex' : 'none';
+            if (isHidden) input.focus();
         }
     }
 

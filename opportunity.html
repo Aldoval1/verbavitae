@@ -282,7 +282,11 @@
             const oppId = urlParams.get('id') || 'poetry-in-motion';
             const opp = typeof getOpportunityById === 'function' ? getOpportunityById(oppId) : null;
 
-            if (!opp) return;
+            if (!opp) {
+                alert('Opportunity not found.');
+                window.location.href = 'opportunities.html';
+                return;
+            }
 
             document.title = `${opp.title} - Verba Vitae Opportunities`;
             document.getElementById('oppTitle').textContent = opp.title;

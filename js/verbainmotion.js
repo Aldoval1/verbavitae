@@ -43,9 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function setFrame(index) {
         if (!frameImg || currentFrameIndex === index) return;
+        const preloaded = preloadedFrames[index];
+        if (!preloaded || !preloaded.complete || preloaded.naturalWidth === 0) {
+            return;
+        }
         currentFrameIndex = index;
         const targetSrc = `${basePath}frame_${index}.png`;
-        if (frameImg.src !== targetSrc) {
+        if (frameImg.getAttribute('src') !== targetSrc) {
             frameImg.src = targetSrc;
         }
     }

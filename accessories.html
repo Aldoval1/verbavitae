@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verba Vitae Shop - Bookish accessories, stationery, and merchandise.">
     <title>Verba Vitae - Accessories</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/shop.css">
@@ -20,6 +21,8 @@
         <!-- Top Utility Bar -->
         <div class="shop-top-bar">
             <div class="top-bar-links">
+                <a href="index.html"><i class="fas fa-home"></i> Home</a>
+                <a href="voice.html"><i class="fas fa-comments"></i> Verba Voice</a>
             </div>
         </div>
 
@@ -30,7 +33,7 @@
             </a>
 
             <div class="search-container">
-                <input type="text" placeholder="Search products, savings, or recipes">
+                <input type="text" id="categorySearch" placeholder="Search products, savings, or recipes">
                 <button class="search-btn" aria-label="Search"><i class="fas fa-search"></i></button>
             </div>
 
@@ -103,8 +106,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Update auth login button
-            if (typeof auth !== 'undefined') {
+            if (typeof auth !== 'undefined' && auth) {
                 auth.onAuthStateChanged(user => {
                     const loginBtn = document.querySelector('.btn-shop-login');
                     if (loginBtn && user) {
@@ -113,6 +115,53 @@
                     }
                 });
             }
+
+            const searchInput = document.querySelector('.search-container input');
+            const grid = document.querySelector('.results-grid');
+
+            function filterCategoryItems() {
+                const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                const cards = document.querySelectorAll('.results-grid .book-card');
+                let visibleCount = 0;
+
+                cards.forEach(card => {
+                    const titleText = card.querySelector('.book-title') ? card.querySelector('.book-title').textContent.toLowerCase() : '';
+                    const authorText = card.querySelector('.book-author') ? card.querySelector('.book-author').textContent.toLowerCase() : '';
+                    const isbnText = card.querySelector('.book-isbn') ? card.querySelector('.book-isbn').textContent.toLowerCase() : '';
+                    const matchesSearch = !query || titleText.includes(query) || authorText.includes(query) || isbnText.includes(query);
+
+                    if (matchesSearch && !card.classList.contains('in-cart') && !card.classList.contains('purchased')) {
+                        card.style.display = 'flex';
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                let emptyMessage = document.querySelector('.empty-message');
+                if (visibleCount === 0 && grid) {
+                    if (!emptyMessage) {
+                        emptyMessage = document.createElement('div');
+                        emptyMessage.className = 'empty-message';
+                        emptyMessage.style.gridColumn = '1 / -1';
+                        emptyMessage.style.textAlign = 'center';
+                        emptyMessage.style.padding = '40px 0';
+                        emptyMessage.style.color = '#718096';
+                        emptyMessage.style.fontSize = '1.1rem';
+                        grid.appendChild(emptyMessage);
+                    }
+                    emptyMessage.textContent = query ? 'No accessories match your search.' : 'No accessories currently available.';
+                    emptyMessage.style.display = 'block';
+                } else if (emptyMessage) {
+                    emptyMessage.style.display = 'none';
+                }
+            }
+
+            window.triggerFilterBooks = filterCategoryItems;
+            if (searchInput) {
+                searchInput.addEventListener('input', filterCategoryItems);
+            }
+            filterCategoryItems();
 
             // Modal logic
             const modal = document.getElementById('bookModal');

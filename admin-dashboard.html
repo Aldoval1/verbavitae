@@ -326,11 +326,8 @@
     <script src="js/firebase-init.js"></script>
     <script src="js/opportunities-data.js?v=20260921"></script>
 
-    <!-- jsPDF & Collaborative Mural Engine Suite -->
+    <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="js/mural-engine.js?v=20261001_v1"></script>
-    <script src="js/mural-realtime.js?v=20261001_v1"></script>
-    <script src="js/mural-export.js?v=20261001_v1"></script>
 </head>
 <body>
     <!-- Top Nav -->
@@ -358,7 +355,6 @@
         <a href="#" class="tab-link active" data-tab="opportunities"><i class="fas fa-file-signature"></i> Opportunities &amp; Applications <span class="tab-badge" id="adminAppsCountBadge">0</span></a>
         <a href="#" class="tab-link" data-tab="store">Store</a>
         <a href="#" class="tab-link" data-tab="events">Add Events</a>
-        <a href="#" class="tab-link" data-tab="murals"><i class="fas fa-palette"></i> Collaborative Murals</a>
         <a href="#" class="tab-link" data-tab="services">Verba Services</a>
         <div class="nav-dropdown">
             <button class="dropbtn">Members <i class="fas fa-caret-down"></i></button>
@@ -373,7 +369,7 @@
 
     <main class="dash-main">
         <div class="admin-header">
-            <h1>Welcome, Aaron</h1>
+            <h1 id="adminWelcomeTitle">Welcome, Aaron</h1>
             <p>Manage community operations, members, and resources from your executive dashboard.</p>
         </div>
 
@@ -859,130 +855,26 @@
             </section>
         </div>
 
-        <!-- TAB: Collaborative Murals -->
-        <div class="tab-panel" id="tab-murals">
-            <section class="admin-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
-                    <div>
-                        <h2><i class="fas fa-palette" style="color: #1d0c8d;"></i> Collaborative Whiteboards &amp; Murals</h2>
-                        <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin: 4px 0 0 0;">
-                            Live Promethean whiteboard events, real-time community participation, content moderation, and 72" &times; 24" print export.
-                        </p>
-                    </div>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="admin-btn" onclick="loadMuralAdminData()" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fas fa-sync-alt"></i> Refresh Data</button>
-                    </div>
-                </div>
-
-                <!-- Featured Event Card: Hispanic in 17 Syllables -->
-                <div class="mural-admin-card" style="background: #ffffff; border: 1.5px solid #cbd5e1; border-radius: 12px; padding: 24px; box-shadow: 0 4px 15px rgba(0,0,0,0.04);">
-                    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 15px;">
-                        <div>
-                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
-                                <h3 style="font-size: 1.35rem; color: #1d0c8d; font-weight: 800; margin: 0;">Hispanic in 17 Syllables</h3>
-                                <span id="adminMuralStatusBadge" class="status-badge" style="padding: 4px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; background: #c6f6d5; color: #22543d;">LIVE</span>
-                            </div>
-                            <p style="color: #4a5568; font-size: 0.92rem; margin: 0;">
-                                72" &times; 24" Landscape Community Haiku Mural &bull; Dual Promethean Interactive Whiteboard Event
-                            </p>
-                        </div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button id="adminBtnSetLive" class="admin-btn" style="background: #38a169; color: #fff; padding: 8px 16px; font-size: 0.85rem;" onclick="adminSetEventStatus('LIVE')">
-                                <i class="fas fa-play"></i> Open Live Event
-                            </button>
-                            <button id="adminBtnSetClosed" class="admin-btn" style="background: #e53e3e; color: #fff; padding: 8px 16px; font-size: 0.85rem;" onclick="adminPromptCloseEvent()">
-                                <i class="fas fa-lock"></i> Close Event
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Metrics Grid -->
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin: 20px 0;">
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
-                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Community Strokes</span>
-                            <div id="adminMuralStrokeCount" style="font-size: 1.6rem; font-weight: 800; color: #1d0c8d; margin-top: 4px;">--</div>
-                        </div>
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
-                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Inserted Images</span>
-                            <div id="adminMuralImageCount" style="font-size: 1.6rem; font-weight: 800; color: #d68b2d; margin-top: 4px;">--</div>
-                        </div>
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
-                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Aspect Ratio &amp; Dimensions</span>
-                            <div style="font-size: 1.1rem; font-weight: 800; color: #2d3748; margin-top: 8px;">3:1 &bull; 72" &times; 24"</div>
-                        </div>
-                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 14px 16px;">
-                            <span style="font-size: 0.72rem; color: #64748b; font-weight: 700; text-transform: uppercase;">Realtime Status</span>
-                            <div id="adminMuralSyncStatus" style="font-size: 1.1rem; font-weight: 800; color: #3182ce; margin-top: 8px;">Firestore Sync Active</div>
-                        </div>
-                    </div>
-
-                    <!-- Official Public URL & Quick Copy -->
-                    <div style="background: #edf2f7; border-left: 4px solid #1d0c8d; border-radius: 8px; padding: 14px 18px; margin: 18px 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                        <div>
-                            <span style="font-size: 0.75rem; font-weight: 800; color: #4a5568; text-transform: uppercase; letter-spacing: 0.5px; display: block;">Official Public Event URL</span>
-                            <code style="font-size: 1.05rem; font-weight: 700; color: #1d0c8d;">https://theverbavitae.org/hispanicin17</code>
-                        </div>
-                        <div style="display: flex; gap: 10px;">
-                            <button type="button" class="admin-btn" onclick="copyMuralEventUrl()" style="background: #3182ce; color: #fff; padding: 8px 16px; font-size: 0.85rem;">
-                                <i class="fas fa-copy"></i> Copy Link
-                            </button>
-                            <a href="https://theverbavitae.org/hispanicin17" target="_blank" class="admin-btn" style="background: #1d0c8d; color: #fff; text-decoration: none; padding: 8px 16px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;">
-                                <i class="fas fa-globe"></i> Visit Live URL
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Promethean Launcher Actions Row -->
-                    <div style="border-top: 1px solid #e2e8f0; padding-top: 18px; margin-top: 10px;">
-                        <h4 style="font-size: 0.88rem; font-weight: 800; color: #4a5568; text-transform: uppercase; margin-bottom: 12px;">
-                            Promethean Displays &amp; Live Workspaces
-                        </h4>
-                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-                            <a href="hispanicin17.html?device=A" target="_blank" class="admin-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: #1d0c8d;">
-                                <i class="fas fa-display"></i> Open Promethean A (Left Viewport)
-                            </a>
-                            <a href="hispanicin17.html?device=B" target="_blank" class="admin-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: #2b6cb0;">
-                                <i class="fas fa-display"></i> Open Promethean B (Right Viewport)
-                            </a>
-                            <a href="hispanicin17.html?admin=1" target="_blank" class="admin-btn" style="text-decoration: none; display: inline-flex; align-items: center; gap: 8px; background: #4a5568;">
-                                <i class="fas fa-pen-to-square"></i> Open in Admin Mode (Moderation)
-                            </a>
-                            <button class="admin-btn" onclick="openAdminMuralPreviewModal()" style="background: #2d3748; color: #fff;">
-                                <i class="fas fa-eye"></i> Full-Board Preview
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Export Suite Row -->
-                    <div style="border-top: 1px solid #e2e8f0; padding-top: 18px; margin-top: 18px;">
-                        <h4 style="font-size: 0.88rem; font-weight: 800; color: #4a5568; text-transform: uppercase; margin-bottom: 12px;">
-                            Large-Format Print Export Suite (72" &times; 24")
-                        </h4>
-                        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
-                            <button class="admin-btn" onclick="adminExportPDF()" style="background: #c53030; color: #fff;">
-                                <i class="fas fa-file-pdf"></i> Download Print PDF (72" &times; 24")
-                            </button>
-                            <button class="admin-btn" onclick="adminExportPNG()" style="background: #2b6cb0; color: #fff;">
-                                <i class="fas fa-file-image"></i> Download High-Res PNG (7200 &times; 2400)
-                            </button>
-                            <button class="admin-btn" onclick="adminExportSVG()" style="background: #718096; color: #fff;">
-                                <i class="fas fa-bezier-curve"></i> Download SVG Vector
-                            </button>
-                            <button class="admin-btn" onclick="adminConfirmClearCanvas()" style="background: transparent; border: 1.5px solid #e53e3e; color: #e53e3e; margin-left: auto;">
-                                <i class="fas fa-trash-can"></i> Reset Canvas
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
     </main>
 
     <!-- Global Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
     <script>
+        function escapeAdminHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function escapeJsSingleQuote(str) {
+            return escapeAdminHtml(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        }
+
         // Profile Picture Dynamic Display
         const adminPicContainer = document.getElementById('navProfilePicContainer');
         const adminPicImg = document.getElementById('navProfilePic');
@@ -1032,10 +924,6 @@
                     if (adminMap) adminMap.invalidateSize();
                 }, 200);
             }
-
-            if (tabName === 'murals') {
-                loadMuralAdminData();
-            }
         }
 
         document.querySelectorAll('.tab-link').forEach(link => {
@@ -1060,12 +948,15 @@
 
         document.getElementById('logoutBtn').addEventListener('click', async (e) => {
             e.preventDefault();
+            localStorage.removeItem('verba_logged_in');
+            localStorage.removeItem('verba_user_name');
+            localStorage.removeItem('verba_user_email');
             try {
                 await auth.signOut();
                 window.location.href = 'login.html';
             } catch (error) {
                 console.error("Error signing out:", error);
-                showToast('Failed to sign out.');
+                window.location.href = 'login.html';
             }
         });
 
@@ -1217,17 +1108,17 @@
                     : '<span style="background: rgba(221, 107, 32, 0.15); color: #c05621; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-clock"></i> Pending</span>';
 
                 const dateStr = inv.createdAt ? new Date(inv.createdAt).toLocaleDateString() : '';
-                const codeSafe = (inv.code || '').replace(/'/g, "\\'");
-                const joinUrlSafe = (inv.joinUrl || `https://theverbavitae.org/join.html?code=${inv.code}`).replace(/'/g, "\\'");
+                const codeSafe = escapeJsSingleQuote(inv.code || '');
+                const joinUrlSafe = escapeJsSingleQuote(inv.joinUrl || `https://theverbavitae.org/join.html?code=${inv.code}`);
 
                 item.innerHTML = `
                     <div class="member-info" style="display: flex; flex-direction: column; gap: 3px;">
                         <div style="display: flex; align-items: center; gap: 8px;">
-                            <strong>${inv.email}</strong>
+                            <strong>${escapeAdminHtml(inv.email)}</strong>
                             ${statusBadge}
                         </div>
                         <span style="font-size: 0.8rem; color: var(--admin-text-muted);">
-                            Code: <strong style="font-family: monospace; color: #2b6cb0;">${inv.code}</strong> ${dateStr ? `&bull; Sent: ${dateStr}` : ''}
+                            Code: <strong style="font-family: monospace; color: #2b6cb0;">${escapeAdminHtml(inv.code)}</strong> ${dateStr ? `&bull; Sent: ${dateStr}` : ''}
                         </span>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center;">
@@ -1408,10 +1299,10 @@
                 ` + results.map(r => `
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding: 10px 14px; background: #fff; border-radius: 4px; border: 1px solid var(--admin-border); flex-wrap: wrap; gap: 8px;">
                         <div>
-                            <strong>${r.email}</strong> &nbsp;&bull;&nbsp; Código: <span style="font-family: monospace; font-weight: 700; color: #2b6cb0; background: #ebf8ff; padding: 2px 6px; border-radius: 3px;">${r.code}</span>
-                            ${r.success ? '<span style="color: #38a169; font-weight: 600; font-size: 0.8rem; margin-left: 8px;"><i class="fas fa-check-circle"></i> Enviado por EmailJS</span>' : `<span style="color: #e53e3e; font-weight: 600; font-size: 0.8rem; margin-left: 8px;"><i class="fas fa-times-circle"></i> Error de entrega (${r.error || 'Verifica EmailJS'})</span>`}
+                            <strong>${escapeAdminHtml(r.email)}</strong> &nbsp;&bull;&nbsp; Código: <span style="font-family: monospace; font-weight: 700; color: #2b6cb0; background: #ebf8ff; padding: 2px 6px; border-radius: 3px;">${escapeAdminHtml(r.code)}</span>
+                            ${r.success ? '<span style="color: #38a169; font-weight: 600; font-size: 0.8rem; margin-left: 8px;"><i class="fas fa-check-circle"></i> Enviado por EmailJS</span>' : `<span style="color: #e53e3e; font-weight: 600; font-size: 0.8rem; margin-left: 8px;"><i class="fas fa-times-circle"></i> Error de entrega (${escapeAdminHtml(r.error || 'Verifica EmailJS')})</span>`}
                         </div>
-                        <button type="button" class="admin-btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="navigator.clipboard.writeText('${r.joinUrl}'); showToast('¡Enlace de invitación copiado!');">
+                        <button type="button" class="admin-btn" style="padding: 4px 10px; font-size: 0.75rem;" onclick="navigator.clipboard.writeText('${escapeJsSingleQuote(r.joinUrl)}'); showToast('¡Enlace de invitación copiado!');">
                             <i class="fas fa-copy"></i> Copiar Link
                         </button>
                     </div>
@@ -1569,38 +1460,39 @@
                     : '<span style="background: rgba(56, 161, 105, 0.15); color: #276749; padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-check-circle"></i> Active</span>';
 
                 const formattedDate = m.createdAt ? new Date(m.createdAt).toLocaleDateString() : '';
-                const nameSafe = m.displayName.replace(/'/g, "\\'");
-                const emailSafe = m.email.replace(/'/g, "\\'");
+                const idSafe = escapeJsSingleQuote(m.id);
+                const nameSafe = escapeJsSingleQuote(m.displayName);
+                const emailSafe = escapeJsSingleQuote(m.email);
 
                 item.innerHTML = `
                     <div class="member-info" style="display: flex; align-items: center; gap: 15px;">
                         <div style="width: 44px; height: 44px; border-radius: 50%; background: ${isExpelled ? '#fed7d7' : '#e2e8f0'}; color: ${isExpelled ? '#c53030' : '#2d3748'}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; border: 2px solid ${isExpelled ? '#feb2b2' : '#cbd5e0'};">
-                            ${(m.displayName ? m.displayName.charAt(0) : 'M').toUpperCase()}
+                            ${escapeAdminHtml((m.displayName ? m.displayName.charAt(0) : 'M').toUpperCase())}
                         </div>
                         <div>
                             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                                <strong style="font-size: 1rem; color: var(--admin-text);">${m.displayName}</strong>
-                                <span style="padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; ${roleBadgeStyle}">${m.role}</span>
+                                <strong style="font-size: 1rem; color: var(--admin-text);">${escapeAdminHtml(m.displayName)}</strong>
+                                <span style="padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; ${roleBadgeStyle}">${escapeAdminHtml(m.role)}</span>
                                 ${statusBadge}
                             </div>
                             <div style="font-size: 0.85rem; color: var(--admin-text-muted); margin-top: 3px; display: flex; gap: 12px; flex-wrap: wrap;">
-                                <span><i class="fas fa-envelope" style="font-size: 0.75rem;"></i> ${m.email}</span>
-                                ${m.invitationCode ? `<span><i class="fas fa-ticket-alt" style="font-size: 0.75rem;"></i> Code: <strong style="color: #2b6cb0;">${m.invitationCode}</strong></span>` : ''}
-                                ${m.major ? `<span><i class="fas fa-graduation-cap" style="font-size: 0.75rem;"></i> ${m.major}</span>` : ''}
+                                <span><i class="fas fa-envelope" style="font-size: 0.75rem;"></i> ${escapeAdminHtml(m.email)}</span>
+                                ${m.invitationCode ? `<span><i class="fas fa-ticket-alt" style="font-size: 0.75rem;"></i> Code: <strong style="color: #2b6cb0;">${escapeAdminHtml(m.invitationCode)}</strong></span>` : ''}
+                                ${m.major ? `<span><i class="fas fa-graduation-cap" style="font-size: 0.75rem;"></i> ${escapeAdminHtml(m.major)}</span>` : ''}
                                 ${formattedDate ? `<span><i class="fas fa-calendar-alt" style="font-size: 0.75rem;"></i> Joined: ${formattedDate}</span>` : ''}
                             </div>
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center;">
                         ${isExpelled ? `
-                            <button type="button" class="admin-btn" style="padding: 6px 14px; font-size: 0.8rem; background: #38a169; color: white; border: none; border-radius: 4px;" onclick="reactivateMember('${m.id}', '${nameSafe}')">
+                            <button type="button" class="admin-btn" style="padding: 6px 14px; font-size: 0.8rem; background: #38a169; color: white; border: none; border-radius: 4px;" onclick="reactivateMember('${idSafe}', '${nameSafe}')">
                                 <i class="fas fa-undo"></i> Reactivate
                             </button>
-                            <button type="button" class="btn-expel" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteMemberPermanently('${m.id}', '${nameSafe}')">
+                            <button type="button" class="btn-expel" style="padding: 6px 12px; font-size: 0.8rem;" onclick="deleteMemberPermanently('${idSafe}', '${nameSafe}')">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
                         ` : `
-                            <button type="button" class="btn-expel" onclick="expelMember('${m.id}', '${nameSafe}', '${emailSafe}')">
+                            <button type="button" class="btn-expel" onclick="expelMember('${idSafe}', '${nameSafe}', '${emailSafe}')">
                                 <i class="fas fa-user-slash"></i> Expel
                             </button>
                         `}
@@ -1688,34 +1580,68 @@
         document.getElementById('bannerTitleInput').value = savedTitle;
         document.getElementById('bannerTextInput').value = savedText;
 
-        document.getElementById('bannerForm').addEventListener('submit', (e) => {
+        if (db) {
+            db.collection('settings').doc('banner').get().then(doc => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    if (data.title) {
+                        document.getElementById('bannerTitleInput').value = data.title;
+                        localStorage.setItem('verba_banner_title', data.title);
+                    }
+                    if (data.text) {
+                        document.getElementById('bannerTextInput').value = data.text;
+                        localStorage.setItem('verba_banner_text', data.text);
+                    }
+                }
+            }).catch(err => console.warn('Could not fetch global banner settings:', err));
+        }
+
+        document.getElementById('bannerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const title = document.getElementById('bannerTitleInput').value;
             const text = document.getElementById('bannerTextInput').value;
             localStorage.setItem('verba_banner_title', title);
             localStorage.setItem('verba_banner_text', text);
+            try {
+                if (db) {
+                    await db.collection('settings').doc('banner').set({
+                        title,
+                        text,
+                        updatedAt: new Date().toISOString()
+                    }, { merge: true });
+                }
+            } catch (err) {
+                console.warn('Could not sync banner to Firestore:', err);
+            }
             showToast('Global banner updated successfully!');
         });
 
-        // --- Event Manager ---
-        document.getElementById('eventForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const title = document.getElementById('eventTitle').value;
-            const date = document.getElementById('eventDate').value;
-            const color = document.getElementById('eventColor').value;
-            
-            const events = JSON.parse(localStorage.getItem('verba_events')) || [];
-            events.push({ title, date, color });
-            localStorage.setItem('verba_events', JSON.stringify(events));
-            
-            showToast('Event added to the calendar!');
-            e.target.reset();
-        });
-
         // --- Store Inventory ---
-        function loadCustomInventory() {
+        async function loadCustomInventory() {
             const list = document.getElementById('inventoryList');
-            const products = JSON.parse(localStorage.getItem('verba_products')) || [];
+            let products = JSON.parse(localStorage.getItem('verba_products')) || [];
+
+            if (db) {
+                try {
+                    const snap = await db.collection('products').get();
+                    const fsProducts = [];
+                    snap.forEach(doc => fsProducts.push({ id: doc.id, ...doc.data() }));
+                    if (fsProducts.length > 0) {
+                        const merged = [...fsProducts];
+                        products.forEach(loc => {
+                            if (!merged.some(p => String(p.id) === String(loc.id))) {
+                                merged.push(loc);
+                            }
+                        });
+                        products = merged;
+                        try {
+                            localStorage.setItem('verba_products', JSON.stringify(products));
+                        } catch (e) {}
+                    }
+                } catch (err) {
+                    console.warn('Could not load products from Firestore:', err);
+                }
+            }
             
             if (products.length === 0) {
                 list.innerHTML = '<p style="color: var(--admin-text-muted);">No custom items added.</p>';
@@ -1728,41 +1654,50 @@
                 item.className = 'member-item';
                 const isBook = p.category === 'books';
                 const detail = isBook 
-                    ? `$${parseFloat(p.price).toFixed(2)} | ISBN: ${p.isbn || 'N/A'} | Qty: ${p.quantity || 1}`
-                    : `$${parseFloat(p.price).toFixed(2)} | ${p.category} | Qty: ${p.quantity || 1}`;
+                    ? `$${parseFloat(p.price || 0).toFixed(2)} | ISBN: ${escapeAdminHtml(p.isbn || 'N/A')} | Qty: ${parseInt(p.quantity, 10) || 1}`
+                    : `$${parseFloat(p.price || 0).toFixed(2)} | ${escapeAdminHtml(p.category)} | Qty: ${parseInt(p.quantity, 10) || 1}`;
                 
                 const isRecommended = p.isStaffPick;
                 const recStyle = isRecommended ? 'background: #d69e2e; color: white;' : 'background: transparent; color: var(--admin-text); border: 1px solid var(--admin-border);';
                 const recText = isRecommended ? '⭐ Recommended' : '☆ Recommend';
+                const safeId = escapeJsSingleQuote(p.id);
 
                 item.innerHTML = `
                     <div class="member-info" style="display: flex; align-items: center; gap: 12px;">
-                        ${p.image ? `<img src="${p.image}" style="width: 40px; height: 55px; object-fit: cover; border: 1px solid var(--admin-border);">` : ''}
+                        ${p.image ? `<img src="${escapeAdminHtml(p.image)}" style="width: 40px; height: 55px; object-fit: cover; border: 1px solid var(--admin-border);">` : ''}
                         <div>
-                            <strong>${p.name}</strong>
+                            <strong>${escapeAdminHtml(p.name)}</strong>
                             <span>${detail}</span>
                         </div>
                     </div>
                     <div style="display: flex; gap: 10px;">
-                        ${isBook ? `<button style="padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: 0.3s; ${recStyle}" onclick="toggleRecommend(${p.id})">${recText}</button>` : ''}
-                        <button class="btn-expel" onclick="removeCustomProduct(${p.id})">Remove</button>
+                        ${isBook ? `<button style="padding: 6px 12px; border-radius: 4px; cursor: pointer; transition: 0.3s; ${recStyle}" onclick="toggleRecommend('${safeId}')">${recText}</button>` : ''}
+                        <button class="btn-expel" onclick="removeCustomProduct('${safeId}')">Remove</button>
                     </div>
                 `;
                 list.appendChild(item);
             });
         }
 
-        window.removeCustomProduct = function(id) {
+        window.removeCustomProduct = async function(id) {
             let products = JSON.parse(localStorage.getItem('verba_products')) || [];
-            products = products.filter(p => p.id !== id);
+            products = products.filter(p => String(p.id) !== String(id));
             localStorage.setItem('verba_products', JSON.stringify(products));
+            try {
+                if (db) {
+                    await db.collection('products').doc(String(id)).delete();
+                }
+            } catch (err) {
+                console.warn('Could not delete product from Firestore:', err);
+            }
             loadCustomInventory();
             showToast('Product removed from store.');
         };
+        window.deleteProduct = window.removeCustomProduct;
 
-        window.toggleRecommend = function(id) {
+        window.toggleRecommend = async function(id) {
             let products = JSON.parse(localStorage.getItem('verba_products')) || [];
-            const product = products.find(p => p.id === id);
+            const product = products.find(p => String(p.id) === String(id));
             if (!product) return;
 
             const currentRecommended = products.filter(p => p.isStaffPick).length;
@@ -1780,10 +1715,17 @@
             }
 
             localStorage.setItem('verba_products', JSON.stringify(products));
+            try {
+                if (db) {
+                    await db.collection('products').doc(String(product.id)).set(product, { merge: true });
+                }
+            } catch (err) {
+                console.warn('Could not update recommended status in Firestore:', err);
+            }
             loadCustomInventory();
         };
 
-        document.getElementById('productForm').addEventListener('submit', (e) => {
+        document.getElementById('productForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const name = document.getElementById('productName').value;
             const authorInput = document.getElementById('productAuthor').value;
@@ -1813,9 +1755,21 @@
                 product.quantity = parseInt(document.getElementById('itemQuantity').value) || 1;
             }
 
+            try {
+                if (db) {
+                    await db.collection('products').doc(String(product.id)).set(product);
+                }
+            } catch (err) {
+                console.warn('Could not save product to Firestore:', err);
+            }
+
             const products = JSON.parse(localStorage.getItem('verba_products')) || [];
             products.push(product);
-            localStorage.setItem('verba_products', JSON.stringify(products));
+            try {
+                localStorage.setItem('verba_products', JSON.stringify(products));
+            } catch (storageErr) {
+                console.warn('localStorage quota warning on verba_products:', storageErr);
+            }
             
             showToast(`${category === 'books' ? 'Book' : 'Product'} added to store!`);
             e.target.reset();
@@ -1843,9 +1797,20 @@
             { title: "Neon Horizons", isbn: "978-7-89012-345-6" }
         ];
 
-        function loadStaticInventory() {
+        async function loadStaticInventory() {
             const list = document.getElementById('staticInventoryList');
-            const hidden = JSON.parse(localStorage.getItem('verba_hidden_products')) || [];
+            let hidden = JSON.parse(localStorage.getItem('verba_hidden_products')) || [];
+            if (db) {
+                try {
+                    const doc = await db.collection('settings').doc('hidden_products').get();
+                    if (doc.exists && Array.isArray(doc.data().list)) {
+                        hidden = doc.data().list;
+                        localStorage.setItem('verba_hidden_products', JSON.stringify(hidden));
+                    }
+                } catch (err) {
+                    console.warn('Could not load hidden_products from Firestore:', err);
+                }
+            }
             list.innerHTML = '';
 
             staticBooks.forEach(book => {
@@ -1854,10 +1819,10 @@
                 item.className = 'member-item';
                 item.innerHTML = `
                     <div class="member-info">
-                        <strong style="${isHidden ? 'text-decoration: line-through; color: var(--admin-text-muted);' : ''}">${book.title}</strong>
-                        <span>ISBN: ${book.isbn}</span>
+                        <strong style="${isHidden ? 'text-decoration: line-through; color: var(--admin-text-muted);' : ''}">${escapeAdminHtml(book.title)}</strong>
+                        <span>ISBN: ${escapeAdminHtml(book.isbn)}</span>
                     </div>
-                    <button class="${isHidden ? 'btn-hide' : 'btn-expel'}" onclick="toggleStaticProduct('${book.isbn}')">
+                    <button class="${isHidden ? 'btn-hide' : 'btn-expel'}" onclick="toggleStaticProduct('${escapeJsSingleQuote(book.isbn)}')">
                         ${isHidden ? 'Restore' : 'Hide from Shop'}
                     </button>
                 `;
@@ -1865,7 +1830,7 @@
             });
         }
 
-        window.toggleStaticProduct = function(isbn) {
+        window.toggleStaticProduct = async function(isbn) {
             let hidden = JSON.parse(localStorage.getItem('verba_hidden_products')) || [];
             if (hidden.includes(isbn)) {
                 hidden = hidden.filter(i => i !== isbn);
@@ -1875,8 +1840,16 @@
                 showToast('Product hidden from storefront.');
             }
             localStorage.setItem('verba_hidden_products', JSON.stringify(hidden));
+            try {
+                if (db) {
+                    await db.collection('settings').doc('hidden_products').set({ list: hidden }, { merge: true });
+                }
+            } catch (err) {
+                console.warn('Could not sync hidden_products to Firestore:', err);
+            }
             loadStaticInventory();
         };
+        window.toggleHideProduct = window.toggleStaticProduct;
 
         // --- Gallery Management ---
         const albumForm = document.getElementById('albumForm');
@@ -1940,14 +1913,16 @@
                     const data = doc.data();
                     const item = document.createElement('div');
                     item.className = 'member-item';
+                    const safeDocId = escapeJsSingleQuote(doc.id);
+                    const safeTitle = escapeJsSingleQuote(data.title || '');
                     item.innerHTML = `
                         <div class="member-info" style="display:flex; align-items:center; gap: 15px;">
-                            <img src="${data.coverUrl}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
-                            <strong>${data.title}</strong>
+                            <img src="${escapeAdminHtml(data.coverUrl)}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
+                            <strong>${escapeAdminHtml(data.title)}</strong>
                         </div>
                         <div style="display:flex; gap:10px;">
-                            <button class="btn-hide" onclick="openPhotoManager('${doc.id}', '${data.title.replace(/'/g, "\\'")}')">Manage Photos</button>
-                            <button class="btn-expel" onclick="deleteAlbum('${doc.id}')">Delete</button>
+                            <button class="btn-hide" onclick="openPhotoManager('${safeDocId}', '${safeTitle}')">Manage Photos</button>
+                            <button class="btn-expel" onclick="deleteAlbum('${safeDocId}')">Delete</button>
                         </div>
                     `;
                     albumList.appendChild(item);
@@ -2139,6 +2114,37 @@
             });
         }
 
+        let cachedAllEventRegistrations = [];
+
+        async function fetchAllEventRegistrations() {
+            let allRegistrations = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+            if (db) {
+                try {
+                    const regSnap = await db.collection('event_registrations').get();
+                    regSnap.forEach(doc => {
+                        const data = doc.data();
+                        const evId = data.eventId || data.id;
+                        const email = data.userEmail || data.uid || doc.id;
+                        if (!allRegistrations.some(r => (r.id === evId || r.eventId === evId || r.title === data.title) && (r.userEmail === email || r.uid === data.uid))) {
+                            allRegistrations.push({
+                                id: evId,
+                                eventId: evId,
+                                title: data.title,
+                                userName: data.userName,
+                                userEmail: data.userEmail,
+                                uid: data.uid,
+                                registeredAt: data.registeredAt
+                            });
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Could not load event_registrations from Firestore:', e);
+                }
+            }
+            cachedAllEventRegistrations = allRegistrations;
+            return allRegistrations;
+        }
+
         async function loadAdminEvents() {
             if (!adminEventsList) return;
             adminEventsList.innerHTML = '<p style="padding: 10px; color: var(--admin-text-muted);">Loading events...</p>';
@@ -2157,7 +2163,7 @@
 
             const local = JSON.parse(localStorage.getItem('verba_events')) || [];
             local.forEach(loc => {
-                if (!events.some(e => e.id === loc.id || e.title === loc.title)) {
+                if (!events.some(e => String(e.id) === String(loc.id) || e.title === loc.title)) {
                     events.push(loc);
                 }
             });
@@ -2168,8 +2174,8 @@
                 return;
             }
 
-            // Get registrations
-            let allRegistrations = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+            // Get registrations (Firestore + localStorage)
+            const allRegistrations = await fetchAllEventRegistrations();
 
             events.forEach(ev => {
                 const item = document.createElement('div');
@@ -2179,41 +2185,43 @@
                 item.style.gap = '8px';
                 item.style.marginBottom = '15px';
                 
-                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location)}`;
-                const registeredForThis = allRegistrations.filter(r => r.id === ev.id || r.title === ev.title);
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location || '')}`;
+                const registeredForThis = allRegistrations.filter(r => String(r.id) === String(ev.id) || String(r.eventId) === String(ev.id) || r.title === ev.title);
                 const regCount = registeredForThis.length;
                 const maxSlots = parseInt(ev.maxSlots, 10) || 20;
+                const safeEvId = escapeJsSingleQuote(ev.id);
+                const safeEvTitle = escapeJsSingleQuote(ev.title || '');
 
                 item.innerHTML = `
                     <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <strong style="font-size:1.1rem; color:var(--admin-primary);">${ev.title}</strong>
+                        <strong style="font-size:1.1rem; color:var(--admin-primary);">${escapeAdminHtml(ev.title)}</strong>
                         <div style="display:flex; gap:8px;">
                             <span style="background:#feebc8; color:#744210; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:700;"><i class="fas fa-users"></i> ${regCount} / ${maxSlots} Slots Filled</span>
-                            <span style="background:#e3f2fd; color:#1976d2; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:600;"><i class="fas fa-award"></i> ${ev.serviceHours || 0} Hours</span>
+                            <span style="background:#e3f2fd; color:#1976d2; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:600;"><i class="fas fa-award"></i> ${parseFloat(ev.serviceHours) || 0} Hours</span>
                         </div>
                     </div>
                     <div style="font-size:0.9rem; color:var(--admin-text-muted); display:flex; gap:15px; flex-wrap:wrap;">
-                        <span><i class="far fa-calendar"></i> ${ev.date}</span>
-                        <span><i class="far fa-clock"></i> ${ev.time}</span>
-                        <span><i class="fas fa-map-marker-alt"></i> <a href="${mapsUrl}" target="_blank" style="color:var(--admin-accent); text-decoration:underline;">${ev.location}</a></span>
+                        <span><i class="far fa-calendar"></i> ${escapeAdminHtml(ev.date)}</span>
+                        <span><i class="far fa-clock"></i> ${escapeAdminHtml(ev.time)}</span>
+                        <span><i class="fas fa-map-marker-alt"></i> <a href="${escapeAdminHtml(mapsUrl)}" target="_blank" style="color:var(--admin-accent); text-decoration:underline;">${escapeAdminHtml(ev.location)}</a></span>
                     </div>
-                    <p style="font-size:0.9rem; color:var(--admin-text); margin:8px 0 0 0; line-height:1.5; white-space: pre-line;">${ev.description || ''}</p>
+                    <p style="font-size:0.9rem; color:var(--admin-text); margin:8px 0 0 0; line-height:1.5; white-space: pre-line;">${escapeAdminHtml(ev.description || '')}</p>
                     <div style="margin-top:8px; align-self:flex-end; display:flex; gap:10px;">
-                        <button class="admin-btn" style="padding:4px 12px; font-size:0.8rem; background:#3182ce;" onclick="viewEventAttendees('${ev.id}', '${ev.title.replace(/'/g, "\\'")}')"><i class="fas fa-users"></i> View Attendees (${regCount})</button>
-                        <button class="btn-expel" onclick="deleteEvent('${ev.id}')">Delete Event</button>
+                        <button class="admin-btn" style="padding:4px 12px; font-size:0.8rem; background:#3182ce;" onclick="viewEventAttendees('${safeEvId}', '${safeEvTitle}')"><i class="fas fa-users"></i> View Attendees (${regCount})</button>
+                        <button class="btn-expel" onclick="deleteEvent('${safeEvId}')">Delete Event</button>
                     </div>
                 `;
                 adminEventsList.appendChild(item);
             });
         }
 
-        window.viewEventAttendees = function(eventId, eventTitle) {
+        window.viewEventAttendees = async function(eventId, eventTitle) {
             document.getElementById('attendeesEventTitle').textContent = eventTitle;
             const modal = document.getElementById('attendeesModal');
             const list = document.getElementById('attendeesModalList');
             
-            const allRegistrations = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
-            const eventRegs = allRegistrations.filter(r => r.id === eventId || r.title === eventTitle);
+            const allRegistrations = cachedAllEventRegistrations.length > 0 ? cachedAllEventRegistrations : await fetchAllEventRegistrations();
+            const eventRegs = allRegistrations.filter(r => String(r.id) === String(eventId) || String(r.eventId) === String(eventId) || r.title === eventTitle);
 
             list.innerHTML = '';
             if (eventRegs.length === 0) {
@@ -2228,10 +2236,10 @@
                     
                     div.innerHTML = `
                         <div class="member-info">
-                            <strong>${r.userName || r.userEmail || ('Member #' + (idx + 1))}</strong>
-                            <span>${r.userEmail || 'registered student'}</span>
+                            <strong>${escapeAdminHtml(r.userName || r.userEmail || ('Member #' + (idx + 1)))}</strong>
+                            <span>${escapeAdminHtml(r.userEmail || 'registered student')}</span>
                         </div>
-                        <span style="font-size:0.78rem; color:var(--admin-text-muted);"><i class="far fa-clock"></i> ${dateDisplay}</span>
+                        <span style="font-size:0.78rem; color:var(--admin-text-muted);"><i class="far fa-clock"></i> ${escapeAdminHtml(dateDisplay)}</span>
                     `;
                     list.appendChild(div);
                 });
@@ -2246,13 +2254,13 @@
         window.deleteEvent = async function(id) {
             if (confirm('Are you sure you want to delete this event?')) {
                 try {
-                    if (db && !id.startsWith('evt_')) {
-                        await db.collection('events').doc(id).delete();
+                    if (db) {
+                        await db.collection('events').doc(String(id)).delete();
                     }
                 } catch(e) { console.warn(e); }
 
                 let local = JSON.parse(localStorage.getItem('verba_events')) || [];
-                local = local.filter(e => e.id !== id);
+                local = local.filter(e => String(e.id) !== String(id));
                 localStorage.setItem('verba_events', JSON.stringify(local));
 
                 showToast('Event deleted.');
@@ -2331,9 +2339,10 @@
             }
 
             const local = JSON.parse(localStorage.getItem('verba_orders')) || [];
-            local.forEach(loc => {
-                if (!orders.some(o => o.id === loc.id || o.docId === loc.id)) {
-                    orders.push(loc);
+            local.forEach((loc, idx) => {
+                const locId = loc.id || loc.docId || ('ORD-' + idx);
+                if (!orders.some(o => o.id === locId || o.docId === locId)) {
+                    orders.push({ ...loc, id: locId });
                 }
             });
 
@@ -2355,7 +2364,7 @@
                 return;
             }
 
-            filtered.forEach(o => {
+            filtered.forEach((o, idx) => {
                 const item = document.createElement('div');
                 item.className = 'member-item';
                 item.style.flexDirection = 'column';
@@ -2368,19 +2377,22 @@
                 const badgeTextColor = isCompleted ? '#22543d' : '#744210';
                 
                 const itemNames = (o.items || []).map(i => `${i.title || i.name || 'Book'} (${i.quantity || 1})`).join(', ') || '1x Campus Book';
-                const dateDisplay = o.timestamp ? new Date(o.timestamp).toLocaleDateString() + ' ' + new Date(o.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Recent Order';
+                const rawTimestamp = o.timestamp || o.date;
+                const dateDisplay = rawTimestamp ? new Date(rawTimestamp).toLocaleDateString() + ' ' + new Date(rawTimestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Recent Order';
+                const orderId = o.docId || o.id || ('ORD-' + idx);
+                const safeOrderId = escapeJsSingleQuote(orderId);
 
                 item.innerHTML = `
                     <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <strong style="font-size:1.05rem; color:var(--admin-primary);">${o.customerName || 'Student'} <span style="font-weight:400; font-size:0.85rem; color:var(--admin-text-muted);">(${o.customerEmail || ''})</span></strong>
+                        <strong style="font-size:1.05rem; color:var(--admin-primary);">${escapeAdminHtml(o.customerName || 'Student')} <span style="font-weight:400; font-size:0.85rem; color:var(--admin-text-muted);">(${escapeAdminHtml(o.customerEmail || '')})</span></strong>
                         <span style="background:${badgeColor}; color:${badgeTextColor}; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:700;">${isCompleted ? '✓ Picked Up' : '⏳ Pending Pick-Up'}</span>
                     </div>
                     <div style="font-size:0.9rem; color:var(--admin-text); font-weight:600;">
-                        <i class="fas fa-book" style="color:var(--admin-accent);"></i> ${itemNames}
+                        <i class="fas fa-book" style="color:var(--admin-accent);"></i> ${escapeAdminHtml(itemNames)}
                     </div>
                     <div style="font-size:0.8rem; color:var(--admin-text-muted); display:flex; gap:15px; flex-wrap:wrap; width:100%; justify-content:space-between; align-items:center; margin-top:4px;">
-                        <span><i class="far fa-clock"></i> ${dateDisplay} ${o.id ? '| ID: ' + o.id : ''}</span>
-                        ${!isCompleted ? `<button class="admin-btn" style="padding:4px 12px; font-size:0.8rem; background:#38a169;" onclick="confirmPickup('${o.docId || o.id}')"><i class="fas fa-check"></i> Mark as Picked Up</button>` : ''}
+                        <span><i class="far fa-clock"></i> ${escapeAdminHtml(dateDisplay)} ${o.id ? '| ID: ' + escapeAdminHtml(o.id) : ''}</span>
+                        ${!isCompleted ? `<button class="admin-btn" style="padding:4px 12px; font-size:0.8rem; background:#38a169;" onclick="confirmPickup('${safeOrderId}')"><i class="fas fa-check"></i> Mark as Picked Up</button>` : ''}
                     </div>
                 `;
                 pendingPickupsList.appendChild(item);
@@ -2389,15 +2401,16 @@
 
         window.confirmPickup = async function(orderId) {
             try {
-                if (db && !orderId.startsWith('ORD-') && !orderId.startsWith('PU-')) {
+                if (db && orderId && !orderId.startsWith('ORD-') && !orderId.startsWith('PU-')) {
                     await db.collection('orders').doc(orderId).update({ status: 'Picked Up / Completed' });
                 }
             } catch(e) { console.warn(e); }
 
             let orders = JSON.parse(localStorage.getItem('verba_orders')) || [];
-            orders = orders.map(o => {
-                if (o.id === orderId || o.docId === orderId) {
-                    return { ...o, status: 'Picked Up / Completed' };
+            orders = orders.map((o, idx) => {
+                const candidateId = o.id || o.docId || ('ORD-' + idx);
+                if (o.id === orderId || o.docId === orderId || candidateId === orderId) {
+                    return { ...o, id: candidateId, status: 'Picked Up / Completed' };
                 }
                 return o;
             });
@@ -2482,13 +2495,14 @@
                 div.style.borderRadius = '4px';
                 div.style.border = '1px solid #e2e8f0';
                 div.style.fontSize = '0.85rem';
+                const safeWinId = escapeJsSingleQuote(win.docId || win.id);
 
                 div.innerHTML = `
                     <div>
-                        <strong>${win.date}</strong> | ${win.time}
-                        <div style="font-size:0.78rem; color:#718096;">📍 ${win.location}</div>
+                        <strong>${escapeAdminHtml(win.date)}</strong> | ${escapeAdminHtml(win.time)}
+                        <div style="font-size:0.78rem; color:#718096;">📍 ${escapeAdminHtml(win.location)}</div>
                     </div>
-                    <button class="btn-expel" style="padding:2px 8px; font-size:0.75rem;" onclick="deletePrintWindow('${win.docId || win.id}')">Delete</button>
+                    <button class="btn-expel" style="padding:2px 8px; font-size:0.75rem;" onclick="deletePrintWindow('${safeWinId}')">Delete</button>
                 `;
                 printWindowsList.appendChild(div);
             });
@@ -2577,25 +2591,28 @@
                 const badgeTextColor = isReady ? '#22543d' : '#744210';
                 
                 const dateDisplay = r.timestamp ? new Date(r.timestamp).toLocaleDateString() + ' ' + new Date(r.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : 'Recent';
+                const pdfHref = r.fileUrl || r.fileData || '';
+                const safePdfHref = (pdfHref.startsWith('https://') || pdfHref.startsWith('http://') || pdfHref.startsWith('data:application/pdf')) ? escapeAdminHtml(pdfHref) : '';
+                const safeReqId = escapeJsSingleQuote(r.docId || r.id);
 
                 item.innerHTML = `
                     <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <strong style="font-size:1.05rem; color:var(--admin-primary);">${r.userName || 'Student'} <span style="font-weight:400; font-size:0.85rem; color:var(--admin-text-muted);">(${r.userEmail || ''})</span></strong>
+                        <strong style="font-size:1.05rem; color:var(--admin-primary);">${escapeAdminHtml(r.userName || 'Student')} <span style="font-weight:400; font-size:0.85rem; color:var(--admin-text-muted);">(${escapeAdminHtml(r.userEmail || '')})</span></strong>
                         <span style="background:${badgeColor}; color:${badgeTextColor}; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:700;">${isReady ? '✓ Ready for Pick-Up' : '🖨️ Pending Print'}</span>
                     </div>
                     <div style="font-size:0.9rem; color:var(--admin-text); display:flex; gap:10px; align-items:center; flex-wrap:wrap; width:100%;">
-                        <span><i class="fas fa-file-pdf" style="color:#e53e3e;"></i> <strong>${r.fileName || 'document.pdf'}</strong></span>
-                        <span style="background:#edf2f7; padding:2px 8px; border-radius:4px; font-size:0.8rem;">${r.copies || 1} Copy (${r.color || 'B&W'}, ${r.sides || 'Single-sided'})</span>
+                        <span><i class="fas fa-file-pdf" style="color:#e53e3e;"></i> <strong>${escapeAdminHtml(r.fileName || 'document.pdf')}</strong></span>
+                        <span style="background:#edf2f7; padding:2px 8px; border-radius:4px; font-size:0.8rem;">${parseInt(r.copies, 10) || 1} Copy (${escapeAdminHtml(r.color || 'B&W')}, ${escapeAdminHtml(r.sides || 'Single-sided')})</span>
                     </div>
                     <div style="font-size:0.82rem; color:#2b6cb0; background:#ebf8ff; padding:6px 10px; border-radius:4px; width:100%; box-sizing:border-box;">
-                        <strong>Requested Pick-Up Window:</strong> ${r.pickupWindow || 'Anytime'}
+                        <strong>Requested Pick-Up Window:</strong> ${escapeAdminHtml(r.pickupWindow || 'Anytime')}
                     </div>
-                    ${r.notes ? `<div style="font-size:0.8rem; color:#4a5568;"><em>Notes: ${r.notes}</em></div>` : ''}
+                    ${r.notes ? `<div style="font-size:0.8rem; color:#4a5568;"><em>Notes: ${escapeAdminHtml(r.notes)}</em></div>` : ''}
                     <div style="font-size:0.78rem; color:var(--admin-text-muted); display:flex; gap:15px; flex-wrap:wrap; width:100%; justify-content:space-between; align-items:center; margin-top:4px;">
-                        <span><i class="far fa-clock"></i> ${dateDisplay}</span>
+                        <span><i class="far fa-clock"></i> ${escapeAdminHtml(dateDisplay)}</span>
                         <div style="display:flex; gap:8px;">
-                            ${r.fileData ? `<a href="${r.fileData}" download="${r.fileName || 'document.pdf'}" class="admin-btn" style="padding:4px 10px; font-size:0.78rem; background:#3182ce; text-decoration:none;"><i class="fas fa-download"></i> Download PDF</a>` : ''}
-                            ${!isReady ? `<button class="admin-btn" style="padding:4px 10px; font-size:0.78rem; background:#38a169;" onclick="markPrintReady('${r.docId || r.id}')"><i class="fas fa-check"></i> Mark Printed & Ready</button>` : ''}
+                            ${safePdfHref ? `<a href="${safePdfHref}" target="_blank" download="${escapeAdminHtml(r.fileName || 'document.pdf')}" class="admin-btn" style="padding:4px 10px; font-size:0.78rem; background:#3182ce; text-decoration:none;"><i class="fas fa-download"></i> Download PDF</a>` : ''}
+                            ${!isReady ? `<button class="admin-btn" style="padding:4px 10px; font-size:0.78rem; background:#38a169;" onclick="markPrintReady('${safeReqId}')"><i class="fas fa-check"></i> Mark Printed & Ready</button>` : ''}
                         </div>
                     </div>
                 `;
@@ -2625,28 +2642,61 @@
 
         // Init
         document.addEventListener('DOMContentLoaded', () => {
-            // Protect page with Firebase Auth
+            // Protect page with Firebase Auth & Role Verification
             auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    // User is signed in, load admin data
-                    try {
-                        loadCustomInventory();
-                        loadStaticInventory();
-                        loadAlbums();
-                        loadAdminEvents();
-                        loadBookPickups();
-                        loadPrintWindows();
-                        loadPrintRequests();
-                        loadMembers();
-                        loadSentInvitations();
-                        fetchAdminApplications();
-                        loadMuralAdminData();
-                    } catch (e) {
-                        console.warn("Error loading admin data:", e);
-                    }
-                } else {
-                    // No user signed in
+                if (!user) {
+                    localStorage.removeItem('verba_logged_in');
                     window.location.href = 'login.html';
+                    return;
+                }
+
+                let uData = null;
+                let userDocExists = false;
+                try {
+                    if (db) {
+                        const userDoc = await db.collection('users').doc(user.uid).get();
+                        if (userDoc.exists) {
+                            userDocExists = true;
+                            uData = userDoc.data();
+                            if (uData.status === 'expelled' || uData.role === 'expelled') {
+                                await auth.signOut();
+                                localStorage.removeItem('verba_logged_in');
+                                window.location.href = 'login.html';
+                                return;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn("Could not verify admin role in Firestore:", err);
+                }
+
+                const isRoot = typeof window.isRootAdminEmail === 'function' && window.isRootAdminEmail(user.email);
+                const isAdmin = isRoot || (userDocExists && uData && uData.role === 'admin');
+                if (!isAdmin) {
+                    window.location.href = (uData && uData.role === 'eboard') ? 'eboard-dashboard.html' : 'dashboard.html';
+                    return;
+                }
+
+                const welcomeEl = document.getElementById('adminWelcomeTitle');
+                if (welcomeEl) {
+                    const adminFirstName = (uData && uData.firstName) || (user.displayName ? user.displayName.split(' ')[0] : 'Admin');
+                    welcomeEl.textContent = `Welcome, ${adminFirstName}`;
+                }
+
+                // User is verified admin, load admin data
+                try {
+                    loadCustomInventory();
+                    loadStaticInventory();
+                    loadAlbums();
+                    loadAdminEvents();
+                    loadBookPickups();
+                    loadPrintWindows();
+                    loadPrintRequests();
+                    loadMembers();
+                    loadSentInvitations();
+                    fetchAdminApplications();
+                } catch (e) {
+                    console.warn("Error loading admin data:", e);
                 }
             });
         });
@@ -2678,7 +2728,7 @@
 
         window.openPhotoManager = function(albumId, albumTitle) {
             currentManageAlbumId = albumId;
-            document.getElementById('photoManagerTitle').innerHTML = `<i class="fas fa-images"></i> Manage Photos: ${albumTitle}`;
+            document.getElementById('photoManagerTitle').innerHTML = `<i class="fas fa-images"></i> Manage Photos: ${escapeAdminHtml(albumTitle)}`;
             document.getElementById('photoManagerModal').style.display = 'flex';
             loadAlbumPhotos(albumId);
         };
@@ -2740,11 +2790,12 @@
                 }
 
                 let html = '';
+                const safeAlbumId = escapeJsSingleQuote(albumId);
                 photos.forEach((url, index) => {
                     html += `
                         <div style="position:relative; width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden;">
-                            <img src="${url}" style="width:100%; height:100%; object-fit:cover;">
-                            <button onclick="deleteAlbumPhoto('${albumId}', ${index})" style="position:absolute; top:5px; right:5px; background:red; color:white; border:none; border-radius:50%; width:25px; height:25px; cursor:pointer;">&times;</button>
+                            <img src="${escapeAdminHtml(url)}" style="width:100%; height:100%; object-fit:cover;">
+                            <button onclick="deleteAlbumPhoto('${safeAlbumId}', ${index})" style="position:absolute; top:5px; right:5px; background:red; color:white; border:none; border-radius:50%; width:25px; height:25px; cursor:pointer;">&times;</button>
                         </div>
                     `;
                 });
@@ -2775,16 +2826,6 @@
         let adminAllApplications = [];
         let currentAdminViewingApp = null;
         let adminAppsListenerUnsubscribe = null;
-
-        function escapeAdminHtml(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
-        }
 
         async function fetchAdminApplications() {
             let localApps = [];
@@ -2893,7 +2934,7 @@
                     const opp = typeof getOpportunityById === 'function' ? getOpportunityById(app.opportunityId) : null;
                     const r = opp?.roles?.find(item => item.id === rId);
                     const title = r ? r.title : rId;
-                    return `<span style="background: #edf2f7; color: #2d3748; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; margin-right: 4px; display: inline-block; margin-bottom: 2px;">${title}</span>`;
+                    return `<span style="background: #edf2f7; color: #2d3748; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; margin-right: 4px; display: inline-block; margin-bottom: 2px;">${escapeAdminHtml(title)}</span>`;
                 }).join('');
 
                 const status = app.status || 'Pending';
@@ -2903,26 +2944,28 @@
                 if (status === 'Accepted') statusClass = 'status-accepted';
                 if (status === 'Rejected') statusClass = 'status-rejected';
 
+                const safeAppId = escapeJsSingleQuote(app.id);
+
                 return `
                     <tr>
                         <td>
-                            <strong style="color: var(--admin-primary); display: block;">${app.applicant?.name || 'Applicant'}</strong>
-                            <span style="color: var(--admin-text-muted); font-size: 0.8rem;">${app.applicant?.email || ''}</span>
+                            <strong style="color: var(--admin-primary); display: block;">${escapeAdminHtml(app.applicant?.name || 'Applicant')}</strong>
+                            <span style="color: var(--admin-text-muted); font-size: 0.8rem;">${escapeAdminHtml(app.applicant?.email || '')}</span>
                         </td>
                         <td>
-                            <span style="font-weight: 600; color: var(--admin-accent);">${app.opportunityTitle || 'Poetry in Motion'}</span>
+                            <span style="font-weight: 600; color: var(--admin-accent);">${escapeAdminHtml(app.opportunityTitle || 'Poetry in Motion')}</span>
                         </td>
                         <td>${rolesPills || '<span style="color:#a0aec0;">None</span>'}</td>
                         <td>
-                            <span style="display: block; font-weight: 600;">${app.applicant?.campus || 'MDC'}</span>
-                            <span style="color: var(--admin-text-muted); font-size: 0.78rem;">${app.applicant?.major || ''}</span>
+                            <span style="display: block; font-weight: 600;">${escapeAdminHtml(app.applicant?.campus || 'MDC')}</span>
+                            <span style="color: var(--admin-text-muted); font-size: 0.78rem;">${escapeAdminHtml(app.applicant?.major || '')}</span>
                         </td>
-                        <td style="color: var(--admin-text-muted); font-size: 0.85rem;">${appDate}</td>
+                        <td style="color: var(--admin-text-muted); font-size: 0.85rem;">${escapeAdminHtml(appDate)}</td>
                         <td>
-                            <span class="status-badge ${statusClass}">${status}</span>
+                            <span class="status-badge ${statusClass}">${escapeAdminHtml(status)}</span>
                         </td>
                         <td style="text-align: right;">
-                            <button class="btn-view-app" onclick="openAdminApplicationModal('${app.id}')">
+                            <button class="btn-view-app" onclick="openAdminApplicationModal('${safeAppId}')">
                                 <i class="fas fa-eye"></i> Review
                             </button>
                         </td>
@@ -2953,7 +2996,7 @@
             const opp = typeof getOpportunityById === 'function' ? getOpportunityById(app.opportunityId) : null;
             const rolesHtml = (app.selectedRoles || []).map(rId => {
                 const r = opp?.roles?.find(item => item.id === rId);
-                return `<span class="role-pill-badge"><i class="fas ${r ? r.icon : 'fa-star'}"></i> ${r ? r.title : rId}</span>`;
+                return `<span class="role-pill-badge"><i class="fas ${escapeAdminHtml(r ? r.icon : 'fa-star')}"></i> ${escapeAdminHtml(r ? r.title : rId)}</span>`;
             }).join('');
             document.getElementById('mAdminRolesBadgesList').innerHTML = rolesHtml || '<span style="color:#94a3b8; font-style:italic;">No roles selected</span>';
 
@@ -2974,12 +3017,14 @@
                         const answer = roleAnswers[q.id];
                         let displayVal = '-';
                         if (Array.isArray(answer)) {
-                            displayVal = answer.join(', ');
-                        } else if (answer && typeof answer === 'object' && answer.base64) {
+                            displayVal = escapeAdminHtml(answer.join(', '));
+                        } else if (answer && typeof answer === 'object' && (answer.base64 || answer.fileUrl)) {
+                            const rawSrc = String(answer.fileUrl || answer.base64 || '');
+                            const safeImgSrc = (rawSrc.startsWith('data:image/') || rawSrc.startsWith('https://')) ? escapeAdminHtml(rawSrc) : '';
                             displayVal = `
                                 <div style="margin-top: 8px;">
                                     <span style="font-weight:700; color:#1e293b;">Attached File:</span> <strong style="color:#2b6cb0;">${escapeAdminHtml(answer.name)}</strong> (${escapeAdminHtml(answer.size)})<br>
-                                    ${answer.type && answer.type.startsWith('image/') ? `<img src="${answer.base64}" alt="Artwork Preview" style="max-width: 280px; max-height: 200px; border-radius: 10px; margin-top: 10px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.06);">` : ''}
+                                    ${answer.type && answer.type.startsWith('image/') && safeImgSrc ? `<img src="${safeImgSrc}" alt="Artwork Preview" style="max-width: 280px; max-height: 200px; border-radius: 10px; margin-top: 10px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.06);">` : ''}
                                 </div>
                             `;
                         } else if (answer) {
@@ -3008,8 +3053,8 @@
                 roleSectionsHtml += `
                     <div>
                         <div class="modal-section-header">
-                            <i class="fas ${role ? role.icon : 'fa-paint-brush'}" style="color: #1d0c8d;"></i>
-                            <span>${role ? role.title : roleId} Questions</span>
+                            <i class="fas ${escapeAdminHtml(role ? role.icon : 'fa-paint-brush')}" style="color: #1d0c8d;"></i>
+                            <span>${escapeAdminHtml(role ? role.title : roleId)} Questions</span>
                         </div>
                         ${questionsListHtml || '<p style="color:#94a3b8; font-style:italic;">No questions answered.</p>'}
                     </div>
@@ -3020,9 +3065,9 @@
 
             const portfolio = app.generalAnswers?.consolidatedPortfolio;
             if (portfolio && portfolio.trim()) {
-                const cleanHref = portfolio.startsWith('http') ? portfolio : `https://${portfolio}`;
+                const cleanHref = portfolio.startsWith('http://') || portfolio.startsWith('https://') ? portfolio : `https://${portfolio}`;
                 document.getElementById('mAdminAnswerPortfolio').innerHTML = `
-                    <a href="${escapeAdminHtml(cleanHref)}" target="_blank" class="portfolio-link-chip">
+                    <a href="${escapeAdminHtml(cleanHref)}" target="_blank" rel="noopener noreferrer" class="portfolio-link-chip">
                         <i class="fas fa-external-link-alt"></i>
                         <span>${escapeAdminHtml(portfolio)}</span>
                     </a>
@@ -3070,10 +3115,6 @@
             filterAdminApplications();
             showToast(`Application updated: ${newStatus}`);
         };
-
-        // Init applications on load
-        fetchAdminApplications();
-
     </script>
 
     <!-- Admin Application Detail Modal -->
@@ -3231,182 +3272,5 @@
             </div>
         </div>
     </div>
-
-    <!-- Full-Board Interactive Preview Modal for Admin -->
-    <div id="adminMuralPreviewModal" class="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,27,42,0.85); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(8px);">
-        <div style="background: #ffffff; width: 95%; max-width: 1400px; height: 88vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.5);">
-            <div style="padding: 16px 24px; background: #1d0c8d; color: #fff; display: flex; justify-content: space-between; align-items: center;">
-                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800;"><i class="fas fa-palette"></i> Full-Board Preview (72" &times; 24" Canonical View)</h3>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <a href="mural.html?event=hispanic-in-17-syllables&admin=1" target="_blank" class="admin-btn" style="padding: 6px 14px; font-size: 0.8rem; background: #3182ce;"><i class="fas fa-external-link-alt"></i> Open Fullscreen</a>
-                    <button onclick="closeAdminMuralPreviewModal()" style="background: rgba(255,255,255,0.2); border: none; color: #fff; width: 32px; height: 32px; border-radius: 50%; font-size: 1.2rem; cursor: pointer;">&times;</button>
-                </div>
-            </div>
-            <div style="flex: 1; position: relative; background: #0b1320; overflow: hidden;">
-                <iframe id="adminPreviewIframe" src="" style="width: 100%; height: 100%; border: none;"></iframe>
-            </div>
-        </div>
-    </div>
-
-    <!-- Close Event Confirmation Modal -->
-    <div id="adminCloseEventModal" class="preview-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13,27,42,0.8); z-index: 99999; justify-content: center; align-items: center; backdrop-filter: blur(6px);">
-        <div style="background: #ffffff; max-width: 480px; width: 90%; border-radius: 12px; padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.4); text-align: center;">
-            <i class="fas fa-lock" style="font-size: 2.8rem; color: #e53e3e; margin-bottom: 14px;"></i>
-            <h3 style="font-size: 1.3rem; color: #0d1b2a; margin-bottom: 8px;">Close Community Mural?</h3>
-            <p style="font-size: 0.9rem; color: #4a5568; line-height: 1.5; margin-bottom: 20px;">
-                Closing the event will immediately lock both Promethean displays and all public participants to <strong>read-only mode</strong>. No new ink or images can be added publicly. You can still edit as administrator before printing.
-            </p>
-            <div style="display: flex; gap: 10px; justify-content: center;">
-                <button class="admin-btn" onclick="document.getElementById('adminCloseEventModal').style.display = 'none'" style="background: #edf2f7; color: #2d3748;">Cancel</button>
-                <button class="admin-btn" onclick="adminExecuteCloseEvent()" style="background: #e53e3e; color: #ffffff;">Confirm Close Event</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Script: Mural Admin Functions -->
-    <script>
-        let adminMuralStrokes = [];
-        let adminMuralImages = [];
-        let adminMuralStatus = 'LIVE';
-
-        async function loadMuralAdminData() {
-            try {
-                const res = await fetch('/api/mural?eventId=hispanic-in-17-syllables&t=' + Date.now());
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.success) {
-                        adminMuralStatus = data.status || 'LIVE';
-                        updateMuralAdminStatusBadge(adminMuralStatus);
-                        adminMuralStrokes = data.strokes || [];
-                        adminMuralImages = data.images || [];
-                        const strokeEl = document.getElementById('adminMuralStrokeCount');
-                        const imgEl = document.getElementById('adminMuralImageCount');
-                        if (strokeEl) strokeEl.textContent = adminMuralStrokes.length;
-                        if (imgEl) imgEl.textContent = adminMuralImages.length;
-                        return;
-                    }
-                }
-            } catch (err) {
-                console.warn("[Admin Dashboard] loadMuralAdminData warning:", err);
-            }
-        }
-
-        function updateMuralAdminStatusBadge(status) {
-            const badge = document.getElementById('adminMuralStatusBadge');
-            if (!badge) return;
-            badge.textContent = status;
-            if (status === 'LIVE') {
-                badge.style.background = '#c6f6d5';
-                badge.style.color = '#22543d';
-            } else if (status === 'CLOSED') {
-                badge.style.background = '#fed7d7';
-                badge.style.color = '#9b2c2c';
-            } else {
-                badge.style.background = '#feebc8';
-                badge.style.color = '#7b341e';
-            }
-        }
-
-        function copyMuralEventUrl() {
-            const url = 'https://theverbavitae.org/hispanicin17';
-            navigator.clipboard.writeText(url).then(() => {
-                showToast("Copied to clipboard: " + url);
-            }).catch(() => {
-                prompt("Copy URL:", url);
-            });
-        }
-
-        async function adminSetEventStatus(newStatus) {
-            try {
-                await fetch('/api/mural/status', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ eventId: 'hispanic-in-17-syllables', status: newStatus })
-                });
-                adminMuralStatus = newStatus;
-                updateMuralAdminStatusBadge(newStatus);
-                showToast("Mural event status set to " + newStatus);
-            } catch (e) {
-                showToast("Failed to update status: " + e.message);
-            }
-        }
-
-        function adminPromptCloseEvent() {
-            document.getElementById('adminCloseEventModal').style.display = 'flex';
-        }
-
-        async function adminExecuteCloseEvent() {
-            document.getElementById('adminCloseEventModal').style.display = 'none';
-            await adminSetEventStatus('CLOSED');
-        }
-
-        function openAdminMuralPreviewModal() {
-            const modal = document.getElementById('adminMuralPreviewModal');
-            const iframe = document.getElementById('adminPreviewIframe');
-            iframe.src = 'hispanicin17.html?admin=1&preview=1';
-            modal.style.display = 'flex';
-        }
-
-        function closeAdminMuralPreviewModal() {
-            const modal = document.getElementById('adminMuralPreviewModal');
-            const iframe = document.getElementById('adminPreviewIframe');
-            iframe.src = '';
-            modal.style.display = 'none';
-        }
-
-        async function adminExportPDF() {
-            showToast("Generating 72\" x 24\" Print PDF...");
-            const dummyCanvas = document.createElement('canvas');
-            const engine = new MuralEngine(dummyCanvas);
-            engine.loadStrokes(adminMuralStrokes);
-            engine.loadImages(adminMuralImages);
-            const exporter = new MuralExportService(engine);
-            try {
-                await exporter.exportPrintPDF('Hispanic_In_17_Syllables_Print_72x24.pdf');
-                showToast("Print PDF downloaded successfully!");
-            } catch (err) {
-                showToast("Export error: " + err.message);
-            }
-        }
-
-        async function adminExportPNG() {
-            showToast("Generating 7200 x 2400 High-Res PNG...");
-            const dummyCanvas = document.createElement('canvas');
-            const engine = new MuralEngine(dummyCanvas);
-            engine.loadStrokes(adminMuralStrokes);
-            engine.loadImages(adminMuralImages);
-            const exporter = new MuralExportService(engine);
-            await exporter.exportPNG('Hispanic_In_17_Syllables_Mural_7200x2400.png', 1.0);
-            showToast("PNG downloaded successfully!");
-        }
-
-        function adminExportSVG() {
-            const dummyCanvas = document.createElement('canvas');
-            const engine = new MuralEngine(dummyCanvas);
-            engine.loadStrokes(adminMuralStrokes);
-            engine.loadImages(adminMuralImages);
-            const exporter = new MuralExportService(engine);
-            exporter.exportSVG('Hispanic_In_17_Syllables_Mural_Vector.svg');
-            showToast("SVG Vector downloaded successfully!");
-        }
-
-        async function adminConfirmClearCanvas() {
-            if (confirm("Are you sure you want to reset the mural? This will clear all community strokes and images from the server. This action CANNOT be undone.")) {
-                if (confirm("CONFIRM CANVAS WIPE: All participants' work will be deleted permanently. Proceed?")) {
-                    try {
-                        await fetch('/api/mural/clear', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ eventId: 'hispanic-in-17-syllables' })
-                        });
-                        showToast("Mural canvas reset successfully.");
-                        loadMuralAdminData();
-                    } catch (e) {
-                        showToast("Failed to reset canvas: " + e.message);
-                    }
-                }
-            }
-        }
-    </script>
 </body>
 </html>

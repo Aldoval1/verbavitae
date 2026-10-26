@@ -330,6 +330,13 @@
                     <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
             </a>
+            <a href="login.html" id="eboardLogoutBtn" class="config-link" title="Log Out" style="display: flex; align-items: center; color: var(--text-muted); transition: color 0.3s; padding: 5px;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+            </a>
         </div>
     </header>
 
@@ -461,6 +468,7 @@
                         </div>
                         <button type="submit" class="admin-btn">Add Event</button>
                     </form>
+                    <div id="eboardEventsList" style="margin-top: 20px;"></div>
                 </section>
 
                 <!-- Shop Manager Section -->
@@ -481,6 +489,10 @@
                             </select>
                         </div>
                         <div id="bookExtraFields" style="border-left: 3px solid var(--accent-color); padding-left: 15px; margin-bottom: 20px;">
+                            <div class="form-group">
+                                <label for="bookAuthor">Author</label>
+                                <input type="text" id="bookAuthor" placeholder="e.g. Jane Doe">
+                            </div>
                             <div class="form-group">
                                 <label for="bookSubCategory">Sub-category</label>
                                 <input type="text" id="bookSubCategory" placeholder="e.g. Fantasy, Romance">
@@ -830,7 +842,7 @@
                     const opp = typeof getOpportunityById === 'function' ? getOpportunityById(app.opportunityId) : null;
                     const r = opp?.roles?.find(item => item.id === rId);
                     const title = r ? r.title : rId;
-                    return `<span style="background: #edf2f7; color: #2d3748; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; margin-right: 4px; display: inline-block; margin-bottom: 2px;">${title}</span>`;
+                    return `<span style="background: #edf2f7; color: #2d3748; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700; margin-right: 4px; display: inline-block; margin-bottom: 2px;">${escapeAppHtml(title)}</span>`;
                 }).join('');
 
                 const status = app.status || 'Pending';
@@ -840,26 +852,28 @@
                 if (status === 'Accepted') statusClass = 'status-accepted';
                 if (status === 'Rejected') statusClass = 'status-rejected';
 
+                const safeId = escapeAppHtml(String(app.id || '')).replace(/'/g, "\\'");
+
                 return `
                     <tr>
                         <td>
-                            <strong style="color: #1a202c; display: block;">${app.applicant?.name || 'Applicant'}</strong>
-                            <span style="color: #718096; font-size: 0.8rem;">${app.applicant?.email || ''}</span>
+                            <strong style="color: #1a202c; display: block;">${escapeAppHtml(app.applicant?.name || 'Applicant')}</strong>
+                            <span style="color: #718096; font-size: 0.8rem;">${escapeAppHtml(app.applicant?.email || '')}</span>
                         </td>
                         <td>
-                            <span style="font-weight: 600; color: var(--primary-color);">${app.opportunityTitle || 'Poetry in Motion'}</span>
+                            <span style="font-weight: 600; color: var(--primary-color);">${escapeAppHtml(app.opportunityTitle || 'Poetry in Motion')}</span>
                         </td>
                         <td>${rolesPills || '<span style="color:#a0aec0;">None</span>'}</td>
                         <td>
-                            <span style="display: block; font-weight: 600;">${app.applicant?.campus || 'MDC'}</span>
-                            <span style="color: #718096; font-size: 0.78rem;">${app.applicant?.major || ''}</span>
+                            <span style="display: block; font-weight: 600;">${escapeAppHtml(app.applicant?.campus || 'MDC')}</span>
+                            <span style="color: #718096; font-size: 0.78rem;">${escapeAppHtml(app.applicant?.major || '')}</span>
                         </td>
-                        <td style="color: #718096; font-size: 0.85rem;">${appDate}</td>
+                        <td style="color: #718096; font-size: 0.85rem;">${escapeAppHtml(appDate)}</td>
                         <td>
-                            <span class="status-badge ${statusClass}">${status}</span>
+                            <span class="status-badge ${statusClass}">${escapeAppHtml(status)}</span>
                         </td>
                         <td style="text-align: right;">
-                            <button class="btn-view-app" onclick="openApplicationModal('${app.id}')">
+                            <button class="btn-view-app" onclick="openApplicationModal('${safeId}')">
                                 <i class="fas fa-eye"></i> Review
                             </button>
                         </td>
@@ -869,7 +883,7 @@
         }
 
         function escapeAppHtml(str) {
-            if (!str) return '';
+            if (str === null || str === undefined) return '';
             return String(str)
                 .replace(/&/g, '&amp;')
                 .replace(/</g, '&lt;')
@@ -878,9 +892,15 @@
                 .replace(/'/g, '&#039;');
         }
 
+        function isSafeFileUrl(url) {
+            if (!url || typeof url !== 'string') return false;
+            const trimmed = url.trim();
+            return /^https?:\/\//i.test(trimmed) || /^data:image\/(png|jpeg|jpg|gif|webp);base64,/i.test(trimmed) || /^data:application\/pdf;base64,/i.test(trimmed);
+        }
+
         // --- Application Modal Handlers ---
         window.openApplicationModal = function (appId) {
-            const app = allApplications.find(a => a.id === appId);
+            const app = allApplications.find(a => String(a.id) === String(appId));
             if (!app) return;
             currentViewingApp = app;
 
@@ -902,7 +922,7 @@
             const opp = typeof getOpportunityById === 'function' ? getOpportunityById(app.opportunityId) : null;
             const rolesHtml = (app.selectedRoles || []).map(rId => {
                 const r = opp?.roles?.find(item => item.id === rId);
-                return `<span class="role-pill-badge"><i class="fas ${r ? r.icon : 'fa-star'}"></i> ${r ? r.title : rId}</span>`;
+                return `<span class="role-pill-badge"><i class="fas ${escapeAppHtml(r ? r.icon : 'fa-star')}"></i> ${escapeAppHtml(r ? r.title : rId)}</span>`;
             }).join('');
             document.getElementById('mRolesBadgesList').innerHTML = rolesHtml || '<span style="color:#94a3b8; font-style:italic;">No roles selected</span>';
 
@@ -925,12 +945,15 @@
                         const answer = roleAnswers[q.id];
                         let displayVal = '-';
                         if (Array.isArray(answer)) {
-                            displayVal = answer.join(', ');
-                        } else if (answer && typeof answer === 'object' && answer.base64) {
+                            displayVal = escapeAppHtml(answer.join(', '));
+                        } else if (answer && typeof answer === 'object' && (answer.fileUrl || answer.base64)) {
+                            const srcUrl = answer.fileUrl || answer.base64;
+                            const safeSrc = isSafeFileUrl(srcUrl) ? escapeAppHtml(srcUrl) : '';
                             displayVal = `
                                 <div style="margin-top: 8px;">
                                     <span style="font-weight:700; color:#1e293b;">Attached File:</span> <strong style="color:#2b6cb0;">${escapeAppHtml(answer.name)}</strong> (${escapeAppHtml(answer.size)})<br>
-                                    ${answer.type && answer.type.startsWith('image/') ? `<img src="${answer.base64}" alt="Artwork Preview" style="max-width: 280px; max-height: 200px; border-radius: 10px; margin-top: 10px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.06);">` : ''}
+                                    ${safeSrc && answer.type && answer.type.startsWith('image/') ? `<img src="${safeSrc}" alt="Artwork Preview" style="max-width: 280px; max-height: 200px; border-radius: 10px; margin-top: 10px; border: 1.5px solid #cbd5e1; box-shadow: 0 4px 10px rgba(0,0,0,0.06);">` : ''}
+                                    ${safeSrc ? `<div style="margin-top:6px;"><a href="${safeSrc}" target="_blank" rel="noopener noreferrer" download="${escapeAppHtml(answer.name || 'attachment')}" style="color:#2b6cb0; font-weight:700; font-size:0.85rem; text-decoration:underline;"><i class="fas fa-download"></i> View / Download File</a></div>` : ''}
                                 </div>
                             `;
                         } else if (answer) {
@@ -959,8 +982,8 @@
                 roleSectionsHtml += `
                     <div>
                         <div class="modal-section-header">
-                            <i class="fas ${role ? role.icon : 'fa-paint-brush'}" style="color: #1d0c8d;"></i>
-                            <span>${role ? role.title : roleId} Questions</span>
+                            <i class="fas ${escapeAppHtml(role ? role.icon : 'fa-paint-brush')}" style="color: #1d0c8d;"></i>
+                            <span>${escapeAppHtml(role ? role.title : roleId)} Questions</span>
                         </div>
                         ${questionsListHtml || '<p style="color:#94a3b8; font-style:italic;">No questions answered.</p>'}
                     </div>
@@ -972,11 +995,12 @@
             // Portfolio & Comments
             const portfolio = app.generalAnswers?.consolidatedPortfolio;
             if (portfolio && portfolio.trim()) {
-                const cleanHref = portfolio.startsWith('http') ? portfolio : `https://${portfolio}`;
+                const rawTrimmed = portfolio.trim();
+                const cleanHref = /^https?:\/\//i.test(rawTrimmed) ? rawTrimmed : `https://${rawTrimmed}`;
                 document.getElementById('mAnswerPortfolio').innerHTML = `
-                    <a href="${escapeAppHtml(cleanHref)}" target="_blank" class="portfolio-link-chip">
+                    <a href="${escapeAppHtml(cleanHref)}" target="_blank" rel="noopener noreferrer" class="portfolio-link-chip">
                         <i class="fas fa-external-link-alt"></i>
-                        <span>${escapeAppHtml(portfolio)}</span>
+                        <span>${escapeAppHtml(rawTrimmed)}</span>
                     </a>
                 `;
             } else {
@@ -1027,31 +1051,6 @@
 
         // --- Core Page Load ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Protect Route
-            const isLoggedIn = localStorage.getItem('verba_logged_in');
-            if (typeof auth !== 'undefined' && auth) {
-                auth.onAuthStateChanged((user) => {
-                    if (!user && isLoggedIn !== 'true') {
-                        window.location.href = 'login.html';
-                    }
-                });
-            } else if (isLoggedIn !== 'true') {
-                window.location.href = 'login.html';
-            }
-
-            // Profile Picture
-            const picContainer = document.getElementById('navProfilePicContainer');
-            const picImg = document.getElementById('navProfilePic');
-            const savedPic = localStorage.getItem('verba_profile_pic');
-            if (savedPic && !savedPic.includes('cover1.png') && picContainer && picImg) {
-                picImg.src = savedPic;
-                picImg.style.display = 'block';
-                picContainer.style.display = 'block';
-            }
-
-            // Fetch Applications
-            fetchApplications();
-
             // Toast System
             window.showToast = function (message) {
                 const container = document.getElementById('toastContainer');
@@ -1065,6 +1064,68 @@
                 }, 3000);
             };
 
+            // Logout Button Handler
+            const eboardLogoutBtn = document.getElementById('eboardLogoutBtn');
+            if (eboardLogoutBtn) {
+                eboardLogoutBtn.addEventListener('click', async (e) => {
+                    e.preventDefault();
+                    localStorage.removeItem('verba_logged_in');
+                    localStorage.removeItem('verba_user_name');
+                    localStorage.removeItem('verba_user_email');
+                    try {
+                        if (typeof auth !== 'undefined' && auth) {
+                            await auth.signOut();
+                        }
+                    } catch (err) {
+                        console.warn("Error signing out:", err);
+                    }
+                    window.location.href = 'login.html';
+                });
+            }
+
+            // Profile Picture
+            const picContainer = document.getElementById('navProfilePicContainer');
+            const picImg = document.getElementById('navProfilePic');
+            const savedPic = localStorage.getItem('verba_profile_pic');
+            if (savedPic && !savedPic.includes('cover1.png') && picContainer && picImg) {
+                picImg.src = savedPic;
+                picImg.style.display = 'block';
+                picContainer.style.display = 'block';
+            }
+
+            // Load E-Board Events
+            async function loadEboardEvents() {
+                const listEl = document.getElementById('eboardEventsList');
+                if (!listEl) return;
+                let events = [];
+                try {
+                    if (typeof db !== 'undefined' && db) {
+                        const snap = await db.collection('events').get();
+                        snap.forEach(doc => events.push({ id: doc.id, ...doc.data() }));
+                    }
+                } catch (e) {
+                    console.warn("Could not load events from Firestore:", e);
+                }
+                const localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
+                localEvents.forEach(loc => {
+                    if (!events.some(ev => String(ev.id) === String(loc.id) || ev.title === loc.title)) {
+                        events.push(loc);
+                    }
+                });
+                if (events.length === 0) {
+                    listEl.innerHTML = '';
+                    return;
+                }
+                listEl.innerHTML = `<h4 style="font-size:0.9rem; color:var(--text-muted); margin-bottom:10px;">Published Events (${events.length})</h4>` +
+                    events.slice(0, 6).map(ev => `
+                        <div style="padding:8px 10px; border:1px solid var(--border-color); margin-bottom:6px; font-size:0.85rem; display:flex; justify-content:space-between; align-items:center;">
+                            <span><strong>${escapeAppHtml(ev.title)}</strong> &bull; ${escapeAppHtml(ev.date || '')}</span>
+                            <span style="color:var(--accent-color); font-weight:600;">${parseFloat(ev.serviceHours) || 0} hrs</span>
+                        </div>
+                    `).join('');
+            }
+            window.loadEboardEvents = loadEboardEvents;
+
             // Event Form logic
             const eventForm = document.getElementById('eventForm');
             if (eventForm) {
@@ -1077,9 +1138,16 @@
                     const serviceHours = parseFloat(document.getElementById('eventServiceHours').value) || 0;
                     const description = document.getElementById('eventDescription').value.trim();
 
+                    const id = 'evt_' + Date.now();
                     const newEvent = {
-                        id: Date.now(),
-                        title, date, time, location, serviceHours, description,
+                        id: id,
+                        title,
+                        date,
+                        time,
+                        location,
+                        serviceHours,
+                        maxSlots: 30,
+                        description,
                         createdAt: new Date().toISOString()
                     };
 
@@ -1089,7 +1157,7 @@
 
                     if (typeof db !== 'undefined' && db) {
                         try {
-                            await db.collection('events').add(newEvent);
+                            await db.collection('events').doc(id).set(newEvent);
                         } catch(err) {
                             console.warn("Firestore error adding event:", err);
                         }
@@ -1097,6 +1165,7 @@
 
                     showToast('Event added successfully!');
                     eventForm.reset();
+                    loadEboardEvents();
                 });
             }
 
@@ -1122,21 +1191,38 @@
                     const price = parseFloat(document.getElementById('productPrice').value) || 0;
                     const image = document.getElementById('productImage').value.trim();
 
-                    let productData = { id: Date.now(), name, category, price, image };
+                    let newProduct = {
+                        id: Date.now(),
+                        name,
+                        category,
+                        price,
+                        image,
+                        quantity: 1,
+                        isStaffPick: false
+                    };
 
                     if (category === 'books') {
-                        productData.subCategory = document.getElementById('bookSubCategory').value;
-                        productData.condition = document.getElementById('bookCondition').value;
-                        productData.pages = document.getElementById('bookPages').value;
-                        productData.isbn = document.getElementById('bookISBN').value;
-                        productData.publisher = document.getElementById('bookPublisher').value;
-                        productData.synopsis = document.getElementById('bookSynopsis').value;
-                        productData.goodreadsLink = document.getElementById('bookGoodreads').value;
+                        newProduct.author = (document.getElementById('bookAuthor')?.value || '').trim() || 'Unknown Author';
+                        newProduct.subCategory = document.getElementById('bookSubCategory').value;
+                        newProduct.condition = document.getElementById('bookCondition').value;
+                        newProduct.pages = document.getElementById('bookPages').value;
+                        newProduct.isbn = document.getElementById('bookISBN').value;
+                        newProduct.publisher = document.getElementById('bookPublisher').value;
+                        newProduct.synopsis = document.getElementById('bookSynopsis').value;
+                        newProduct.goodreadsLink = document.getElementById('bookGoodreads').value;
                     }
                     
                     const products = JSON.parse(localStorage.getItem('verba_products')) || [];
-                    products.push(productData);
+                    products.push(newProduct);
                     localStorage.setItem('verba_products', JSON.stringify(products));
+
+                    if (typeof db !== 'undefined' && db) {
+                        try {
+                            await db.collection('products').doc(String(newProduct.id)).set(newProduct);
+                        } catch (err) {
+                            console.warn("Firestore error saving product:", err);
+                        }
+                    }
                     
                     showToast('Product added successfully!');
                     productForm.reset();
@@ -1146,47 +1232,123 @@
             }
 
             // Orders Logic
-            function loadOrders() {
+            async function loadOrders() {
                 const ordersList = document.getElementById('ordersList');
-                const orders = JSON.parse(localStorage.getItem('verba_orders')) || [];
-                
-                if (orders.length === 0) {
+                if (!ordersList) return;
+
+                let allOrders = [];
+                try {
+                    if (typeof db !== 'undefined' && db) {
+                        const snap = await db.collection('orders').get();
+                        snap.forEach(doc => {
+                            allOrders.push({ docId: doc.id, ...doc.data() });
+                        });
+                    }
+                } catch (e) {
+                    console.warn("Could not load orders from Firestore:", e);
+                }
+
+                const localOrders = JSON.parse(localStorage.getItem('verba_orders')) || [];
+                localOrders.forEach(loc => {
+                    if (!allOrders.some(o => (loc.id && o.id === loc.id) || (loc.id && o.docId === loc.id))) {
+                        allOrders.push(loc);
+                    }
+                });
+
+                const pendingOrders = allOrders.filter(o => o.status !== 'Picked Up / Completed' && o.status !== 'Completed');
+
+                if (pendingOrders.length === 0) {
                     ordersList.innerHTML = '<p class="empty-state">No pending orders at this time.</p>';
                     return;
                 }
 
                 ordersList.innerHTML = '';
-                orders.forEach((order, index) => {
+                pendingOrders.forEach((order, index) => {
                     const orderCard = document.createElement('div');
                     orderCard.className = 'order-card';
-                    
-                    let itemsHtml = (order.items || []).map(item => `<li>${item.quantity}x ${item.title}</li>`).join('');
+                    const orderId = order.docId || order.id || ('ORD-' + index);
+                    const safeOrderId = escapeAppHtml(String(orderId)).replace(/'/g, "\\'");
+                    const rawDate = order.date || order.timestamp;
+                    const dateStr = rawDate ? new Date(rawDate).toLocaleString() : 'Recent Order';
+
+                    let itemsHtml = (order.items || []).map(item => `<li>${escapeAppHtml(item.quantity || 1)}x ${escapeAppHtml(item.title || item.name || 'Item')}</li>`).join('');
                     
                     orderCard.innerHTML = `
                         <div class="order-header">
-                            <h4>${order.customerName}</h4>
+                            <h4>${escapeAppHtml(order.customerName || 'Student')}</h4>
                             <span class="order-total">$${parseFloat(order.total || 0).toFixed(2)}</span>
                         </div>
-                        <p class="order-email">${order.customerEmail}</p>
-                        <p class="order-date">${new Date(order.date).toLocaleString()}</p>
+                        <p class="order-email">${escapeAppHtml(order.customerEmail || '')}</p>
+                        <p class="order-date">${escapeAppHtml(dateStr)}</p>
                         <ul class="order-items">${itemsHtml}</ul>
-                        <button class="admin-btn resolve-btn" data-index="${index}">Mark as Resolved</button>
+                        <button class="admin-btn resolve-btn" onclick="completeOrder('${safeOrderId}')">Mark as Resolved</button>
                     `;
                     ordersList.appendChild(orderCard);
                 });
-
-                document.querySelectorAll('.resolve-btn').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        const index = e.target.getAttribute('data-index');
-                        orders.splice(index, 1);
-                        localStorage.setItem('verba_orders', JSON.stringify(orders));
-                        loadOrders();
-                        showToast('Order resolved!');
-                    });
-                });
             }
 
-            loadOrders();
+            window.completeOrder = async function(orderId) {
+                try {
+                    if (typeof db !== 'undefined' && db && orderId && !String(orderId).startsWith('ORD-') && !String(orderId).startsWith('PU-')) {
+                        await db.collection('orders').doc(String(orderId)).update({ status: 'Picked Up / Completed' });
+                    }
+                } catch (e) {
+                    console.warn("Could not update order in Firestore:", e);
+                }
+
+                let localOrders = JSON.parse(localStorage.getItem('verba_orders')) || [];
+                localOrders = localOrders.map((o, idx) => {
+                    const fallbackId = o.id || o.docId || ('ORD-' + idx);
+                    if (String(o.id) === String(orderId) || String(o.docId) === String(orderId) || String(fallbackId) === String(orderId)) {
+                        return { ...o, status: 'Picked Up / Completed' };
+                    }
+                    return o;
+                });
+                localStorage.setItem('verba_orders', JSON.stringify(localOrders));
+                loadOrders();
+                showToast('Order resolved!');
+            };
+
+            // Strict Auth & Role Check
+            if (typeof auth !== 'undefined' && auth) {
+                auth.onAuthStateChanged(async (user) => {
+                    if (!user) {
+                        localStorage.removeItem('verba_logged_in');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    try {
+                        let uData = null;
+                        if (typeof db !== 'undefined' && db) {
+                            const userDoc = await db.collection('users').doc(user.uid).get();
+                            if (userDoc.exists) {
+                                uData = userDoc.data();
+                                if (uData.status === 'expelled' || uData.role === 'expelled') {
+                                    await auth.signOut();
+                                    localStorage.removeItem('verba_logged_in');
+                                    window.location.href = 'login.html';
+                                    return;
+                                }
+                            }
+                        }
+                        const isRootAdmin = window.isRootAdminEmail ? window.isRootAdminEmail(user.email) : false;
+                        const isAllowed = isRootAdmin || (uData && (uData.role === 'eboard' || uData.role === 'admin'));
+                        if (!isAllowed) {
+                            window.location.href = 'dashboard.html';
+                            return;
+                        }
+                        fetchApplications();
+                        loadEboardEvents();
+                        loadOrders();
+                    } catch (err) {
+                        console.error("Error verifying E-Board role:", err);
+                        window.location.href = 'login.html';
+                    }
+                });
+            } else {
+                localStorage.removeItem('verba_logged_in');
+                window.location.href = 'login.html';
+            }
         });
     </script>
 </body>

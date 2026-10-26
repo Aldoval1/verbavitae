@@ -152,7 +152,7 @@ body {
 
 .news-image {
     width: 40%;
-    background-image: url('cover2.png');
+    background-image: url('../images/cover2.png');
     background-size: cover;
     background-position: center;
     opacity: 0.8;

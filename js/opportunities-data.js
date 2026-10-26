@@ -255,7 +255,7 @@ No previous professional experience is required. Students interested in art, lit
 
 // Helper Functions
 function getOpportunityById(id) {
-    return VERBA_OPPORTUNITIES.find(o => o.id === id) || VERBA_OPPORTUNITIES[0];
+    return VERBA_OPPORTUNITIES.find(o => o.id === id) || null;
 }
 
 function getAllOpportunities() {

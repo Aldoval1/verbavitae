@@ -1,0 +1,55 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isRootAdminEmail() {
+      return isSignedIn() && request.auth.token.email != null && (
+        request.auth.token.email == 'aaronbacallao06@gmail.com' ||
+        request.auth.token.email.matches('.*@theverbavitae\\.org$')
+      );
+    }
+
+    function isStaff() {
+      return isSignedIn() && (
+        isRootAdminEmail() ||
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role in ['admin', 'eboard']
+      );
+    }
+
+    // Gallery albums & photos: public read, staff write (max 15MB images)
+    match /albums/{allPaths=**} {
+      allow read: if true;
+      allow write: if isStaff() && request.resource.size < 15 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+    }
+
+    // User profile avatars: public read, owner write (max 5MB images)
+    match /avatars/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isSignedIn() && request.auth.uid == userId && request.resource.size < 5 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+    }
+
+    // Application attachments: public/authenticated upload (max 15MB), staff read
+    match /applications/{appId}/{fileName} {
+      allow read: if isSignedIn();
+      allow create: if request.resource.size < 15 * 1024 * 1024;
+      allow update, delete: if isStaff();
+    }
+
+    // Print request PDFs: authenticated upload (max 20MB PDF), owner/staff read
+    match /print_requests/{userId}/{fileName} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isStaff());
+      allow create: if isSignedIn() && request.auth.uid == userId && request.resource.size < 20 * 1024 * 1024 && request.resource.contentType == 'application/pdf';
+      allow delete: if isStaff();
+    }
+
+    // Verba Voice image attachments
+    match /voices/{userId}/{fileName} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.auth.uid == userId && request.resource.size < 10 * 1024 * 1024 && request.resource.contentType.matches('image/.*');
+      allow delete: if isSignedIn() && (request.auth.uid == userId || isStaff());
+    }
+  }
+}

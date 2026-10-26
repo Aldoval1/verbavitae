@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Welcome to Verba Vitae">
+    <meta name="description" content="Explore photo albums from Verba Vitae events and community activities.">
     <title>Verba Vitae - Gallery</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/style.css?v=20260819">
@@ -14,7 +14,6 @@
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <!-- Note: We only need firestore to read public albums, no auth/storage needed for viewing -->
     <script src="js/firebase-init.js"></script>
     <style>
         .embed-mode .main-header,
@@ -123,7 +122,9 @@
                 </div>
             </div>
 
-            <div class="footer-right"></div>
+            <div class="footer-right">
+                <p style="font-size: 0.78rem; color: #cbd5e0; margin: 0;">&copy; 2026 Verba Vitae Organization. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
@@ -136,6 +137,25 @@
             burgerMenu.addEventListener('click', () => {
                 mobileNav.classList.toggle('active');
             });
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function sanitizeUrl(url) {
+            if (!url || typeof url !== 'string') return '';
+            const trimmed = url.trim();
+            if (/^https?:\/\//i.test(trimmed) || /^data:image\//i.test(trimmed) || /^[a-zA-Z0-9_./-]+$/.test(trimmed)) {
+                return trimmed;
+            }
+            return '';
         }
 
         function showEmptyState() {
@@ -156,13 +176,13 @@
 
             let html = '';
             albums.forEach(data => {
-                const cover = data.coverUrl || 'images/verbavitaelogoblue.png';
+                const cover = sanitizeUrl(data.coverUrl) || 'images/verbavitaelogoblue.png';
                 const title = data.title || 'Untitled Album';
                 html += `
-                    <a href="album.html?id=${data.id}" class="gallery-album-card" style="text-decoration:none; color:inherit; display:block; cursor:pointer;">
-                        <img src="${cover}" alt="${title}" class="album-cover" onerror="this.onerror=null; this.src='images/verbavitaelogoblue.png';">
+                    <a href="album.html?id=${encodeURIComponent(data.id)}" class="gallery-album-card" style="text-decoration:none; color:inherit; display:block; cursor:pointer;">
+                        <img src="${escapeHtml(cover)}" alt="${escapeHtml(title)}" class="album-cover" loading="lazy" onerror="this.onerror=null; this.src='images/verbavitaelogoblue.png';">
                         <div class="album-overlay">
-                            <h3 class="album-title">${title}</h3>
+                            <h3 class="album-title">${escapeHtml(title)}</h3>
                         </div>
                     </a>
                 `;

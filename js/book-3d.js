@@ -625,11 +625,17 @@
         window.addEventListener('touchmove', onPointerMove, { passive: true });
         window.addEventListener('touchend', onPointerUp);
 
-        // --- Animation Loop ---
+        // --- Animation Loop (pauses when off-screen or tab hidden) ---
         let startTime = performance.now();
+        let isBookVisible = true;
+        let rafId = null;
 
         function animate() {
-            requestAnimationFrame(animate);
+            if (!isBookVisible || document.hidden) {
+                rafId = null;
+                return;
+            }
+            rafId = requestAnimationFrame(animate);
 
             const elapsed = (performance.now() - startTime) * 0.001;
 
@@ -648,8 +654,28 @@
             renderer.render(scene, camera);
         }
 
+        function startLoop() {
+            if (!rafId && isBookVisible && !document.hidden) {
+                animate();
+            }
+        }
+
+        if ('IntersectionObserver' in window) {
+            const visObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    isBookVisible = entry.isIntersecting;
+                    if (isBookVisible) startLoop();
+                });
+            }, { threshold: 0.05 });
+            visObserver.observe(container);
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) startLoop();
+        });
+
         // Start render loop immediately
-        animate();
+        startLoop();
 
         // --- Resize Handler ---
         function handleResize() {

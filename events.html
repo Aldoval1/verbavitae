@@ -110,24 +110,6 @@
             <h1 class="events-page-title">UPCOMING EVENTS</h1>
             <div class="title-underline"></div>
         </div>
-
-        <!-- Live Mural Event Spotlight Banner -->
-        <div class="mural-spotlight-banner" style="background: linear-gradient(135deg, #1d0c8d 0%, #2b6cb0 60%, #d68b2d 100%); border-radius: 14px; padding: 22px 28px; color: #ffffff; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px; box-shadow: 0 10px 30px rgba(29, 12, 141, 0.25); border: 1.5px solid rgba(255, 255, 255, 0.2);">
-            <div style="max-width: 680px;">
-                <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(255, 255, 255, 0.2); padding: 4px 14px; border-radius: 20px; font-size: 0.76rem; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px;">
-                    <i class="fas fa-satellite-dish" style="color: #68d391;"></i> LIVE PROMETHEAN EVENT
-                </div>
-                <h2 style="font-size: 1.6rem; font-weight: 800; margin: 0 0 6px 0; letter-spacing: -0.5px;">Hispanic in 17 Syllables</h2>
-                <p style="font-size: 0.95rem; line-height: 1.5; color: #edf2f7; margin: 0;">
-                    Join our live collaborative mural! Use the Promethean digital stylus to handwrite your original 3-line haiku, accompany it with generative or searched cultural artwork, and contribute to an enormous 72" &times; 24" community print.
-                </p>
-            </div>
-            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                <a href="hispanicin17.html" class="btn-enter" style="background: #ffffff; color: #1d0c8d; font-weight: 800; padding: 14px 26px; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s;">
-                    <i class="fas fa-feather-pointed" style="color: #d68b2d;"></i> ENTER LIVE MURAL CANVAS
-                </a>
-            </div>
-        </div>
         
         <div class="events-container">
             <!-- Left Side: List -->
@@ -151,7 +133,7 @@
                                     <strong id="e-location" style="color: #2d3748; font-size: 0.95rem; line-height: 1.4; display: block;">Loading...</strong>
                                 </div>
                             </div>
-                            <a id="e-directions-btn" href="#" target="_blank" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #3182ce; color: #fff; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; white-space: nowrap;">
+                            <a id="e-directions-btn" href="#" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 6px; padding: 8px 16px; background: #3182ce; color: #fff; border-radius: 6px; text-decoration: none; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; white-space: nowrap;">
                                 <i class="fas fa-directions"></i> Get Directions
                             </a>
                         </div>
@@ -188,7 +170,9 @@
                 </div>
             </div>
 
-            <div class="footer-right"></div>
+            <div class="footer-right">
+                <p style="font-size: 0.78rem; color: #cbd5e0; margin: 0;">&copy; 2026 Verba Vitae Organization. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
@@ -197,20 +181,24 @@
         const burgerMenu = document.getElementById('burger-menu');
         const mobileNav = document.getElementById('mobile-nav');
         
-        burgerMenu.addEventListener('click', () => {
-            mobileNav.classList.toggle('active');
-        });
+        if (burgerMenu && mobileNav) {
+            burgerMenu.addEventListener('click', () => {
+                mobileNav.classList.toggle('active');
+            });
+        }
 
         let eventsData = [];
         let currentIndex = 0;
         let currentUser = null;
+        let userRegisteredEventIds = new Set();
+        let allEventRegistrations = [];
 
         function isUserLoggedIn() {
-            return !!(currentUser || (typeof auth !== 'undefined' && auth && auth.currentUser) || localStorage.getItem('verba_logged_in') === 'true');
+            return !!(currentUser || (typeof auth !== 'undefined' && auth && auth.currentUser));
         }
 
         if (typeof auth !== 'undefined' && auth) {
-            auth.onAuthStateChanged(user => {
+            auth.onAuthStateChanged(async user => {
                 currentUser = user;
                 if (user) {
                     localStorage.setItem('verba_logged_in', 'true');
@@ -219,6 +207,20 @@
                         b.textContent = 'DASHBOARD';
                         b.href = 'dashboard.html';
                     });
+                    if (typeof db !== 'undefined' && db) {
+                        try {
+                            const regSnap = await db.collection('users').doc(user.uid).collection('registered_events').get();
+                            regSnap.forEach(doc => {
+                                userRegisteredEventIds.add(doc.id);
+                                const d = doc.data();
+                                if (d && d.eventId) userRegisteredEventIds.add(d.eventId);
+                            });
+                        } catch (e) {
+                            console.warn('Could not fetch user registered_events:', e);
+                        }
+                    }
+                } else {
+                    userRegisteredEventIds.clear();
                 }
                 if (eventsData.length > 0) {
                     selectEvent(currentIndex);
@@ -230,7 +232,7 @@
 
         function escapeHtml(text) {
             if (!text) return '';
-            return text
+            return String(text)
                 .replace(/&/g, "&amp;")
                 .replace(/</g, "&lt;")
                 .replace(/>/g, "&gt;")
@@ -246,6 +248,13 @@
                     snapshot.forEach(doc => {
                         fetched.push({ id: doc.id, ...doc.data() });
                     });
+                    try {
+                        const regSnap = await db.collection('event_registrations').get();
+                        allEventRegistrations = [];
+                        regSnap.forEach(doc => allEventRegistrations.push({ id: doc.id, ...doc.data() }));
+                    } catch (regErr) {
+                        console.warn("Could not read event_registrations collection:", regErr);
+                    }
                 }
             } catch (err) {
                 console.warn("Firestore fetch events warning:", err);
@@ -258,6 +267,8 @@
                 }
             });
 
+            const localRegs = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+
             eventsData = fetched.map(ev => {
                 let day = "12";
                 let month = "AUG";
@@ -268,8 +279,9 @@
                         month = monthNames[parseInt(parts[1], 10) - 1] || "AUG";
                     }
                 }
-                const allRegs = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
-                const regCount = allRegs.filter(r => r.id === ev.id || r.title === ev.title).length;
+                const firestoreRegCount = allEventRegistrations.filter(r => r.eventId === ev.id || r.id === ev.id || r.eventTitle === ev.title).length;
+                const localRegCount = localRegs.filter(r => r.id === ev.id || r.title === ev.title).length;
+                const regCount = Math.max(firestoreRegCount, localRegCount);
                 const maxSlots = parseInt(ev.maxSlots, 10) || 20;
                 const slotsLeft = Math.max(0, maxSlots - regCount);
                 const address = ev.location || 'Miami, FL';
@@ -298,7 +310,7 @@
                         <div class="event-meta-boxes">
                             <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: #1976d2; font-size: 0.95rem;">
                                 <i class="fas fa-award" style="font-size: 1.1rem;"></i> 
-                                <span>Volunteer Service Hours Granted: <strong>${ev.serviceHours || 0} Hours</strong></span>
+                                <span>Volunteer Service Hours Granted: <strong>${escapeHtml(ev.serviceHours || 0)} Hours</strong></span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: ${slotsLeft > 0 ? '#2b6cb0' : '#e53e3e'}; font-size: 0.95rem;">
                                 <i class="fas fa-users" style="font-size: 1.1rem;"></i> 
@@ -336,16 +348,16 @@
                 
                 item.innerHTML = `
                     <div class="event-date">
-                        <span class="day">${ev.day}</span>
-                        <span class="month">${ev.month}</span>
+                        <span class="day">${escapeHtml(ev.day)}</span>
+                        <span class="month">${escapeHtml(ev.month)}</span>
                     </div>
                     <div class="event-brief">
-                        <h4>${ev.title}</h4>
-                        <div class="event-card-location" title="${ev.location}">
+                        <h4>${escapeHtml(ev.title)}</h4>
+                        <div class="event-card-location" title="${escapeHtml(ev.location)}">
                             <i class="fas fa-map-marker-alt" style="color: #e53e3e; flex-shrink: 0; font-size: 0.78rem;"></i>
-                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${shortLocation}</span>
+                            <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(shortLocation)}</span>
                         </div>
-                        <p>${ev.brief}</p>
+                        <p>${escapeHtml(ev.brief)}</p>
                     </div>
                 `;
                 listContainer.appendChild(item);
@@ -353,11 +365,13 @@
         }
 
         function isEventRegistered(eventId) {
+            if (userRegisteredEventIds.has(eventId)) return true;
+            const uid = currentUser ? currentUser.uid : '';
             const registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
-            return registered.some(r => r.id === eventId);
+            return registered.some(r => r.id === eventId && (!uid || !r.userId || r.userId === uid));
         }
 
-        function registerForEvent(eventId) {
+        async function registerForEvent(eventId) {
             if (!isUserLoggedIn()) {
                 alert('You must be registered and logged into Verba Vitae to sign up for events.');
                 window.location.href = 'login.html';
@@ -367,11 +381,14 @@
             const ev = eventsData.find(e => e.id === eventId);
             if (!ev) return;
 
-            let registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
-            if (!registered.some(r => r.id === eventId)) {
-                const userEmail = currentUser ? currentUser.email : (localStorage.getItem('verba_user_email') || '');
-                const userUid = currentUser ? currentUser.uid : '';
+            const userEmail = currentUser ? currentUser.email : (localStorage.getItem('verba_user_email') || '');
+            const userUid = currentUser ? currentUser.uid : '';
+            const userName = (currentUser && currentUser.displayName) || localStorage.getItem('verba_user_name') || userEmail;
 
+            userRegisteredEventIds.add(ev.id);
+
+            let registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+            if (!registered.some(r => r.id === eventId && (!userUid || r.userId === userUid))) {
                 registered.push({
                     id: ev.id,
                     title: ev.title,
@@ -380,23 +397,40 @@
                     location: ev.location,
                     serviceHours: ev.serviceHours,
                     userEmail: userEmail,
+                    userName: userName,
                     userId: userUid,
                     registeredAt: new Date().toISOString()
                 });
                 localStorage.setItem('verba_registered_events', JSON.stringify(registered));
+            }
 
-                if (typeof db !== 'undefined' && db && userUid) {
-                    db.collection('users').doc(userUid).collection('registered_events').doc(ev.id).set({
-                        eventId: ev.id,
-                        eventTitle: ev.title,
-                        date: ev.dateStr,
-                        time: ev.time,
-                        location: ev.location,
-                        serviceHours: ev.serviceHours,
-                        registeredAt: firebase.firestore.FieldValue.serverTimestamp()
-                    }, { merge: true }).catch(err => console.warn("Firestore event registration warning:", err));
+            if (typeof db !== 'undefined' && db && userUid) {
+                const payload = {
+                    eventId: ev.id,
+                    id: ev.id,
+                    eventTitle: ev.title,
+                    title: ev.title,
+                    date: ev.dateStr,
+                    time: ev.time,
+                    location: ev.location,
+                    serviceHours: ev.serviceHours,
+                    userId: userUid,
+                    userEmail: userEmail,
+                    userName: userName,
+                    registeredAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                try {
+                    await Promise.all([
+                        db.collection('users').doc(userUid).collection('registered_events').doc(ev.id).set(payload, { merge: true }),
+                        db.collection('event_registrations').doc(`${userUid}_${ev.id}`).set(payload, { merge: true })
+                    ]);
+                } catch (err) {
+                    console.warn("Firestore event registration warning:", err);
                 }
             }
+
+            ev.regCount = (ev.regCount || 0) + 1;
+            ev.slotsLeft = Math.max(0, ev.maxSlots - ev.regCount);
 
             alert(`Successfully registered for "${ev.title}"! You will earn ${ev.serviceHours} volunteer service hours upon completion.`);
             selectEvent(currentIndex);
@@ -427,7 +461,8 @@
                 detailMarker.setLatLng([lat, lng]);
             }
 
-            detailMarker.bindPopup(`<b>${event.title}</b><br><i class="fas fa-map-marker-alt"></i> ${event.location}`).openPopup();
+            const popupHtml = `<b>${escapeHtml(event.title)}</b><br><i class="fas fa-map-marker-alt"></i> ${escapeHtml(event.location)}`;
+            detailMarker.bindPopup(popupHtml).openPopup();
 
             // If coordinates were not saved, try geocoding address on the fly
             if (!event.lat || !event.lng) {
@@ -439,7 +474,7 @@
                             const newLng = parseFloat(data[0].lon);
                             detailMap.setView([newLat, newLng], 15);
                             detailMarker.setLatLng([newLat, newLng]);
-                            detailMarker.bindPopup(`<b>${event.title}</b><br><i class="fas fa-map-marker-alt"></i> ${event.location}`).openPopup();
+                            detailMarker.bindPopup(popupHtml).openPopup();
                         }
                     })
                     .catch(e => console.warn(e));
@@ -493,7 +528,7 @@
                 btn.style.display = 'inline-block';
                 
                 if (!isUserLoggedIn()) {
-                    btn.innerHTML = `<i class="fas fa-lock"></i> LOG IN TO REGISTER (${event.serviceHours} HOURS)`;
+                    btn.innerHTML = `<i class="fas fa-lock"></i> LOG IN TO REGISTER (${escapeHtml(event.serviceHours)} HOURS)`;
                     btn.style.backgroundColor = '#d97706';
                     btn.onclick = (e) => {
                         e.preventDefault();

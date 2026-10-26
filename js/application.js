@@ -11,7 +11,17 @@
     const totalSteps = 5;
     let selectedOpportunity = null;
     let selectedRoles = [];
-    let uploadedFiles = {}; // { questionId: { name, size, base64 } }
+    let uploadedFiles = {}; // { questionId: { name, size, rawBytes, type, base64 } }
+
+    function escapeHtml(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
 
     // Init on DOM ready
     document.addEventListener('DOMContentLoaded', () => {
@@ -37,7 +47,7 @@
         // Render Step 2 Role Cards
         renderRoleSelectionCards();
 
-        // Setup Step 1 Button
+        // Setup Step 1 Button & Tracker
         updateStepTracker();
     });
 
@@ -64,16 +74,16 @@
         if (!container || !selectedOpportunity.roles) return;
 
         container.innerHTML = selectedOpportunity.roles.map(role => `
-            <div class="role-select-card" id="roleCard_${role.id}" onclick="toggleRoleSelection('${role.id}')">
+            <div class="role-select-card" id="roleCard_${escapeHtml(role.id)}" onclick="toggleRoleSelection('${escapeHtml(role.id)}')">
                 <div class="role-select-check">
                     <i class="fas fa-check"></i>
                 </div>
                 <div class="role-select-info">
                     <h4 class="role-select-title">
-                        <i class="fas ${role.icon || 'fa-star'}"></i>
-                        ${role.title}
+                        <i class="fas ${escapeHtml(role.icon || 'fa-star')}"></i>
+                        ${escapeHtml(role.title)}
                     </h4>
-                    <p class="role-select-desc">${role.shortDesc}</p>
+                    <p class="role-select-desc">${escapeHtml(role.shortDesc)}</p>
                 </div>
             </div>
         `).join('');
@@ -111,10 +121,10 @@
             const questionsHtml = questions.map(q => renderSingleQuestionField(q, roleId)).join('');
 
             return `
-                <div class="role-question-group" data-role="${roleId}">
+                <div class="role-question-group" data-role="${escapeHtml(roleId)}">
                     <div class="role-group-header">
                         <span class="role-group-badge">Role Specific</span>
-                        <h3 class="role-group-title"><i class="fas ${role ? role.icon : 'fa-check'}"></i> ${role ? role.title : roleId} Questions</h3>
+                        <h3 class="role-group-title"><i class="fas ${escapeHtml(role ? role.icon : 'fa-check')}"></i> ${escapeHtml(role ? role.title : roleId)} Questions</h3>
                     </div>
                     <div class="role-group-fields">
                         ${questionsHtml}
@@ -126,12 +136,14 @@
 
     function renderSingleQuestionField(q, roleId) {
         const fieldName = `rq_${roleId}_${q.id}`;
+        const safeLabel = escapeHtml(q.label);
+        const safePlaceholder = escapeHtml(q.placeholder || '');
 
         if (q.type === 'textarea') {
             return `
                 <div class="form-group">
-                    <label for="${fieldName}">${q.label} ${q.required ? '<span class="required">*</span>' : ''}</label>
-                    <textarea class="form-control" id="${fieldName}" name="${fieldName}" ${q.required ? 'required' : ''} placeholder="${q.placeholder || ''}"></textarea>
+                    <label for="${fieldName}">${safeLabel} ${q.required ? '<span class="required">*</span>' : ''}</label>
+                    <textarea class="form-control" id="${fieldName}" name="${fieldName}" ${q.required ? 'required' : ''} placeholder="${safePlaceholder}"></textarea>
                 </div>
             `;
         }
@@ -139,17 +151,17 @@
         if (q.type === 'text' || q.type === 'url') {
             return `
                 <div class="form-group">
-                    <label for="${fieldName}">${q.label} ${q.required ? '<span class="required">*</span>' : ''}</label>
-                    <input type="${q.type}" class="form-control" id="${fieldName}" name="${fieldName}" ${q.required ? 'required' : ''} placeholder="${q.placeholder || ''}">
+                    <label for="${fieldName}">${safeLabel} ${q.required ? '<span class="required">*</span>' : ''}</label>
+                    <input type="${q.type}" class="form-control" id="${fieldName}" name="${fieldName}" ${q.required ? 'required' : ''} placeholder="${safePlaceholder}">
                 </div>
             `;
         }
 
         if (q.type === 'select') {
-            const optionsHtml = (q.options || []).map(opt => `<option value="${opt}">${opt}</option>`).join('');
+            const optionsHtml = (q.options || []).map(opt => `<option value="${escapeHtml(opt)}">${escapeHtml(opt)}</option>`).join('');
             return `
                 <div class="form-group">
-                    <label for="${fieldName}">${q.label} ${q.required ? '<span class="required">*</span>' : ''}</label>
+                    <label for="${fieldName}">${safeLabel} ${q.required ? '<span class="required">*</span>' : ''}</label>
                     <select class="form-control" id="${fieldName}" name="${fieldName}" ${q.required ? 'required' : ''}>
                         <option value="">-- Please select an option --</option>
                         ${optionsHtml}
@@ -159,15 +171,15 @@
         }
 
         if (q.type === 'checkboxes') {
-            const optionsHtml = (q.options || []).map((opt, i) => `
+            const optionsHtml = (q.options || []).map((opt) => `
                 <label class="checkbox-option-label">
-                    <input type="checkbox" name="${fieldName}[]" value="${opt}">
-                    <span>${opt}</span>
+                    <input type="checkbox" name="${fieldName}[]" value="${escapeHtml(opt)}">
+                    <span>${escapeHtml(opt)}</span>
                 </label>
             `).join('');
             return `
                 <div class="form-group">
-                    <label>${q.label} ${q.required ? '<span class="required">*</span>' : ''}</label>
+                    <label>${safeLabel} ${q.required ? '<span class="required">*</span>' : ''}</label>
                     <div class="checkbox-options-grid">
                         ${optionsHtml}
                     </div>
@@ -178,12 +190,12 @@
         if (q.type === 'file') {
             return `
                 <div class="form-group">
-                    <label>${q.label} ${q.required ? '<span class="required">*</span>' : ''}</label>
+                    <label>${safeLabel} ${q.required ? '<span class="required">*</span>' : ''}</label>
                     <div class="file-upload-box" onclick="document.getElementById('${fieldName}').click()">
                         <i class="fas fa-cloud-upload-alt"></i>
                         <div class="file-upload-text">Click to choose a file from your device</div>
-                        <div class="file-upload-subtext">${q.accept || 'Images or videos up to 10MB'}</div>
-                        <input type="file" id="${fieldName}" accept="${q.accept || '*'}" style="display:none;" onchange="handleFileUpload('${fieldName}', this)">
+                        <div class="file-upload-subtext">${escapeHtml(q.accept || 'Images or videos up to 10MB')}</div>
+                        <input type="file" id="${fieldName}" accept="${escapeHtml(q.accept || '*')}" style="display:none;" onchange="handleFileUpload('${fieldName}', this)">
                         <div id="preview_${fieldName}"></div>
                     </div>
                 </div>
@@ -209,6 +221,7 @@
             uploadedFiles[fieldId] = {
                 name: file.name,
                 size: (file.size / 1024).toFixed(1) + ' KB',
+                rawBytes: file.size,
                 type: file.type,
                 base64: e.target.result
             };
@@ -216,7 +229,7 @@
                 previewEl.innerHTML = `
                     <div class="file-preview-pill">
                         <i class="fas fa-file-check" style="color: #38a169;"></i>
-                        <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB)
+                        <strong>${escapeHtml(file.name)}</strong> (${(file.size / 1024).toFixed(1)} KB)
                     </div>
                 `;
             }
@@ -229,18 +242,18 @@
         const container = document.getElementById('reviewSummaryContent');
         if (!container) return;
 
-        const name = document.getElementById('applicantName').value;
-        const email = document.getElementById('applicantEmail').value;
-        const campus = document.getElementById('applicantCampus').value;
-        const major = document.getElementById('applicantMajor').value;
-        const year = document.getElementById('applicantYear').value;
-        const phone = document.getElementById('applicantPhone').value || 'Not provided';
-        const availability = document.getElementById('applicantAvailability').value;
+        const name = escapeHtml(document.getElementById('applicantName').value);
+        const email = escapeHtml(document.getElementById('applicantEmail').value);
+        const campus = escapeHtml(document.getElementById('applicantCampus').value);
+        const major = escapeHtml(document.getElementById('applicantMajor').value);
+        const year = escapeHtml(document.getElementById('applicantYear').value);
+        const phone = escapeHtml(document.getElementById('applicantPhone').value || 'Not provided');
+        const availability = escapeHtml(document.getElementById('applicantAvailability').value);
 
-        const roleTitles = selectedRoles.map(rid => {
+        const roleTitles = escapeHtml(selectedRoles.map(rid => {
             const r = selectedOpportunity.roles.find(item => item.id === rid);
             return r ? r.title : rid;
-        }).join(', ');
+        }).join(', '));
 
         let roleAnswersHtml = '';
         selectedRoles.forEach(roleId => {
@@ -260,17 +273,18 @@
                     const el = document.getElementById(fieldName);
                     val = el ? el.value.trim() : '';
                 }
+                const safeVal = val ? escapeHtml(val) : '<em>Not provided</em>';
                 answersForRole += `
                     <div style="margin-bottom: 8px;">
-                        <span style="color: #718096; font-size: 0.85rem; font-weight: 600;">${q.label}</span>
-                        <div style="font-weight: 700; color: #1a202c; font-size: 0.9rem; margin-top: 2px;">${val || '<em>Not provided</em>'}</div>
+                        <span style="color: #718096; font-size: 0.85rem; font-weight: 600;">${escapeHtml(q.label)}</span>
+                        <div style="font-weight: 700; color: #1a202c; font-size: 0.9rem; margin-top: 2px;">${safeVal}</div>
                     </div>
                 `;
             });
 
             roleAnswersHtml += `
                 <div class="review-section">
-                    <div class="review-title">${role ? role.title : roleId} Responses</div>
+                    <div class="review-title">${escapeHtml(role ? role.title : roleId)} Responses</div>
                     ${answersForRole}
                 </div>
             `;
@@ -289,7 +303,7 @@
 
             <div class="review-section">
                 <div class="review-title">Opportunity & Selected Roles</div>
-                <div class="review-row"><span class="review-label">Opportunity:</span><span class="review-value">${selectedOpportunity.title}</span></div>
+                <div class="review-row"><span class="review-label">Opportunity:</span><span class="review-value">${escapeHtml(selectedOpportunity.title)}</span></div>
                 <div class="review-row"><span class="review-label">Roles Applied For:</span><span class="review-value" style="color: var(--app-primary);">${roleTitles}</span></div>
             </div>
 
@@ -351,6 +365,15 @@
             const percent = ((currentStep - 1) / (totalSteps - 1)) * 100;
             progressEl.style.width = `${percent}%`;
         }
+
+        // Toggle step navigation buttons cleanly
+        const btnPrev = document.getElementById('btnPrevStep');
+        const btnNext = document.getElementById('btnNextStep');
+        const btnSubmit = document.getElementById('btnSubmitApp');
+
+        if (btnPrev) btnPrev.style.display = currentStep === 1 ? 'none' : 'inline-flex';
+        if (btnNext) btnNext.style.display = currentStep === totalSteps ? 'none' : 'inline-flex';
+        if (btnSubmit) btnSubmit.style.display = currentStep === totalSteps ? 'inline-flex' : 'none';
     }
 
     function validateStep(step) {
@@ -425,6 +448,7 @@
             submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Submitting...`;
         }
 
+        const appId = 'app_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
         const name = document.getElementById('applicantName').value.trim();
         const email = document.getElementById('applicantEmail').value.trim().toLowerCase();
         const studentId = (document.getElementById('applicantStudentId').value || '').trim();
@@ -438,31 +462,56 @@
         const consolidatedPortfolio = (document.getElementById('consolidatedPortfolio').value || '').trim();
         const finalComments = (document.getElementById('finalComments').value || '').trim();
 
-        // Compile role answers
+        const storageInst = (typeof storage !== 'undefined' && storage)
+            ? storage
+            : (typeof firebase !== 'undefined' && typeof firebase.storage === 'function' ? firebase.storage() : null);
+
+        // Compile role answers (uploading files to Firebase Storage when available)
         const roleAnswers = {};
-        selectedRoles.forEach(roleId => {
+        for (const roleId of selectedRoles) {
             roleAnswers[roleId] = {};
             const questions = (selectedOpportunity.customQuestions && selectedOpportunity.customQuestions[roleId]) || [];
-            questions.forEach(q => {
+            for (const q of questions) {
                 const fieldName = `rq_${roleId}_${q.id}`;
                 if (q.type === 'checkboxes') {
                     const checkedBoxes = Array.from(document.querySelectorAll(`input[name="${fieldName}[]"]:checked`));
                     roleAnswers[roleId][q.id] = checkedBoxes.map(cb => cb.value);
                 } else if (q.type === 'file') {
-                    roleAnswers[roleId][q.id] = uploadedFiles[fieldName] ? {
-                        name: uploadedFiles[fieldName].name,
-                        size: uploadedFiles[fieldName].size,
-                        base64: uploadedFiles[fieldName].base64
-                    } : null;
+                    const fileObj = uploadedFiles[fieldName];
+                    if (fileObj) {
+                        let fileEntry = {
+                            name: fileObj.name,
+                            size: fileObj.size,
+                            type: fileObj.type
+                        };
+                        if (storageInst && fileObj.base64) {
+                            try {
+                                const safeFileName = fileObj.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                                const snap = await storageInst.ref('applications/' + appId + '/' + safeFileName).putString(fileObj.base64, 'data_url');
+                                fileEntry.fileUrl = await snap.ref.getDownloadURL();
+                            } catch (uploadErr) {
+                                console.warn('Firebase Storage upload fallback:', uploadErr);
+                                // Only keep base64 inline if < 400KB so Firestore 1 MiB limit is never exceeded
+                                if (fileObj.rawBytes && fileObj.rawBytes < 400 * 1024) {
+                                    fileEntry.base64 = fileObj.base64;
+                                }
+                            }
+                        } else if (fileObj.rawBytes && fileObj.rawBytes < 400 * 1024) {
+                            fileEntry.base64 = fileObj.base64;
+                        }
+                        roleAnswers[roleId][q.id] = fileEntry;
+                    } else {
+                        roleAnswers[roleId][q.id] = null;
+                    }
                 } else {
                     const el = document.getElementById(fieldName);
                     roleAnswers[roleId][q.id] = el ? el.value.trim() : '';
                 }
-            });
-        });
+            }
+        }
 
         const newApplication = {
-            id: 'app_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+            id: appId,
             opportunityId: selectedOpportunity.id,
             opportunityTitle: selectedOpportunity.title,
             applicant: {
@@ -488,13 +537,30 @@
             createdAt: new Date().toISOString()
         };
 
-        // 1. Save to LocalStorage Backup
+        // 1. Save to LocalStorage Backup (with QuotaExceededError fallback stripping inline base64)
         try {
             const savedApps = JSON.parse(localStorage.getItem('verba_submitted_applications') || '[]');
             savedApps.unshift(newApplication);
             localStorage.setItem('verba_submitted_applications', JSON.stringify(savedApps));
         } catch (err) {
-            console.warn('LocalStorage error:', err);
+            console.warn('LocalStorage quota warning, saving lightweight copy:', err);
+            try {
+                const lightCopy = JSON.parse(JSON.stringify(newApplication));
+                if (lightCopy.roleAnswers) {
+                    Object.values(lightCopy.roleAnswers).forEach(rObj => {
+                        Object.values(rObj).forEach(ans => {
+                            if (ans && typeof ans === 'object' && ans.base64) {
+                                delete ans.base64;
+                            }
+                        });
+                    });
+                }
+                const savedApps = JSON.parse(localStorage.getItem('verba_submitted_applications') || '[]');
+                savedApps.unshift(lightCopy);
+                localStorage.setItem('verba_submitted_applications', JSON.stringify(savedApps));
+            } catch (e2) {
+                console.warn('LocalStorage unavailable:', e2);
+            }
         }
 
         // 2. Save to Firestore (if online & connected)

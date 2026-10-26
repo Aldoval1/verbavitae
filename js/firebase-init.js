@@ -18,3 +18,21 @@ if (!firebase.apps.length) {
 const auth = typeof firebase.auth === 'function' ? firebase.auth() : null;
 const db = typeof firebase.firestore === 'function' ? firebase.firestore() : null;
 const storage = typeof firebase.storage === 'function' ? firebase.storage() : null;
+
+// Global security & admin helper functions
+window.isRootAdminEmail = function(email) {
+    if (!email) return false;
+    const e = String(email).trim().toLowerCase();
+    return e === 'aaronbacallao06@gmail.com' || e.endsWith('@theverbavitae.org');
+};
+
+window.escapeHtml = function(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
+

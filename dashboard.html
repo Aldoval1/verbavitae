@@ -12,6 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
     <script src="js/firebase-init.js"></script>
 </head>
 <body>
@@ -41,7 +42,7 @@
                 <span class="news-badge">LATEST NEWS</span>
                 <h1 id="bannerTitle">Welcome to your new Dashboard!</h1>
                 <p id="bannerText">Stay updated with the latest community events, new book arrivals, and exclusive study group sessions starting this week.</p>
-                <button class="news-btn">Read More</button>
+                <button class="news-btn" onclick="window.location.href='news.html'">Read More</button>
             </div>
             <div class="news-image"></div>
         </section>
@@ -211,49 +212,65 @@
             }
 
             // Protect Dashboard Route & Sync user profile picture from Firebase
-            const isLoggedIn = localStorage.getItem('verba_logged_in');
             if (auth) {
                 auth.onAuthStateChanged(async (user) => {
-                    if (!user && isLoggedIn !== 'true') {
+                    if (!user) {
+                        localStorage.removeItem('verba_logged_in');
                         window.location.href = 'login.html';
                         return;
                     }
-                    if (user) {
-                        try {
-                            const userPic = localStorage.getItem('verba_profile_pic_' + user.uid) || user.photoURL;
-                            if (userPic && !userPic.includes('cover1.png')) {
-                                applyProfilePic(userPic);
-                            }
-                            if (typeof db !== 'undefined' && db) {
-                                const userDoc = await db.collection('users').doc(user.uid).get();
-                                if (userDoc.exists) {
-                                    const uData = userDoc.data();
-                                    if (uData.status === 'expelled' || uData.role === 'expelled') {
-                                        alert('Your account has been expelled from Verba Vitae. Access is revoked.');
-                                        await auth.signOut();
-                                        localStorage.removeItem('verba_logged_in');
-                                        window.location.href = 'login.html';
-                                        return;
-                                    }
-                                    if (uData.profilePic && !uData.profilePic.includes('cover1.png')) {
-                                        applyProfilePic(uData.profilePic);
+                    try {
+                        if (user.email) {
+                            localStorage.setItem('verba_user_email', user.email);
+                        }
+                        if (user.displayName) {
+                            localStorage.setItem('verba_user_name', user.displayName);
+                        }
+                        const userPic = localStorage.getItem('verba_profile_pic_' + user.uid) || user.photoURL;
+                        if (userPic && !userPic.includes('cover1.png')) {
+                            applyProfilePic(userPic);
+                        }
+                        if (typeof db !== 'undefined' && db) {
+                            const userDoc = await db.collection('users').doc(user.uid).get();
+                            if (userDoc.exists) {
+                                const uData = userDoc.data();
+                                if (uData.status === 'expelled' || uData.role === 'expelled') {
+                                    alert('Your account has been expelled from Verba Vitae. Access is revoked.');
+                                    await auth.signOut();
+                                    localStorage.removeItem('verba_logged_in');
+                                    localStorage.removeItem('verba_user_name');
+                                    localStorage.removeItem('verba_user_email');
+                                    window.location.href = 'login.html';
+                                    return;
+                                }
+                                const resolvedName = uData.displayName || uData.fullName || ((uData.firstName || uData.lastName) ? `${uData.firstName || ''} ${uData.lastName || ''}`.trim() : '') || user.displayName || (user.email ? user.email.split('@')[0] : 'Student Member');
+                                localStorage.setItem('verba_user_name', resolvedName);
+                                if (uData.email || user.email) {
+                                    localStorage.setItem('verba_user_email', uData.email || user.email);
+                                }
+                                if (uData.profilePic && !uData.profilePic.includes('cover1.png')) {
+                                    applyProfilePic(uData.profilePic);
+                                    try {
                                         localStorage.setItem('verba_profile_pic_' + user.uid, uData.profilePic);
                                         localStorage.setItem('verba_profile_pic', uData.profilePic);
-                                    } else if (!userPic) {
-                                        applyProfilePic(null);
-                                    }
+                                    } catch (e) {}
+                                } else if (!userPic) {
+                                    applyProfilePic(null);
                                 }
+                            } else if (!localStorage.getItem('verba_user_name') && user.email) {
+                                localStorage.setItem('verba_user_name', user.displayName || user.email.split('@')[0]);
                             }
-                        } catch (e) {
-                            console.warn("Could not load user profile pic from Firestore:", e);
                         }
+                    } catch (e) {
+                        console.warn("Could not load user profile pic from Firestore:", e);
                     }
+                    renderRegisteredEvents();
                 });
-            } else if (isLoggedIn !== 'true') {
+            } else {
                 window.location.href = 'login.html';
             }
 
-            // Load saved banner
+            // Load saved banner (with Firestore sync + localStorage fallback)
             const savedBannerTitle = localStorage.getItem('verba_banner_title');
             const savedBannerText = localStorage.getItem('verba_banner_text');
             if (savedBannerTitle) {
@@ -261,6 +278,21 @@
             }
             if (savedBannerText) {
                 document.getElementById('bannerText').textContent = savedBannerText;
+            }
+            if (typeof db !== 'undefined' && db) {
+                db.collection('settings').doc('banner').get().then(doc => {
+                    if (doc.exists) {
+                        const bData = doc.data();
+                        if (bData.title) {
+                            document.getElementById('bannerTitle').textContent = bData.title;
+                            localStorage.setItem('verba_banner_title', bData.title);
+                        }
+                        if (bData.text) {
+                            document.getElementById('bannerText').textContent = bData.text;
+                            localStorage.setItem('verba_banner_text', bData.text);
+                        }
+                    }
+                }).catch(e => console.warn("Could not load global banner from Firestore:", e));
             }
 
             // Modal Logic
@@ -277,7 +309,7 @@
                 modal.style.display = 'none';
             });
 
-            // File Upload Listener
+            // File Upload Listener (with offscreen canvas compression to max 256x256 JPEG 0.8)
             let uploadedFileBase64 = null;
             const fileInput = document.getElementById('profilePicFileInput');
             const fileNameDisplay = document.getElementById('fileNameDisplay');
@@ -288,7 +320,32 @@
                         fileNameDisplay.textContent = file.name;
                         const reader = new FileReader();
                         reader.onload = function(evt) {
-                            uploadedFileBase64 = evt.target.result;
+                            const rawDataUrl = evt.target.result;
+                            const img = new Image();
+                            img.onload = function() {
+                                const maxDim = 256;
+                                let w = img.width;
+                                let h = img.height;
+                                if (w > maxDim || h > maxDim) {
+                                    if (w > h) {
+                                        h = Math.round((h * maxDim) / w);
+                                        w = maxDim;
+                                    } else {
+                                        w = Math.round((w * maxDim) / h);
+                                        h = maxDim;
+                                    }
+                                }
+                                const canvas = document.createElement('canvas');
+                                canvas.width = w;
+                                canvas.height = h;
+                                const ctx = canvas.getContext('2d');
+                                ctx.drawImage(img, 0, 0, w, h);
+                                uploadedFileBase64 = canvas.toDataURL('image/jpeg', 0.8);
+                            };
+                            img.onerror = function() {
+                                uploadedFileBase64 = rawDataUrl;
+                            };
+                            img.src = rawDataUrl;
                         };
                         reader.readAsDataURL(file);
                     }
@@ -297,21 +354,33 @@
 
             // Update Picture
             document.getElementById('updatePicBtn').addEventListener('click', async () => {
-                const url = uploadedFileBase64 || document.getElementById('profilePicInput').value.trim();
+                let url = uploadedFileBase64 || document.getElementById('profilePicInput').value.trim();
                 if (!url) {
                     alert('Please enter an image URL or choose a file.');
                     return;
                 }
-                applyProfilePic(url);
-                localStorage.setItem('verba_profile_pic', url);
 
                 const currentUser = auth ? auth.currentUser : null;
-                if (currentUser) {
-                    localStorage.setItem('verba_profile_pic_' + currentUser.uid, url);
+                if (currentUser && uploadedFileBase64 && typeof storage !== 'undefined' && storage) {
                     try {
-                        if (currentUser.updateProfile) {
-                            await currentUser.updateProfile({ photoURL: url });
-                        }
+                        const avatarRef = storage.ref(`avatars/${currentUser.uid}/profile.jpg`);
+                        await avatarRef.putString(uploadedFileBase64, 'data_url');
+                        url = await avatarRef.getDownloadURL();
+                    } catch (storageErr) {
+                        console.warn("Could not upload avatar to Storage, using compressed data URL:", storageErr);
+                    }
+                }
+
+                applyProfilePic(url);
+                try {
+                    localStorage.setItem('verba_profile_pic', url);
+                } catch (e) {}
+
+                if (currentUser) {
+                    try {
+                        localStorage.setItem('verba_profile_pic_' + currentUser.uid, url);
+                    } catch (e) {}
+                    try {
                         if (typeof db !== 'undefined' && db) {
                             await db.collection('users').doc(currentUser.uid).set({
                                 profilePic: url
@@ -319,6 +388,13 @@
                         }
                     } catch (err) {
                         console.warn("Could not sync profile picture to Firestore:", err);
+                    }
+                    if (currentUser.updateProfile && url.length <= 2000) {
+                        try {
+                            await currentUser.updateProfile({ photoURL: url });
+                        } catch (authProfileErr) {
+                            console.warn("Could not update Firebase Auth photoURL:", authProfileErr);
+                        }
                     }
                 }
                 alert('Profile picture updated successfully!');
@@ -365,6 +441,8 @@
             // Logout Logic
             document.getElementById('logoutBtn').addEventListener('click', () => {
                 localStorage.removeItem('verba_logged_in');
+                localStorage.removeItem('verba_user_name');
+                localStorage.removeItem('verba_user_email');
                 if (auth) auth.signOut();
                 window.location.href = 'login.html';
             });
@@ -381,6 +459,11 @@
             let currentDate = new Date();
             let events = [];
 
+            const escHtml = window.escapeHtml || function(str) {
+                if (str === null || str === undefined) return '';
+                return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+            };
+
             async function fetchDashboardEvents() {
                 let fetched = [];
                 try {
@@ -394,7 +477,7 @@
 
                 const local = JSON.parse(localStorage.getItem('verba_events')) || [];
                 local.forEach(loc => {
-                    if (!fetched.some(f => f.id === loc.id || f.title === loc.title)) {
+                    if (!fetched.some(f => String(f.id) === String(loc.id) || f.title === loc.title)) {
                         fetched.push(loc);
                     }
                 });
@@ -404,9 +487,32 @@
                 renderRegisteredEvents();
             }
 
-            function renderRegisteredEvents() {
-                const registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+            async function renderRegisteredEvents() {
                 if (!userRegisteredEventsList) return;
+                const currentUser = auth ? auth.currentUser : null;
+                const userEmail = (currentUser?.email || localStorage.getItem('verba_user_email') || '').toLowerCase();
+
+                let registered = [];
+                try {
+                    if (currentUser && typeof db !== 'undefined' && db) {
+                        const snap = await db.collection('users').doc(currentUser.uid).collection('registered_events').get();
+                        snap.forEach(doc => {
+                            registered.push({ id: doc.id, ...doc.data() });
+                        });
+                    }
+                } catch (e) {
+                    console.warn("Could not load registered events from Firestore:", e);
+                }
+
+                const localRegs = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+                localRegs.forEach(loc => {
+                    const belongsToUser = !loc.userId && !loc.userEmail
+                        || (currentUser && loc.userId === currentUser.uid)
+                        || (userEmail && (loc.userEmail || '').toLowerCase() === userEmail);
+                    if (belongsToUser && !registered.some(r => String(r.id) === String(loc.id) || r.title === loc.title)) {
+                        registered.push(loc);
+                    }
+                });
 
                 if (registered.length === 0) {
                     userRegisteredEventsList.innerHTML = '<p style="margin: 0; color: #718096;">You haven\'t registered for any events yet. Check out Volunteer Possibilities to register!</p>';
@@ -426,13 +532,13 @@
                     html += `
                         <li style="background: #ffffff; padding: 12px; border-radius: 6px; border-left: 4px solid #3182ce; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
                             <div style="display:flex; justify-content:space-between; font-weight:600; color:#2d3748; font-size:0.92rem;">
-                                <span>${r.title}</span>
+                                <span>${escHtml(r.title)}</span>
                                 <span style="color:#2b6cb0; font-weight:700;">+${hours} hrs</span>
                             </div>
                             <div style="font-size:0.8rem; color:#718096; margin-top:4px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-                                <span><i class="far fa-calendar"></i> ${r.date || 'Upcoming'}</span>
-                                <span><i class="far fa-clock"></i> ${r.time || 'TBD'}</span>
-                                <span><i class="fas fa-map-marker-alt"></i> ${r.location || 'Location TBD'}</span>
+                                <span><i class="far fa-calendar"></i> ${escHtml(r.date || 'Upcoming')}</span>
+                                <span><i class="far fa-clock"></i> ${escHtml(r.time || 'TBD')}</span>
+                                <span><i class="fas fa-map-marker-alt"></i> ${escHtml(r.location || 'Location TBD')}</span>
                                 <button onclick="toggleDashboardMap('${mapId}')" style="background:none; border:none; color:#3182ce; font-size:0.8rem; cursor:pointer; text-decoration:underline; padding:0;"><i class="fas fa-map"></i> Toggle Live Map</button>
                             </div>
                             <div id="${mapId}" style="display:none; margin-top:10px; height:180px; width:100%; border-radius:6px; overflow:hidden; border:1px solid #e2e8f0;">
@@ -484,7 +590,7 @@
                         classes += ' today';
                     }
                     
-                    gridHtml += `<div class="${classes}" title="${eventForDay ? eventForDay.title : ''}">${day}</div>`;
+                    gridHtml += `<div class="${classes}" title="${eventForDay ? escHtml(eventForDay.title) : ''}">${day}</div>`;
                 }
                 
                 calendarGrid.innerHTML = gridHtml;
@@ -495,7 +601,7 @@
                     upcomingEventsList.innerHTML = '<li>No published events yet</li>';
                 } else {
                     events.slice(0, 5).forEach(e => {
-                        upcomingEventsList.innerHTML += `<li><span class="dot blue"></span> <strong>${e.date || 'Upcoming'}:</strong> ${e.title} (${e.serviceHours || 0} hrs)</li>`;
+                        upcomingEventsList.innerHTML += `<li><span class="dot blue"></span> <strong>${escHtml(e.date || 'Upcoming')}:</strong> ${escHtml(e.title)} (${parseFloat(e.serviceHours) || 0} hrs)</li>`;
                     });
                 }
             }
@@ -515,23 +621,40 @@
 
             // Export ICS
             document.getElementById('exportCalendarBtn').addEventListener('click', () => {
-                if (events.length === 0) {
+                const validEvents = events.filter(e => e && e.date && /^\d{4}-\d{2}-\d{2}$/.test(String(e.date).trim()));
+                if (validEvents.length === 0) {
                     alert('No events to export. The E-Board has not added any yet.');
                     return;
                 }
                 
-                let icsData = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Verba Vitae//EN\n";
-                events.forEach(e => {
-                    const dateParts = e.date.split('-');
+                const escapeIcsText = (str) => String(str || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
+                const dtStamp = new Date().toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+                let icsLines = [
+                    "BEGIN:VCALENDAR",
+                    "VERSION:2.0",
+                    "PRODID:-//Verba Vitae//EN"
+                ];
+                validEvents.forEach((e, idx) => {
+                    const dateParts = String(e.date).trim().split('-');
                     const dateStr = dateParts[0] + dateParts[1] + dateParts[2];
-                    icsData += "BEGIN:VEVENT\n";
-                    icsData += `DTSTART;VALUE=DATE:${dateStr}\n`;
-                    icsData += `SUMMARY:${e.title}\n`;
-                    icsData += "END:VEVENT\n";
+                    const uid = `${e.id || ('evt-' + idx)}@theverbavitae.org`;
+                    icsLines.push("BEGIN:VEVENT");
+                    icsLines.push(`UID:${escapeIcsText(uid)}`);
+                    icsLines.push(`DTSTAMP:${dtStamp}`);
+                    icsLines.push(`DTSTART;VALUE=DATE:${dateStr}`);
+                    icsLines.push(`SUMMARY:${escapeIcsText(e.title || 'Verba Vitae Event')}`);
+                    if (e.location) {
+                        icsLines.push(`LOCATION:${escapeIcsText(e.location)}`);
+                    }
+                    if (e.description) {
+                        icsLines.push(`DESCRIPTION:${escapeIcsText(e.description)}`);
+                    }
+                    icsLines.push("END:VEVENT");
                 });
-                icsData += "END:VCALENDAR";
+                icsLines.push("END:VCALENDAR");
+                const icsData = icsLines.join("\r\n") + "\r\n";
                 
-                const blob = new Blob([icsData], { type: 'text/calendar' });
+                const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
@@ -682,6 +805,18 @@
             document.getElementById('verbaServicesModal').style.display = 'none';
         }
 
+        window.switchServiceTab = function(tabName) {
+            const tabPrinting = document.getElementById('svcTabPrinting');
+            const btnPrinting = document.getElementById('btnSvcPrinting');
+            if (tabName === 'printing') {
+                if (tabPrinting) tabPrinting.style.display = 'block';
+                if (btnPrinting) {
+                    btnPrinting.style.background = '#3182ce';
+                    btnPrinting.style.color = 'white';
+                }
+            }
+        };
+
         async function populatePrintPickupWindows() {
             const select = document.getElementById('printPickupWindowSelect');
             if (!select) return;
@@ -736,7 +871,7 @@
                 }
 
                 const file = fileInput.files[0];
-                if (!file.type.includes('pdf')) {
+                if (!file.type.includes('pdf') && !file.name.toLowerCase().endsWith('.pdf')) {
                     alert('Please upload a valid PDF document.');
                     return;
                 }
@@ -745,17 +880,40 @@
                 submitBtn.textContent = 'Uploading PDF...';
                 submitBtn.disabled = true;
 
-                const reader = new FileReader();
-                reader.onload = async (event) => {
-                    const base64Data = event.target.result;
-                    const userName = localStorage.getItem('verba_user_name') || 'Student Member';
-                    const userEmail = localStorage.getItem('verba_user_email') || 'student@verba.org';
+                try {
+                    const currentUser = auth ? auth.currentUser : null;
+                    const userName = currentUser?.displayName || localStorage.getItem('verba_user_name') || 'Student Member';
+                    const userEmail = currentUser?.email || localStorage.getItem('verba_user_email') || 'student@verba.org';
+
+                    let fileUrl = '';
+                    let base64Data = '';
+
+                    if (typeof storage !== 'undefined' && storage) {
+                        try {
+                            const storageRef = storage.ref('print_requests/' + (currentUser ? currentUser.uid : 'anon') + '/' + Date.now() + '_' + file.name);
+                            await storageRef.put(file);
+                            fileUrl = await storageRef.getDownloadURL();
+                        } catch (storageErr) {
+                            console.warn("Firebase Storage PDF upload failed, checking fallback size:", storageErr);
+                        }
+                    }
+
+                    if (!fileUrl && file.size < 700 * 1024) {
+                        base64Data = await new Promise((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = (evt) => resolve(evt.target.result || '');
+                            reader.onerror = () => resolve('');
+                            reader.readAsDataURL(file);
+                        });
+                    }
 
                     const printJob = {
                         id: 'prt_' + Date.now(),
+                        userId: currentUser ? currentUser.uid : '',
                         userName: userName,
                         userEmail: userEmail,
                         fileName: file.name,
+                        fileUrl: fileUrl,
                         fileData: base64Data,
                         pickupWindow: pickupWindow,
                         copies: copies,
@@ -770,19 +928,30 @@
                         if (typeof db !== 'undefined' && db) {
                             await db.collection('print_requests').add(printJob);
                         }
-                    } catch(err) { console.warn(err); }
+                    } catch (err) {
+                        console.warn("Could not save print request to Firestore:", err);
+                    }
 
-                    const localRequests = JSON.parse(localStorage.getItem('verba_print_requests')) || [];
-                    localRequests.unshift(printJob);
-                    localStorage.setItem('verba_print_requests', JSON.stringify(localRequests));
+                    try {
+                        const localRequests = JSON.parse(localStorage.getItem('verba_print_requests')) || [];
+                        localRequests.unshift(printJob);
+                        localStorage.setItem('verba_print_requests', JSON.stringify(localRequests));
+                    } catch (quotaErr) {
+                        console.warn("localStorage quota exceeded for verba_print_requests, saving metadata only:", quotaErr);
+                        try {
+                            const localRequests = JSON.parse(localStorage.getItem('verba_print_requests')) || [];
+                            localRequests.unshift({ ...printJob, fileData: '' });
+                            localStorage.setItem('verba_print_requests', JSON.stringify(localRequests));
+                        } catch (e2) {}
+                    }
 
                     alert(`PDF "${file.name}" successfully submitted for printing! You can pick it up on ${pickupWindow}.`);
                     userPrintForm.reset();
+                    closeServicesModal();
+                } finally {
                     submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit PDF for Printing';
                     submitBtn.disabled = false;
-                    closeServicesModal();
-                };
-                reader.readAsDataURL(file);
+                }
             });
         }
 

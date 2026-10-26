@@ -1,0 +1,681 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// This security rules file assumes the following data structures:
+//
+// Collection: users
+// Document ID: {userId} (matches Firebase Auth UID)
+// Fields:
+//   - firstName: string (optional, <= 100 chars)
+//   - lastName: string (optional, <= 100 chars)
+//   - displayName: string (optional, <= 200 chars)
+//   - email: string (optional, <= 254 chars)
+//   - phone: string (optional, <= 50 chars)
+//   - major: string (optional, <= 150 chars)
+//   - role: string (optional, enum: ['member', 'eboard', 'admin', 'expelled']) - immutable for non-admins
+//   - status: string (optional, enum: ['active', 'expelled', 'pending', 'suspended']) - immutable for non-admins
+//   - emailVerified: bool (optional)
+//   - profilePic: string (optional, <= 1000000 chars)
+//   - createdAt: timestamp | string (optional)
+//   - expelledAt: timestamp | string (optional)
+//   - reactivatedAt: timestamp | string (optional)
+//
+// Subcollection: users/{userId}/registered_events
+// Document ID: {eventId}
+// Fields:
+//   - eventId: string | number (optional)
+//   - eventTitle: string (optional, <= 300 chars)
+//   - date: string (optional, <= 100 chars)
+//   - time: string (optional, <= 100 chars)
+//   - location: string (optional, <= 500 chars)
+//   - serviceHours: number (optional, 0..1000)
+//   - registeredAt: timestamp | string (optional)
+//
+// Collection: invitations
+// Document ID: {code}
+// Fields:
+//   - code: string (optional, <= 100 chars)
+//   - email: string (optional, <= 254 chars)
+//   - status: string (optional, enum: ['pending', 'accepted', 'expired', 'revoked'])
+//   - createdAt: timestamp | string (optional)
+//   - createdIso: string (optional, <= 100 chars)
+//   - expiresAt: timestamp | string (optional)
+//   - joinUrl: string (optional, <= 1000 chars)
+//   - sentBy: string (optional, <= 254 chars)
+//   - acceptedBy: string (optional, <= 254 chars)
+//   - acceptedAt: timestamp | string (optional)
+//
+// Collection: events
+// Document ID: {eventId}
+// Fields:
+//   - id: string | number (optional)
+//   - title: string (required, <= 300 chars)
+//   - date: string (optional, <= 100 chars)
+//   - time: string (optional, <= 100 chars)
+//   - location: string (optional, <= 500 chars)
+//   - lat: number (optional)
+//   - lng: number (optional)
+//   - serviceHours: number (optional, 0..1000)
+//   - maxSlots: number (optional, 0..100000)
+//   - description: string (optional, <= 10000 chars)
+//   - createdAt: timestamp | string (optional)
+//
+// Collection: event_registrations
+// Document ID: {regId}
+// Fields:
+//   - userId: string (required, matches auth.uid on create)
+//   - userEmail: string (optional, <= 254 chars)
+//   - eventId: string | number (optional)
+//   - title: string (optional, <= 300 chars)
+//   - serviceHours: number (optional, 0..1000)
+//   - registeredAt: timestamp | string (optional)
+//
+// Collection: applications
+// Document ID: {appId}
+// Fields:
+//   - opportunityId: string (required, <= 150 chars)
+//   - applicant: map (required, <= 20 keys, includes email)
+//   - status: string (required, 'Pending' on create)
+//   - createdAt: timestamp | string (required)
+//   - generalAnswers: map (optional, <= 20 keys)
+//   - selectedRoles: list (optional, <= 20 items)
+//   - roleAnswers: map (optional, <= 20 keys)
+//   - adminNotes: string (optional, <= 10000 chars)
+//
+// Collection: products
+// Document ID: {productId}
+// Fields:
+//   - id: string | number (optional)
+//   - name: string (optional, <= 300 chars)
+//   - category: string (optional, <= 100 chars)
+//   - price: number | string (optional)
+//   - image: string (optional, <= 1000000 chars)
+//
+// Collection: orders
+// Document ID: {orderId}
+// Fields:
+//   - customerName: string (required, <= 200 chars)
+//   - customerEmail: string (required, <= 254 chars)
+//   - items: list (required, <= 100 items)
+//   - total: string | number (required)
+//   - status: string (optional, <= 100 chars)
+//   - notes: string (optional, <= 2000 chars)
+//   - timestamp: timestamp | string (optional)
+//
+// Collection: print_windows
+// Document ID: {windowId}
+// Fields:
+//   - id: string (optional, <= 150 chars)
+//   - date: string (optional, <= 100 chars)
+//   - time: string (optional, <= 100 chars)
+//   - location: string (optional, <= 500 chars)
+//   - createdAt: timestamp | string (optional)
+//
+// Collection: print_requests
+// Document ID: {requestId}
+// Fields:
+//   - id: string (optional, <= 150 chars)
+//   - userId: string (optional, <= 128 chars)
+//   - userName: string (optional, <= 200 chars)
+//   - userEmail: string (optional, <= 254 chars)
+//   - fileName: string (optional, <= 500 chars)
+//   - fileData: string (optional, <= 1048576 chars)
+//   - pickupWindow: string (optional, <= 300 chars)
+//   - copies: number | string (optional)
+//   - color: string (optional, <= 100 chars)
+//   - sides: string (optional, <= 100 chars)
+//   - notes: string (optional, <= 2000 chars)
+//   - status: string (optional, <= 100 chars)
+//   - timestamp: timestamp | string (optional)
+//
+// Collection: albums & albums/{albumId}/photos
+// Document ID: {albumId} / {photoId}
+// Fields:
+//   - title: string (optional, <= 300 chars)
+//   - coverUrl: string (optional, <= 2000 chars)
+//   - photos: list (optional, <= 500 items)
+//   - createdAt: timestamp | string (optional)
+//
+// Collection: discussions
+// Document ID: {discussionId}
+// Fields:
+//   - id: string (optional, <= 150 chars)
+//   - title: string (optional, <= 300 chars)
+//   - author: string (optional, <= 200 chars)
+//   - question: string (optional, <= 2000 chars)
+//   - description: string (optional, <= 10000 chars)
+//   - coverImage: string (optional, <= 1000000 chars)
+//   - status: string (optional, <= 100 chars)
+//   - isPinned: bool (optional)
+//   - isLocked: bool (optional)
+//   - fromTheConversation: list (optional, <= 100 items)
+//
+// Collection: voices
+// Document ID: {voiceId}
+// Fields:
+//   - id: string (optional, <= 150 chars)
+//   - discussionId: string (optional, <= 150 chars)
+//   - userId: string (required, matches auth.uid on create, immutable)
+//   - userName: string (optional, <= 200 chars)
+//   - content: string (optional, <= 20000 chars)
+//   - isFeatured: bool (optional, staff-controlled)
+//   - isHidden: bool (optional, staff-controlled)
+//   - reactions: map (optional, <= 10 keys)
+//
+// Collection: replies
+// Document ID: {replyId}
+// Fields:
+//   - id: string (optional, <= 150 chars)
+//   - voiceId: string (optional, <= 150 chars)
+//   - discussionId: string (optional, <= 150 chars)
+//   - userId: string (required, matches auth.uid on create, immutable)
+//   - content: string (optional, <= 10000 chars)
+//
+// Collection: notifications
+// Document ID: {notifId}
+// Fields:
+//   - recipientUid: string (optional, <= 128 chars)
+//   - title: string (optional, <= 300 chars)
+//   - message: string (optional, <= 2000 chars)
+//   - read: bool (optional)
+//
+// Collection: settings
+// Document ID: {docId}
+// Fields:
+//   - General configuration map (<= 50 keys)
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAuthenticated() {
+      return isSignedIn();
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isRootAdminEmail() {
+      return isSignedIn() &&
+        request.auth.token.email != null &&
+        (
+          request.auth.token.email == 'aaronbacallao06@gmail.com' ||
+          request.auth.token.email.matches('.*@theverbavitae\\.org$')
+        );
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function hasUserDoc() {
+      return exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function isNotExpelled() {
+      return !hasUserDoc() ||
+        (
+          getUserData().get('status', 'active') != 'expelled' &&
+          getUserData().get('role', 'member') != 'expelled'
+        );
+    }
+
+    function isAdmin() {
+      return isSignedIn() &&
+        isNotExpelled() &&
+        (
+          isRootAdminEmail() ||
+          (hasUserDoc() && getUserData().get('role', 'member') == 'admin')
+        );
+    }
+
+    function isStaff() {
+      return isSignedIn() &&
+        isNotExpelled() &&
+        (
+          isAdmin() ||
+          (hasUserDoc() && getUserData().get('role', 'member') == 'eboard')
+        );
+    }
+
+    function isValidOptionalString(data, field, maxLen) {
+      return !(field in data) ||
+        data[field] == null ||
+        (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    // ===============================================================
+    // Domain Validators (Used in both create and update)
+    // ===============================================================
+
+    function isValidUser(data) {
+      return data is map &&
+        data.keys().size() <= 25 &&
+        isValidOptionalString(data, 'firstName', 100) &&
+        isValidOptionalString(data, 'lastName', 100) &&
+        isValidOptionalString(data, 'displayName', 200) &&
+        isValidOptionalString(data, 'name', 200) &&
+        isValidOptionalString(data, 'email', 254) &&
+        isValidOptionalString(data, 'phone', 50) &&
+        isValidOptionalString(data, 'major', 150) &&
+        isValidOptionalString(data, 'role', 50) &&
+        isValidOptionalString(data, 'status', 50) &&
+        isValidOptionalString(data, 'profilePic', 1048576) &&
+        isValidOptionalString(data, 'photoURL', 1048576);
+    }
+
+    function isValidRegisteredEvent(data) {
+      return data is map &&
+        data.keys().size() <= 20 &&
+        isValidOptionalString(data, 'eventTitle', 300) &&
+        isValidOptionalString(data, 'title', 300) &&
+        isValidOptionalString(data, 'date', 100) &&
+        isValidOptionalString(data, 'time', 100) &&
+        isValidOptionalString(data, 'location', 500);
+    }
+
+    function isValidInvitation(data) {
+      return data is map &&
+        data.keys().size() <= 20 &&
+        isValidOptionalString(data, 'code', 100) &&
+        isValidOptionalString(data, 'email', 254) &&
+        isValidOptionalString(data, 'status', 50) &&
+        isValidOptionalString(data, 'joinUrl', 1000) &&
+        isValidOptionalString(data, 'sentBy', 254) &&
+        isValidOptionalString(data, 'acceptedBy', 254);
+    }
+
+    function isValidEvent(data) {
+      return data is map &&
+        data.keys().size() <= 25 &&
+        isValidOptionalString(data, 'title', 300) &&
+        isValidOptionalString(data, 'date', 100) &&
+        isValidOptionalString(data, 'dateStr', 100) &&
+        isValidOptionalString(data, 'time', 100) &&
+        isValidOptionalString(data, 'location', 500) &&
+        isValidOptionalString(data, 'description', 10000);
+    }
+
+    function isValidEventRegistration(data) {
+      return data is map &&
+        data.keys().size() <= 20 &&
+        isValidOptionalString(data, 'userId', 128) &&
+        isValidOptionalString(data, 'userEmail', 254) &&
+        isValidOptionalString(data, 'userName', 200) &&
+        isValidOptionalString(data, 'title', 300) &&
+        isValidOptionalString(data, 'eventTitle', 300) &&
+        isValidOptionalString(data, 'location', 500);
+    }
+
+    function isValidApplication(data) {
+      return data is map &&
+        data.keys().size() <= 25 &&
+        isValidOptionalString(data, 'id', 150) &&
+        isValidOptionalString(data, 'opportunityId', 150) &&
+        isValidOptionalString(data, 'opportunityTitle', 300) &&
+        isValidOptionalString(data, 'opportunityCategory', 150) &&
+        isValidOptionalString(data, 'status', 100) &&
+        isValidOptionalString(data, 'adminNotes', 10000) &&
+        (!('applicant' in data) || (data.applicant is map && data.applicant.keys().size() <= 25)) &&
+        (!('selectedRoles' in data) || (data.selectedRoles is list && data.selectedRoles.size() <= 25));
+    }
+
+    function isValidProduct(data) {
+      return data is map &&
+        data.keys().size() <= 25 &&
+        isValidOptionalString(data, 'name', 300) &&
+        isValidOptionalString(data, 'title', 300) &&
+        isValidOptionalString(data, 'category', 100) &&
+        isValidOptionalString(data, 'subCategory', 100) &&
+        isValidOptionalString(data, 'condition', 100) &&
+        isValidOptionalString(data, 'isbn', 100) &&
+        isValidOptionalString(data, 'publisher', 200) &&
+        isValidOptionalString(data, 'synopsis', 10000) &&
+        isValidOptionalString(data, 'goodreadsLink', 1000) &&
+        isValidOptionalString(data, 'image', 1048576);
+    }
+
+    function isValidOrder(data) {
+      return data is map &&
+        data.keys().size() <= 25 &&
+        isValidOptionalString(data, 'id', 150) &&
+        isValidOptionalString(data, 'customerName', 200) &&
+        isValidOptionalString(data, 'customerEmail', 254) &&
+        isValidOptionalString(data, 'status', 100) &&
+        isValidOptionalString(data, 'notes', 2000) &&
+        (!('items' in data) || (data.items is list && data.items.size() <= 100));
+    }
+
+    function isValidPrintWindow(data) {
+      return data is map &&
+        data.keys().size() <= 15 &&
+        isValidOptionalString(data, 'id', 150) &&
+        isValidOptionalString(data, 'date', 100) &&
+        isValidOptionalString(data, 'time', 100) &&
+        isValidOptionalString(data, 'location', 500);
+    }
+
+    function isValidPrintRequest(data) {
+      return data is map &&
+        data.keys().size() <= 25 &&
+        isValidOptionalString(data, 'id', 150) &&
+        isValidOptionalString(data, 'userId', 128) &&
+        isValidOptionalString(data, 'userName', 200) &&
+        isValidOptionalString(data, 'userEmail', 254) &&
+        isValidOptionalString(data, 'fileName', 500) &&
+        isValidOptionalString(data, 'fileData', 1048576) &&
+        isValidOptionalString(data, 'pickupWindow', 300) &&
+        isValidOptionalString(data, 'color', 100) &&
+        isValidOptionalString(data, 'sides', 100) &&
+        isValidOptionalString(data, 'notes', 2000) &&
+        isValidOptionalString(data, 'status', 100);
+    }
+
+    function isValidAlbum(data) {
+      return data is map &&
+        data.keys().size() <= 20 &&
+        isValidOptionalString(data, 'title', 300) &&
+        isValidOptionalString(data, 'coverUrl', 2000) &&
+        (!('photos' in data) || (data.photos is list && data.photos.size() <= 500));
+    }
+
+    function isValidPhoto(data) {
+      return data is map &&
+        data.keys().size() <= 15 &&
+        isValidOptionalString(data, 'url', 1048576) &&
+        isValidOptionalString(data, 'caption', 1000);
+    }
+
+    function isValidDiscussion(data) {
+      return data is map &&
+        data.keys().size() <= 25 &&
+        isValidOptionalString(data, 'id', 150) &&
+        isValidOptionalString(data, 'title', 300) &&
+        isValidOptionalString(data, 'author', 200) &&
+        isValidOptionalString(data, 'question', 2000) &&
+        isValidOptionalString(data, 'description', 10000) &&
+        isValidOptionalString(data, 'coverImage', 1048576) &&
+        isValidOptionalString(data, 'chapterRange', 200) &&
+        isValidOptionalString(data, 'type', 100) &&
+        isValidOptionalString(data, 'status', 100) &&
+        (!('fromTheConversation' in data) || (data.fromTheConversation is list && data.fromTheConversation.size() <= 100));
+    }
+
+    function isValidVoice(data) {
+      return data is map &&
+        data.keys().size() <= 25 &&
+        isValidOptionalString(data, 'id', 150) &&
+        isValidOptionalString(data, 'discussionId', 150) &&
+        isValidOptionalString(data, 'userId', 128) &&
+        isValidOptionalString(data, 'userEmail', 254) &&
+        isValidOptionalString(data, 'userName', 200) &&
+        isValidOptionalString(data, 'userAvatar', 1048576) &&
+        isValidOptionalString(data, 'userRole', 50) &&
+        isValidOptionalString(data, 'content', 20000) &&
+        isValidOptionalString(data, 'image', 1048576) &&
+        (!('reactions' in data) || (data.reactions is map && data.reactions.keys().size() <= 10));
+    }
+
+    function isValidReply(data) {
+      return data is map &&
+        data.keys().size() <= 20 &&
+        isValidOptionalString(data, 'id', 150) &&
+        isValidOptionalString(data, 'voiceId', 150) &&
+        isValidOptionalString(data, 'discussionId', 150) &&
+        isValidOptionalString(data, 'userId', 128) &&
+        isValidOptionalString(data, 'userName', 200) &&
+        isValidOptionalString(data, 'userAvatar', 1048576) &&
+        isValidOptionalString(data, 'userRole', 50) &&
+        isValidOptionalString(data, 'content', 10000);
+    }
+
+    function isValidNotification(data) {
+      return data is map &&
+        data.keys().size() <= 20 &&
+        isValidOptionalString(data, 'id', 150) &&
+        isValidOptionalString(data, 'recipientUid', 128) &&
+        isValidOptionalString(data, 'title', 300) &&
+        isValidOptionalString(data, 'message', 2000) &&
+        isValidOptionalString(data, 'discussionId', 150) &&
+        isValidOptionalString(data, 'voiceId', 150);
+    }
+
+    function isValidSetting(data) {
+      return data is map && data.keys().size() <= 50;
+    }
+
+    // ===============================================================
+    // Collection Rules
+    // ===============================================================
+
+    // Users & Registered Events Subcollection
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isStaff();
+      allow list: if isStaff();
+      allow create: if isValidUser(request.resource.data) &&
+        (
+          (
+            isOwner(userId) &&
+            request.resource.data.get('status', 'active') == 'active' &&
+            (request.resource.data.get('role', 'member') == 'member' || isRootAdminEmail())
+          ) ||
+          isAdmin()
+        );
+      allow update: if isValidUser(request.resource.data) &&
+        (
+          isAdmin() ||
+          (
+            isOwner(userId) &&
+            isNotExpelled() &&
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'status'])
+          )
+        );
+      allow delete: if isAdmin();
+
+      match /registered_events/{eventId} {
+        allow read: if isOwner(userId) || isStaff();
+        allow create, update: if isValidRegisteredEvent(request.resource.data) &&
+          ((isOwner(userId) && isNotExpelled()) || isStaff());
+        allow delete: if (isOwner(userId) && isNotExpelled()) || isStaff();
+      }
+    }
+
+    // Invitations
+    match /invitations/{code} {
+      allow get: if true;
+      allow list: if isStaff();
+      allow create: if isAdmin() && isValidInvitation(request.resource.data);
+      allow update: if isValidInvitation(request.resource.data) &&
+        (
+          isAdmin() ||
+          (
+            isSignedIn() &&
+            resource.data.get('status', 'pending') == 'pending' &&
+            request.resource.data.get('status', '') == 'accepted' &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedBy', 'acceptedAt'])
+          )
+        );
+      allow delete: if isAdmin();
+    }
+
+    // Events
+    match /events/{eventId} {
+      allow read: if true;
+      allow create, update: if isStaff() && isValidEvent(request.resource.data);
+      allow delete: if isStaff();
+    }
+
+    // Event Registrations
+    match /event_registrations/{regId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() &&
+        isNotExpelled() &&
+        request.resource.data.get('userId', '') == request.auth.uid &&
+        isValidEventRegistration(request.resource.data);
+      allow update: if isValidEventRegistration(request.resource.data) &&
+        (
+          isStaff() ||
+          (
+            isSignedIn() &&
+            resource.data.get('userId', '') == request.auth.uid &&
+            request.resource.data.get('userId', '') == resource.data.get('userId', '')
+          )
+        );
+      allow delete: if isStaff() || (isSignedIn() && resource.data.get('userId', '') == request.auth.uid);
+    }
+
+    // Executive Applications
+    match /applications/{appId} {
+      allow create: if isValidApplication(request.resource.data) &&
+        request.resource.data.get('status', 'Pending') == 'Pending' &&
+        request.resource.data.keys().hasAll(['opportunityId', 'applicant', 'status', 'createdAt']);
+      allow read: if isStaff() ||
+        (isSignedIn() && resource.data.applicant.email == request.auth.token.email);
+      allow update: if isStaff() && isValidApplication(request.resource.data);
+      allow delete: if isStaff();
+    }
+
+    // Shop Products
+    match /products/{productId} {
+      allow read: if true;
+      allow create, update: if isStaff() && isValidProduct(request.resource.data);
+      allow delete: if isStaff();
+    }
+
+    // Shop & Book Pick-Up Orders
+    match /orders/{orderId} {
+      allow create: if isValidOrder(request.resource.data) &&
+        request.resource.data.keys().hasAll(['customerName', 'customerEmail', 'items', 'total']);
+      allow read: if isStaff();
+      allow update: if isStaff() && isValidOrder(request.resource.data);
+      allow delete: if isStaff();
+    }
+
+    // Print Pick-Up Windows
+    match /print_windows/{windowId} {
+      allow read: if isSignedIn();
+      allow create, update: if isStaff() && isValidPrintWindow(request.resource.data);
+      allow delete: if isStaff();
+    }
+
+    // Student Print Requests
+    match /print_requests/{requestId} {
+      allow create: if isSignedIn() &&
+        isNotExpelled() &&
+        isValidPrintRequest(request.resource.data);
+      allow read: if isStaff() ||
+        (
+          isSignedIn() &&
+          (
+            resource.data.get('userId', '') == request.auth.uid ||
+            resource.data.get('userEmail', '') == request.auth.token.email
+          )
+        );
+      allow update: if isStaff() && isValidPrintRequest(request.resource.data);
+      allow delete: if isStaff();
+    }
+
+    // Photo Gallery Albums & Subcollection Photos
+    match /albums/{albumId} {
+      allow read: if true;
+      allow create, update: if isStaff() && isValidAlbum(request.resource.data);
+      allow delete: if isStaff();
+
+      match /photos/{photoId} {
+        allow read: if true;
+        allow create, update: if isStaff() && isValidPhoto(request.resource.data);
+        allow delete: if isStaff();
+      }
+    }
+
+    // Reading Club Discussions
+    match /discussions/{discussionId} {
+      allow read: if true;
+      allow create, update: if isStaff() && isValidDiscussion(request.resource.data);
+      allow delete: if isStaff();
+    }
+
+    // Reading Club Voices (Posts)
+    match /voices/{voiceId} {
+      allow read: if true;
+      allow create: if isSignedIn() &&
+        isNotExpelled() &&
+        request.resource.data.get('userId', '') == request.auth.uid &&
+        isValidVoice(request.resource.data);
+      allow update: if isValidVoice(request.resource.data) &&
+        (
+          isStaff() ||
+          (
+            isSignedIn() &&
+            isNotExpelled() &&
+            resource.data.get('userId', '') == request.auth.uid &&
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['isFeatured', 'isHidden', 'userId'])
+          ) ||
+          (
+            isSignedIn() &&
+            isNotExpelled() &&
+            request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+          )
+        );
+      allow delete: if isStaff() || (isSignedIn() && resource.data.get('userId', '') == request.auth.uid);
+    }
+
+    // Reading Club Replies
+    match /replies/{replyId} {
+      allow read: if true;
+      allow create: if isSignedIn() &&
+        isNotExpelled() &&
+        request.resource.data.get('userId', '') == request.auth.uid &&
+        isValidReply(request.resource.data);
+      allow update: if isValidReply(request.resource.data) &&
+        (
+          isStaff() ||
+          (
+            isSignedIn() &&
+            resource.data.get('userId', '') == request.auth.uid &&
+            request.resource.data.get('userId', '') == resource.data.get('userId', '')
+          )
+        );
+      allow delete: if isStaff() || (isSignedIn() && resource.data.get('userId', '') == request.auth.uid);
+    }
+
+    // User Notifications
+    match /notifications/{notifId} {
+      allow read: if isSignedIn() &&
+        (resource.data.get('recipientUid', '') == request.auth.uid || isStaff());
+      allow create: if isSignedIn() &&
+        isNotExpelled() &&
+        isValidNotification(request.resource.data);
+      allow update: if isValidNotification(request.resource.data) &&
+        isSignedIn() &&
+        (resource.data.get('recipientUid', '') == request.auth.uid || isStaff());
+      allow delete: if isSignedIn() &&
+        (resource.data.get('recipientUid', '') == request.auth.uid || isStaff());
+    }
+
+    // Global Settings
+    match /settings/{docId} {
+      allow read: if true;
+      allow create, update: if isStaff() && isValidSetting(request.resource.data);
+      allow delete: if isStaff();
+    }
+
+    // Default Deny All Other Paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

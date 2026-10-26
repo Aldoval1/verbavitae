@@ -120,7 +120,7 @@
             </div>
 
             <div class="upload-note">
-                <i class="fas fa-shield-alt"></i> Tu archivo se procesa de forma 100% privada en tu navegador. Nada se sube a servidores externos.
+                <i class="fas fa-shield-alt"></i> El PDF se procesa localmente en tu navegador. Si usas voces IA en la nube, el texto se sintetiza de forma segura.
             </div>
         </div>
 
@@ -334,7 +334,7 @@
                     </p>
                     
                     <label style="font-size: 0.8rem; font-weight: 600; color: var(--speech-text);">Clave de API de Gemini / Google AI:</label>
-                    <input type="password" id="gemini-api-key" class="modal-input" value="AIzaSyBenPzZ7MOAQQdkAWch-eAWRr5ctk6mjTU" placeholder="AIzaSy...">
+                    <input type="password" id="gemini-api-key" class="modal-input" value="" placeholder="AIzaSy...">
                     
                     <label style="font-size: 0.8rem; font-weight: 600; color: var(--speech-text); margin-top: 6px;">Voz de Gemini:</label>
                     <select id="gemini-voice-select" class="modal-input">
@@ -419,9 +419,6 @@
             });
         }
     </script>
-
-    <!-- Firebase Init (Loads default API key) -->
-    <script src="js/firebase-init.js"></script>
 
     <!-- Speech AI Reader Controller -->
     <script src="js/speech-reader.js"></script>

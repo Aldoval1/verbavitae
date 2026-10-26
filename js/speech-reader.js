@@ -8,14 +8,12 @@
 (function () {
     'use strict';
 
-    // Active working Google AI Studio API key provided by user
-    const defaultGoogleKey = 'AIzaSyBenPzZ7MOAQQdkAWch-eAWRr5ctk6mjTU';
+    // No hardcoded API key in client source; user configures their key in AI Settings
+    const defaultGoogleKey = '';
 
     // State Management
-    const storedKey = localStorage.getItem('vv_speech_gemini_key');
-    const activeKey = (!storedKey || storedKey === 'AIzaSyDYQWPWtY17SUP32rDHjOSqSENIAg_x5Tk') ? 
-        defaultGoogleKey : storedKey;
-    localStorage.setItem('vv_speech_gemini_key', activeKey);
+    const storedKey = localStorage.getItem('vv_speech_gemini_key') || '';
+    const activeKey = storedKey;
 
     const state = {
         pdfDoc: null,
@@ -32,11 +30,11 @@
         isPaused: false,
         autoAdvance: true,
         speechRate: 1.0,
-        selectedVoice: 'gemini:Aoede', // Default to ultra fluid Gemini AI voice!
+        selectedVoice: activeKey ? 'gemini:Aoede' : 'webspeech',
         availableVoices: [],
         viewMode: 'split',
         theme: 'light',
-        ttsProvider: 'gemini', // 'gemini' | 'webspeech' | 'openai'
+        ttsProvider: activeKey ? 'gemini' : 'webspeech', // 'gemini' | 'webspeech' | 'openai'
         geminiApiKey: activeKey,
         geminiVoice: localStorage.getItem('vv_speech_gemini_voice') || 'Aoede',
         openAiKey: localStorage.getItem('vv_speech_openai_key') || '',
@@ -188,18 +186,26 @@
             state.selectedVoice = 'gemini:Aoede';
         }
 
-        updateProviderFromVoice(voiceSelect.value);
+        updateProviderFromVoice(voiceSelect.value, false);
     }
 
     /**
      * Synchronize TTS provider based on voice selection
      */
-    function updateProviderFromVoice(voiceVal) {
+    function updateProviderFromVoice(voiceVal, isUserAction = false) {
         if (!voiceVal) return;
         if (voiceVal.startsWith('gemini:')) {
-            state.ttsProvider = 'gemini';
             state.geminiVoice = voiceVal.replace('gemini:', '');
             localStorage.setItem('vv_speech_gemini_voice', state.geminiVoice);
+            if (state.geminiApiKey) {
+                state.ttsProvider = 'gemini';
+            } else {
+                state.ttsProvider = 'webspeech';
+                if (isUserAction) {
+                    showToast('Ingresa tu clave API de Gemini para usar voces Gemini AI.', 'fa-key');
+                    if (settingsModal) settingsModal.classList.add('active');
+                }
+            }
         } else if (voiceVal.startsWith('openai:')) {
             state.ttsProvider = 'openai';
         } else {
@@ -569,6 +575,8 @@
             if (!audioBlob) {
                 audioBlob = await fetchGeminiAudioBlob(text, voiceName, apiKey);
             }
+
+            if (!state.isPlaying || state.isPaused) return;
 
             if (!audioBlob) {
                 throw new Error('No audio returned from Gemini');
@@ -1259,7 +1267,7 @@ startxref
             voiceSelect.addEventListener('change', () => {
                 const voiceVal = voiceSelect.value;
                 state.selectedVoice = voiceVal;
-                updateProviderFromVoice(voiceVal);
+                updateProviderFromVoice(voiceVal, true);
 
                 if (state.isPlaying) {
                     if (state.activeAudioElement) {

@@ -32,7 +32,7 @@
                     <div class="form-group">
                         <div class="form-label-row">
                             <label for="username">Username (Email Address)</label>
-                            <a href="#" class="forgot-link">Forgot Username?</a>
+                            <a href="#" class="forgot-link" id="forgotUsernameLink">Forgot Username?</a>
                         </div>
                         <div class="input-with-icon">
                             <input type="email" id="username" name="username" placeholder="example@gmail.com" required autocomplete="username">
@@ -43,7 +43,7 @@
                     <div class="form-group">
                         <div class="form-label-row">
                             <label for="password">Password</label>
-                            <a href="#" class="forgot-link">Forgot Password?</a>
+                            <a href="#" class="forgot-link" id="forgotPasswordLink">Forgot Password?</a>
                         </div>
                         <div class="input-with-icon">
                             <input type="password" id="password" name="password" placeholder="Password" required autocomplete="current-password">
@@ -55,7 +55,7 @@
                         <button type="submit" class="btn-signin">Sign In</button>
                     </div>
                     <div id="loginError" style="color: #e53e3e; margin-top: 15px; display: none; font-size: 0.9rem; text-align: center; font-weight: 600;">
-                        Invalid credentials. Please use the test account.
+                        Invalid email or password.
                     </div>
                 </form>
             </div>
@@ -81,12 +81,66 @@
             });
         }
 
+        const forgotUsernameLink = document.getElementById('forgotUsernameLink');
+        if (forgotUsernameLink) {
+            forgotUsernameLink.addEventListener('click', function (e) {
+                e.preventDefault();
+                const errorEl = document.getElementById('loginError');
+                if (errorEl) {
+                    errorEl.style.color = '#2b6cb0';
+                    errorEl.textContent = 'Your username is your registered MDC student email or personal email address. If you need assistance locating your account, please contact Verba Vitae administration.';
+                    errorEl.style.display = 'block';
+                }
+            });
+        }
+
+        const forgotPasswordLink = document.getElementById('forgotPasswordLink');
+        if (forgotPasswordLink) {
+            forgotPasswordLink.addEventListener('click', async function (e) {
+                e.preventDefault();
+                const errorEl = document.getElementById('loginError');
+                let email = document.getElementById('username').value.trim().toLowerCase();
+                if (!email) {
+                    const prompted = prompt('Please enter your registered email address to receive a password reset link:');
+                    if (!prompted) return;
+                    email = prompted.trim().toLowerCase();
+                    document.getElementById('username').value = email;
+                }
+                if (!email) {
+                    if (errorEl) {
+                        errorEl.style.color = '#e53e3e';
+                        errorEl.textContent = 'Please enter your email address first to reset your password.';
+                        errorEl.style.display = 'block';
+                    }
+                    return;
+                }
+                try {
+                    if (auth) {
+                        await auth.sendPasswordResetEmail(email);
+                        if (errorEl) {
+                            errorEl.style.color = '#2f855a';
+                            errorEl.textContent = 'Password reset email sent to ' + email + '. Please check your inbox and spam folder.';
+                            errorEl.style.display = 'block';
+                        }
+                    }
+                } catch (resetErr) {
+                    console.error('Password reset error:', resetErr);
+                    if (errorEl) {
+                        errorEl.style.color = '#e53e3e';
+                        errorEl.textContent = resetErr.message || 'Could not send password reset email. Please verify your email address.';
+                        errorEl.style.display = 'block';
+                    }
+                }
+            });
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('username').value.trim().toLowerCase();
             const pass = document.getElementById('password').value.trim();
             const errorEl = document.getElementById('loginError');
             const submitBtn = e.target.querySelector('.btn-signin');
+            errorEl.style.color = '#e53e3e';
 
             if (!email || !pass) {
                 errorEl.textContent = 'Please enter both email and password.';
@@ -105,17 +159,20 @@
                 // Save login session flag
                 localStorage.setItem('verba_logged_in', 'true');
 
-                // 2. Fetch User Role from Firestore (with automatic admin detection)
-                const isAdminEmail = email.includes('admin') || email.includes('verbavitae') || email.endsWith('@theverbavitae.org') || email === 'aaronbacallao06@gmail.com';
+                // 2. Fetch User Role from Firestore (with strict root admin detection)
+                const isAdminEmail = window.isRootAdminEmail ? window.isRootAdminEmail(email) : (email === 'aaronbacallao06@gmail.com' || email.endsWith('@theverbavitae.org'));
                 let role = isAdminEmail ? 'admin' : 'member';
+                let uData = null;
                 
                 try {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (userDoc.exists) {
-                        const uData = userDoc.data();
+                        uData = userDoc.data();
                         if (uData.status === 'expelled' || uData.role === 'expelled') {
                             await auth.signOut();
                             localStorage.removeItem('verba_logged_in');
+                            localStorage.removeItem('verba_user_email');
+                            localStorage.removeItem('verba_user_name');
                             errorEl.textContent = 'This account has been expelled from Verba Vitae. Access is revoked. Please contact administration.';
                             errorEl.style.display = 'block';
                             submitBtn.textContent = 'Sign In';
@@ -123,7 +180,7 @@
                             return;
                         }
                         if (uData.role) {
-                            role = uData.role;
+                            role = isAdminEmail ? 'admin' : uData.role;
                         }
                     } else if (isAdminEmail) {
                         role = 'admin';
@@ -141,6 +198,10 @@
                         role = 'admin';
                     }
                 }
+
+                // Store user identity in localStorage
+                localStorage.setItem('verba_user_email', email);
+                localStorage.setItem('verba_user_name', uData?.displayName || uData?.firstName || user.displayName || email.split('@')[0]);
 
                 // 3. Redirect based on role
                 if (role === 'admin') {

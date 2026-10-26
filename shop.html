@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verba Vitae Shop - Browse books, textbooks, technology, snacks, and accessories.">
     <title>Verba Vitae - Shop</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/shop.css">
@@ -60,7 +61,6 @@
                     <a href="accessories.html">Accessories <span class="arrow"><i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></span></a>
                 </div>
             </div>
-        </div>
         </div>
     </header>
     
@@ -152,7 +152,7 @@
                     <!-- Horizontal Filters -->
                     <div class="horizontal-filters">
                         <div class="filter-group search-filter">
-                            <input type="text" placeholder="Search by name, author, ISBN..." id="bookSearch">
+                            <input type="text" placeholder="Search by name, author, ISBN..." id="bookFilterSearch">
                         </div>
                         <div class="filter-group">
                             <label for="sortDate">Sort By:</label>
@@ -185,7 +185,7 @@
 
                 <div class="results-grid">
                     <!-- Example 1: Fantasy -->
-                    <div class="book-card" data-category="fantasy">
+                    <div class="book-card" data-category="fantasy" data-date="8" data-rating="4.8">
                         <div class="placeholder-cover">FANTASY</div>
                         <p class="book-title">Dragon's Breath</p>
                         <p class="book-author">By E. R. Vance</p>
@@ -194,7 +194,7 @@
                     </div>
 
                     <!-- Example 2: Romance -->
-                    <div class="book-card" data-category="romance">
+                    <div class="book-card" data-category="romance" data-date="7" data-rating="4.2">
                         <div class="placeholder-cover">ROMANCE</div>
                         <p class="book-title">Summer in Paris</p>
                         <p class="book-author">By Clara Miles</p>
@@ -203,7 +203,7 @@
                     </div>
 
                     <!-- Example 3: Business -->
-                    <div class="book-card" data-category="business">
+                    <div class="book-card" data-category="business" data-date="6" data-rating="4.6">
                         <div class="placeholder-cover">BUSINESS</div>
                         <p class="book-title">Lead from the Front</p>
                         <p class="book-author">By Marcus Sterling</p>
@@ -212,7 +212,7 @@
                     </div>
 
                     <!-- Example 4: History -->
-                    <div class="book-card" data-category="history">
+                    <div class="book-card" data-category="history" data-date="5" data-rating="3.8">
                         <div class="placeholder-cover">HISTORY</div>
                         <p class="book-title">The Fall of Rome</p>
                         <p class="book-author">By Dr. Julian Thorne</p>
@@ -221,7 +221,7 @@
                     </div>
 
                     <!-- Example 5: College -->
-                    <div class="book-card" data-category="college">
+                    <div class="book-card" data-category="college" data-date="4" data-rating="4.5">
                         <div class="placeholder-cover">COLLEGE</div>
                         <p class="book-title">Calculus Vol. 1</p>
                         <p class="book-author">By Helen Carter</p>
@@ -230,7 +230,7 @@
                     </div>
 
                     <!-- Example 6: Kids -->
-                    <div class="book-card" data-category="kids">
+                    <div class="book-card" data-category="kids" data-date="3" data-rating="4.9">
                         <div class="placeholder-cover">KIDS</div>
                         <p class="book-title">The Hungry Little Bear</p>
                         <p class="book-author">By Timmy Walters</p>
@@ -239,7 +239,7 @@
                     </div>
 
                     <!-- Example 7: Audiobooks -->
-                    <div class="book-card" data-category="audiobooks">
+                    <div class="book-card" data-category="audiobooks" data-date="2" data-rating="3.6">
                         <div class="placeholder-cover">AUDIOBOOK</div>
                         <p class="book-title">Mindfulness Daily</p>
                         <p class="book-author">By Sarah Jennings</p>
@@ -248,7 +248,7 @@
                     </div>
 
                     <!-- Example 8: Sci-Fi -->
-                    <div class="book-card" data-category="sci-fi">
+                    <div class="book-card" data-category="sci-fi" data-date="1" data-rating="4.4">
                         <div class="placeholder-cover">SCI-FI</div>
                         <p class="book-title">Neon Horizons</p>
                         <p class="book-author">By Arthur K. Vane</p>
@@ -307,39 +307,102 @@
     <script>
         // Store current user state
         let currentUser = null;
-        auth.onAuthStateChanged(user => {
-            currentUser = user;
-            const loginBtn = document.querySelector('.btn-shop-login');
-            if (loginBtn && user) {
-                loginBtn.textContent = 'Account';
-                loginBtn.href = 'dashboard.html';
-            }
-        });
+        if (typeof auth !== 'undefined' && auth) {
+            auth.onAuthStateChanged(user => {
+                currentUser = user;
+                const loginBtn = document.querySelector('.btn-shop-login');
+                if (loginBtn && user) {
+                    loginBtn.textContent = 'Account';
+                    loginBtn.href = 'dashboard.html';
+                }
+            });
+        }
 
-        // Initialize Carousel
+        // Initialize Shop Filtering, Sorting, and Modal
         document.addEventListener('DOMContentLoaded', () => {
             const sidebarLinks = document.querySelectorAll('.shop-sidebar a');
-            const bookCards = document.querySelectorAll('.results-grid .book-card');
+            const staticBookCards = document.querySelectorAll('.results-grid .book-card:not(.dynamic-product-card)');
             const grid = document.querySelector('.results-grid');
             const searchInput = document.getElementById('bookSearch');
+            const filterSearchInput = document.getElementById('bookFilterSearch');
+            const sortDateSelect = document.getElementById('sortDate');
+            const filterPriceSelect = document.getElementById('filterPrice');
+            const filterRatingSelect = document.getElementById('filterRating');
             
             function filterBooks() {
                 const activeCategoryLink = document.querySelector('.shop-sidebar a.active-category');
                 const selectedCategory = activeCategoryLink ? activeCategoryLink.getAttribute('data-category') : 'all';
-                const searchText = searchInput ? searchInput.value.toLowerCase().trim() : '';
-                
+                const topSearch = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                const barSearch = filterSearchInput ? filterSearchInput.value.toLowerCase().trim() : '';
+                const searchText = barSearch || topSearch;
+                const sortValue = sortDateSelect ? sortDateSelect.value : 'newest';
+                const priceFilter = filterPriceSelect ? filterPriceSelect.value : 'all';
+                const ratingFilter = filterRatingSelect ? filterRatingSelect.value : 'all';
+
+                // Query dynamically so custom products added by cart.js are included
+                const allCards = Array.from(document.querySelectorAll('.results-grid .book-card'));
+
+                // Sort cards and update DOM order
+                allCards.sort((a, b) => {
+                    const titleA = (a.querySelector('.book-title') ? a.querySelector('.book-title').textContent : '').trim();
+                    const titleB = (b.querySelector('.book-title') ? b.querySelector('.book-title').textContent : '').trim();
+                    const dateA = parseFloat(a.getAttribute('data-date') || '0');
+                    const dateB = parseFloat(b.getAttribute('data-date') || '0');
+
+                    if (sortValue === 'az') {
+                        return titleA.localeCompare(titleB);
+                    } else if (sortValue === 'za') {
+                        return titleB.localeCompare(titleA);
+                    } else if (sortValue === 'oldest') {
+                        return dateA - dateB;
+                    } else {
+                        // newest
+                        return dateB - dateA;
+                    }
+                });
+
+                if (grid) {
+                    const emptyMsgEl = grid.querySelector('.empty-message');
+                    allCards.forEach(c => grid.appendChild(c));
+                    if (emptyMsgEl) grid.appendChild(emptyMsgEl);
+                }
+
                 let visibleCount = 0;
 
-                bookCards.forEach(card => {
-                    const matchesCategory = !selectedCategory || selectedCategory === 'all' || card.getAttribute('data-category') === selectedCategory;
+                allCards.forEach(card => {
+                    const cardCat = card.getAttribute('data-category') || '';
+                    const matchesCategory = !selectedCategory || selectedCategory === 'all' || cardCat === selectedCategory;
                     
                     const titleText = card.querySelector('.book-title') ? card.querySelector('.book-title').textContent.toLowerCase() : '';
                     const authorText = card.querySelector('.book-author') ? card.querySelector('.book-author').textContent.toLowerCase() : '';
                     const isbnText = card.querySelector('.book-isbn') ? card.querySelector('.book-isbn').textContent.toLowerCase() : '';
                     
-                    const matchesSearch = titleText.includes(searchText) || authorText.includes(searchText) || isbnText.includes(searchText);
+                    const matchesTop = !topSearch || titleText.includes(topSearch) || authorText.includes(topSearch) || isbnText.includes(topSearch);
+                    const matchesBar = !barSearch || titleText.includes(barSearch) || authorText.includes(barSearch) || isbnText.includes(barSearch);
+                    const matchesSearch = matchesTop && matchesBar;
 
-                    if (matchesCategory && matchesSearch && !card.classList.contains('in-cart') && !card.classList.contains('purchased')) {
+                    // Price filter
+                    const priceText = card.querySelector('.book-price') ? card.querySelector('.book-price').textContent : '$0';
+                    const priceVal = parseFloat(priceText.replace(/[^0-9.]/g, '')) || 0;
+                    let matchesPrice = true;
+                    if (priceFilter === 'under10') {
+                        matchesPrice = priceVal < 10;
+                    } else if (priceFilter === '10to25') {
+                        matchesPrice = priceVal >= 10 && priceVal <= 25;
+                    } else if (priceFilter === 'over25') {
+                        matchesPrice = priceVal > 25;
+                    }
+
+                    // Rating filter
+                    const ratingVal = parseFloat(card.getAttribute('data-rating') || '4.5');
+                    let matchesRating = true;
+                    if (ratingFilter === '4star') {
+                        matchesRating = ratingVal >= 4.0;
+                    } else if (ratingFilter === '3star') {
+                        matchesRating = ratingVal >= 3.0;
+                    }
+
+                    if (matchesCategory && matchesSearch && matchesPrice && matchesRating && !card.classList.contains('in-cart') && !card.classList.contains('purchased')) {
                         card.style.display = 'flex';
                         visibleCount++;
                     } else {
@@ -350,7 +413,7 @@
                 // Handle empty state message
                 let emptyMessage = document.querySelector('.empty-message');
                 if (visibleCount === 0) {
-                    if (!emptyMessage) {
+                    if (!emptyMessage && grid) {
                         emptyMessage = document.createElement('div');
                         emptyMessage.className = 'empty-message';
                         emptyMessage.style.gridColumn = '1 / -1';
@@ -360,8 +423,10 @@
                         emptyMessage.style.fontSize = '1.1rem';
                         grid.appendChild(emptyMessage);
                     }
-                    emptyMessage.textContent = searchText ? 'No books match your search in this category.' : 'No books currently available in this category.';
-                    emptyMessage.style.display = 'block';
+                    if (emptyMessage) {
+                        emptyMessage.textContent = searchText ? 'No books match your search in this category.' : 'No books currently available in this category.';
+                        emptyMessage.style.display = 'block';
+                    }
                 } else if (emptyMessage) {
                     emptyMessage.style.display = 'none';
                 }
@@ -383,37 +448,46 @@
                 });
             });
 
-            // Search Input Event
+            // Search Input Events (both top search bar and horizontal filter search bar)
             if (searchInput) {
                 searchInput.addEventListener('input', filterBooks);
             }
+            if (filterSearchInput) {
+                filterSearchInput.addEventListener('input', filterBooks);
+            }
+            if (sortDateSelect) {
+                sortDateSelect.addEventListener('change', filterBooks);
+            }
+            if (filterPriceSelect) {
+                filterPriceSelect.addEventListener('change', filterBooks);
+            }
+            if (filterRatingSelect) {
+                filterRatingSelect.addEventListener('change', filterBooks);
+            }
 
-            // Modal Logic
+            // Modal Logic for static cards
             const modal = document.getElementById('bookModal');
             const closeModalBtn = document.querySelector('.close-modal');
 
-            // Open Modal
-            bookCards.forEach(card => {
-                card.style.cursor = 'pointer'; // Add pointer to show it's clickable
+            staticBookCards.forEach(card => {
+                card.style.cursor = 'pointer';
                 card.addEventListener('click', () => {
-                    // Extract data
                     const title = card.querySelector('.book-title').textContent;
                     const author = card.querySelector('.book-author').textContent;
                     const price = card.querySelector('.book-price').textContent;
                     const isbn = card.querySelector('.book-isbn').textContent.replace('ISBN: ', '');
-                    const category = card.querySelector('.placeholder-cover').textContent;
+                    const coverNode = card.querySelector('.placeholder-cover');
+                    const category = coverNode ? coverNode.textContent : 'BOOK';
 
-                    // Populate Modal
                     document.getElementById('modalTitle').textContent = title;
                     document.getElementById('modalAuthor').textContent = author;
                     document.getElementById('modalPrice').textContent = price;
-                    document.getElementById('modalIsbn').textContent = isbn;
+                    const modalIsbn = document.getElementById('modalIsbn');
+                    if (modalIsbn) modalIsbn.textContent = isbn;
                     document.getElementById('modalCover').textContent = category;
 
-                    // Show Modal
                     modal.style.display = 'flex';
                     
-                    // Setup Add to Cart button
                     const addToCartBtn = document.querySelector('.add-to-cart-btn');
                     const newBtn = addToCartBtn.cloneNode(true);
                     addToCartBtn.parentNode.replaceChild(newBtn, addToCartBtn);
@@ -435,9 +509,8 @@
                         const added = window.addToCart(bookObj);
                         if (added) {
                             newBtn.textContent = 'Added to Cart!';
-                            newBtn.style.backgroundColor = '#48bb78'; // Green success color
+                            newBtn.style.backgroundColor = '#48bb78';
                             
-                            // Trigger the global toast
                             if (typeof window.showToast === 'function') {
                                 window.showToast('This item is temporarily reserved in your cart for 30 minutes while you continue exploring the store.');
                             }
@@ -452,14 +525,12 @@
                 });
             });
 
-            // Close Modal via X
             if (closeModalBtn) {
                 closeModalBtn.addEventListener('click', () => {
                     modal.style.display = 'none';
                 });
             }
 
-            // Close Modal via background click
             window.addEventListener('click', (e) => {
                 if (e.target === modal) {
                     modal.style.display = 'none';

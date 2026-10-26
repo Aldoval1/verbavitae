@@ -117,7 +117,9 @@
                 </div>
             </div>
 
-            <div class="footer-right"></div>
+            <div class="footer-right">
+                <p style="font-size: 0.78rem; color: #cbd5e0; margin: 0;">&copy; 2026 Verba Vitae Organization. All rights reserved.</p>
+            </div>
         </div>
     </footer>
 
@@ -131,12 +133,24 @@
             });
         }
 
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         // Full Articles Data
         const newsArticles = [
             {
                 badge: 'Announcement',
+                category: 'announcement',
                 date: 'July 20, 2026',
                 title: 'Verba Vitae Launches Annual Academic Excellence Grant',
+                excerpt: 'Verba Vitae is proud to unveil the 2026 Academic Excellence Grant, designed to support students engaged in original research, conference presentations, and professional development programs.',
                 image: 'images/slide1.jpg',
                 content: `
                     <p style="line-height:1.7; color:#333; margin-bottom:15px;">Verba Vitae is proud to unveil the 2026 Academic Excellence Grant, designed to support students engaged in original research, conference presentations, and professional development programs.</p>
@@ -151,8 +165,10 @@
             },
             {
                 badge: 'Spotlight',
+                category: 'spotlight',
                 date: 'July 15, 2026',
                 title: 'Leadership Spotlight: Building Empowered Student Communities',
+                excerpt: 'Our executive leadership team continues to innovate new pathways for student engagement across disciplines. In this spotlight, we reflect on the principles guiding our organizational growth.',
                 image: 'images/cover1.png',
                 content: `
                     <p style="line-height:1.7; color:#333; margin-bottom:15px;">Our executive leadership team continues to innovate new pathways for student engagement across disciplines. In this spotlight, we reflect on the principles guiding our organizational growth.</p>
@@ -161,18 +177,22 @@
             },
             {
                 badge: 'Recap',
+                category: 'recap',
                 date: 'July 08, 2026',
                 title: 'Summer Leadership Summit Highlights & Takeaways',
+                excerpt: 'The 2026 Summer Leadership Summit gathered ambitious student organizers for a full day of collaborative workshops and keynote sessions.',
                 image: 'images/slide2.jpg',
                 content: `
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">The 2026 Summer Leadership Summit gathered ambitious student organizers for a full day of collaborative workshops and keynote key notes.</p>
+                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">The 2026 Summer Leadership Summit gathered ambitious student organizers for a full day of collaborative workshops and keynote sessions.</p>
                     <p style="line-height:1.7; color:#333; margin-bottom:15px;">Highlights included interactive panel sessions on grant writing, project management, and community outreach strategies led by alumni and faculty advisors.</p>
                 `
             },
             {
                 badge: 'Announcement',
+                category: 'announcement',
                 date: 'June 28, 2026',
                 title: 'New Peer Mentorship Program Applications Now Open',
+                excerpt: 'Our flagship Peer Mentorship Program pairs incoming and underclassmen students with experienced upperclassmen to foster academic achievement and personal growth.',
                 image: 'images/slide3.jpg',
                 content: `
                     <p style="line-height:1.7; color:#333; margin-bottom:15px;">Our flagship Peer Mentorship Program pairs incoming and underclassmen students with experienced upperclassmen to foster academic achievement and personal growth.</p>
@@ -181,8 +201,10 @@
             },
             {
                 badge: 'Spotlight',
+                category: 'spotlight',
                 date: 'June 18, 2026',
                 title: 'Verba Vitae Expands Institutional Partner Network',
+                excerpt: 'We are excited to announce strategic partnerships with regional industry partners and academic associations to provide direct access to internships and fellowship opportunities.',
                 image: 'images/cover2.png',
                 content: `
                     <p style="line-height:1.7; color:#333; margin-bottom:15px;">We are excited to announce strategic partnerships with regional industry partners and academic associations to provide direct access to internships and fellowship opportunities.</p>
@@ -190,14 +212,43 @@
             },
             {
                 badge: 'Recap',
+                category: 'recap',
                 date: 'June 05, 2026',
                 title: 'Community Impact Report: 500+ Students Empowered',
+                excerpt: 'Our semi-annual impact report highlights milestone achievements: 500+ active participants, 12 hosted skill workshops, and over $5,000 distributed in student support awards.',
                 image: 'images/slide4.jpg',
                 content: `
                     <p style="line-height:1.7; color:#333; margin-bottom:15px;">Our semi-annual impact report highlights milestone achievements: 500+ active participants, 12 hosted skill workshops, and over $5,000 distributed in student support awards.</p>
                 `
             }
         ];
+
+        function renderNewsArticles() {
+            const grid = document.getElementById('newsGrid');
+            if (!grid) return;
+            if (!newsArticles || newsArticles.length === 0) return;
+
+            grid.innerHTML = newsArticles.map((article, index) => `
+                <article class="news-card" data-category="${escapeHtml(article.category || article.badge.toLowerCase())}">
+                    <div class="news-image-wrapper">
+                        <img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.title)}" loading="lazy">
+                        <span class="news-badge">${escapeHtml(article.badge)}</span>
+                    </div>
+                    <div class="news-content">
+                        <div class="news-meta">
+                            <span><i class="far fa-calendar-alt"></i> ${escapeHtml(article.date)}</span>
+                        </div>
+                        <h3 class="news-title">${escapeHtml(article.title)}</h3>
+                        <p class="news-excerpt">${escapeHtml(article.excerpt)}</p>
+                        <button class="btn-read-more" onclick="openNewsModal(${index})">
+                            Read Full Story <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </article>
+            `).join('');
+        }
+
+        document.addEventListener('DOMContentLoaded', renderNewsArticles);
 
         // Filter Stories Function
         function filterNews(category, btn) {

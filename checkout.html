@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Verba Vitae Checkout - Complete your book and item reservation for in-store pickup.">
     <title>Verba Vitae - Checkout</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
     <link rel="stylesheet" href="css/shop.css">
@@ -10,6 +11,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-init.js"></script>
 </head>
 <body>
     <header class="shop-header">
@@ -49,13 +56,13 @@
                 <div class="order-summary">
                     <h2>Order Summary</h2>
                     <div id="cartItemsList" class="cart-items-list">
-                    <!-- Dynamic Cart Items Here -->
+                        <!-- Dynamic Cart Items Here -->
+                    </div>
+                    <div class="order-total">
+                        <span>Total:</span>
+                        <span id="orderTotalAmount">$0.00</span>
+                    </div>
                 </div>
-                <div class="order-total">
-                    <span>Total:</span>
-                    <span id="orderTotalAmount">$0.00</span>
-                </div>
-            </div>
             </div>
 
             <!-- Right Side: Payment Methods -->
@@ -87,6 +94,16 @@
             const checkoutTimer = document.getElementById('checkoutTimer');
             const placeOrderBtn = document.getElementById('placeOrderBtn');
 
+            function escapeHtmlCheckout(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
             function renderCart() {
                 const cart = getCart();
                 cartItemsList.innerHTML = '';
@@ -104,21 +121,27 @@
                 let total = 0;
 
                 cart.forEach(item => {
-                    const priceVal = parseFloat(item.price.replace('$', ''));
+                    const priceVal = parseFloat(String(item.price || '0').replace('$', '')) || 0;
                     total += priceVal;
+
+                    const safeCategory = escapeHtmlCheckout(item.category || 'ITEM');
+                    const safeTitle = escapeHtmlCheckout(item.title || '');
+                    const safeAuthor = escapeHtmlCheckout(item.author || '');
+                    const safeIsbn = escapeHtmlCheckout(item.isbn || '');
+                    const safePrice = escapeHtmlCheckout(item.price || '$0.00');
 
                     const itemEl = document.createElement('div');
                     itemEl.className = 'cart-item';
                     itemEl.innerHTML = `
-                        <div class="cart-item-cover">${item.category}</div>
+                        <div class="cart-item-cover">${safeCategory}</div>
                         <div class="cart-item-details">
-                            <h3>${item.title}</h3>
-                            <p>${item.author}</p>
-                            <p class="cart-item-isbn">ISBN: ${item.isbn}</p>
+                            <h3>${safeTitle}</h3>
+                            <p>${safeAuthor}</p>
+                            <p class="cart-item-isbn">ISBN: ${safeIsbn}</p>
                         </div>
                         <div class="cart-item-action">
-                            <p class="cart-item-price">${item.price}</p>
-                            <button class="remove-btn" data-isbn="${item.isbn}">Remove</button>
+                            <p class="cart-item-price">${safePrice}</p>
+                            <button class="remove-btn" data-isbn="${safeIsbn}">Remove</button>
                         </div>
                     `;
                     cartItemsList.appendChild(itemEl);
@@ -176,10 +199,11 @@
                 placeOrderBtn.textContent = 'Sending Invoice...';
                 placeOrderBtn.disabled = true;
 
+                const orderId = "ORD-" + Date.now().toString(36).toUpperCase() + "-" + Math.floor(1000 + Math.random() * 9000);
                 const cart = getCart();
                 let total = 0;
                 const ordersParams = cart.map(item => {
-                    const priceVal = parseFloat(item.price.replace('$', ''));
+                    const priceVal = parseFloat(String(item.price || '0').replace('$', '')) || 0;
                     total += priceVal;
                     return {
                         name: item.title + ' (by ' + item.author + ')',
@@ -189,7 +213,7 @@
                 });
 
                 const templateParams = {
-                    order_id: "ORD-" + Math.floor(Math.random() * 1000000),
+                    order_id: orderId,
                     to_name: name,
                     to_email: email,
                     orders: ordersParams,
@@ -200,43 +224,58 @@
                     }
                 };
 
-                // The last parameter must be your Public Key from EmailJS!
-                emailjs.send("service_7v4lwfn", "template_o63ti47", templateParams, "T2RRIBrs9d6zqacLR")
-                    .then(() => {
-                        completeOrderSuccess();
-                    })
-                    .catch((error) => {
-                        console.error('EmailJS Error:', error);
-                        alert('There was an error sending the email (did you add the Public Key?), but your order was still reserved.');
-                        completeOrderSuccess();
-                    });
+                if (typeof emailjs !== 'undefined' && emailjs) {
+                    emailjs.send("service_7v4lwfn", "template_o63ti47", templateParams, "T2RRIBrs9d6zqacLR")
+                        .then(() => {
+                            completeOrderSuccess(orderId);
+                        })
+                        .catch((error) => {
+                            console.error('EmailJS Error:', error);
+                            alert('There was an error sending the email, but your order was still reserved.');
+                            completeOrderSuccess(orderId);
+                        });
+                } else {
+                    completeOrderSuccess(orderId);
+                }
             });
 
-            function completeOrderSuccess() {
-                alert('Your order has been reserved! Please pick up your books within 1 week.');
-                
+            async function completeOrderSuccess(orderId) {
+                const finalOrderId = orderId || ("ORD-" + Date.now().toString(36).toUpperCase() + "-" + Math.floor(1000 + Math.random() * 9000));
                 const cart = getCart();
 
-                // Save order to E-Board Dashboard
+                // Save order to E-Board & Admin Dashboards
                 const name = document.getElementById('customerName').value.trim();
                 const email = document.getElementById('customerEmail').value.trim();
                 let total = 0;
                 const itemsForOrder = cart.map(item => {
-                    total += parseFloat(item.price.replace('$', ''));
-                    return { title: item.title, quantity: 1 };
+                    const itemPrice = parseFloat(String(item.price || '0').replace('$', '')) || 0;
+                    total += itemPrice;
+                    return { title: item.title, isbn: item.isbn, price: itemPrice, quantity: 1 };
                 });
                 
+                const nowIso = new Date().toISOString();
                 const newOrder = {
+                    id: finalOrderId,
                     customerName: name,
                     customerEmail: email,
                     total: total,
                     items: itemsForOrder,
-                    date: new Date().toISOString()
+                    status: 'Pending',
+                    date: nowIso,
+                    timestamp: nowIso
                 };
                 
                 const orders = JSON.parse(localStorage.getItem('verba_orders')) || [];
                 orders.push(newOrder);
                 localStorage.setItem('verba_orders', JSON.stringify(orders));
+
+                if (typeof db !== 'undefined' && db) {
+                    try {
+                        await db.collection('orders').doc(finalOrderId).set(newOrder);
+                    } catch (err) {
+                        console.warn('Firestore order save warning:', err);
+                    }
+                }
 
                 const purchasedStr = localStorage.getItem('verba_purchased');
                 const purchased = purchasedStr ? JSON.parse(purchasedStr) : [];
@@ -249,6 +288,7 @@
 
                 localStorage.removeItem('verba_cart');
                 localStorage.removeItem('verba_cart_expires');
+                alert(`Your order (${finalOrderId}) has been reserved! Please pick up your items within 1 week.`);
                 window.location.href = 'shop.html';
             }
         });

@@ -297,21 +297,33 @@
                 }
 
                 // 2. Save User Document in Firestore
+                const inviteCode = new URLSearchParams(window.location.search).get('code') || '';
                 try {
                     if (db) {
+                        const fullNameStr = `${firstName} ${lastName}`.trim();
                         await db.collection('users').doc(createdUser.uid).set({
                             firstName: firstName,
                             lastName: lastName,
-                            displayName: `${firstName} ${lastName}`.trim(),
+                            displayName: fullNameStr,
+                            fullName: fullNameStr,
                             email: email,
                             phone: phone || '',
                             major: major || '',
                             role: 'member',
                             status: 'active',
+                            invitationCode: inviteCode,
                             emailVerified: false,
                             createdAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date()
                         }, { merge: true });
                         console.log("[Firestore] User document created for UID:", createdUser.uid);
+
+                        if (inviteCode) {
+                            db.collection('invitations').doc(inviteCode).update({
+                                status: 'accepted',
+                                acceptedBy: email,
+                                acceptedAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date()
+                            }).catch(() => {});
+                        }
                     }
                 } catch (dbErr) {
                     console.warn("Could not save user doc in Firestore:", dbErr);
