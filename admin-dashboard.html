@@ -2446,46 +2446,65 @@
 
                 try {
                     if (editId) {
-                        // UPDATE EVENT
+                        // UPDATE EVENT - Firestore is the source of truth.
+                        // A failed cloud write must NOT be reported as success
+                        // and must NOT be hidden behind a local-only copy.
+                        let firestoreOk = false;
+                        let firestoreErr = null;
                         if (db) {
                             try {
                                 await db.collection('events').doc(String(editId)).set(eventData, { merge: true });
+                                firestoreOk = true;
                             } catch (err) {
-                                console.warn("Firestore update event warning:", err);
+                                firestoreErr = err;
+                                console.warn("Firestore update event error:", err);
                             }
-                        }
-
-                        let localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
-                        const targetIdx = localEvents.findIndex(e => String(e.id) === String(editId));
-                        if (targetIdx !== -1) {
-                            localEvents[targetIdx] = { ...localEvents[targetIdx], ...eventData };
                         } else {
-                            localEvents.unshift({ id: editId, ...eventData });
+                            firestoreErr = new Error('Firestore is not initialized');
                         }
-                        localStorage.setItem('verba_events', JSON.stringify(localEvents));
-
-                        showToast('Event updated successfully!');
-                        cancelEditEvent();
+                        if (!firestoreOk) {
+                            showToast('Firestore error - NOT saved to the cloud: ' + (firestoreErr && (firestoreErr.code || firestoreErr.message) || 'unknown error') + '. Fix Firestore rules/permissions, then retry. This browser copy was not updated.');
+                        } else {
+                            let localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
+                            const targetIdx = localEvents.findIndex(e => String(e.id) === String(editId));
+                            if (targetIdx !== -1) {
+                                localEvents[targetIdx] = { ...localEvents[targetIdx], ...eventData };
+                            } else {
+                                localEvents.unshift({ id: editId, ...eventData });
+                            }
+                            localStorage.setItem('verba_events', JSON.stringify(localEvents));
+                            showToast('Event updated successfully in Firestore!');
+                            cancelEditEvent();
+                        }
                     } else {
-                        // CREATE NEW EVENT
+                        // CREATE NEW EVENT - Firestore is the source of truth.
                         eventData.createdAt = firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString();
-                        let newDocId = 'evt_' + Date.now();
+                        let firestoreOk = false;
+                        let firestoreErr = null;
+                        let newDocId = null;
                         if (db) {
                             try {
                                 const docRef = await db.collection('events').add(eventData);
                                 newDocId = docRef.id;
+                                firestoreOk = true;
                             } catch (err) {
-                                console.warn("Firestore add event warning:", err);
+                                firestoreErr = err;
+                                console.warn("Firestore add event error:", err);
                             }
+                        } else {
+                            firestoreErr = new Error('Firestore is not initialized');
                         }
-
-                        // Store exact matching ID in localStorage
-                        const localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
-                        localEvents.unshift({ id: newDocId, ...eventData });
-                        localStorage.setItem('verba_events', JSON.stringify(localEvents));
-
-                        showToast('Event published successfully!');
-                        eventForm.reset();
+                        if (!firestoreOk) {
+                            showToast('Firestore error - NOT published to the cloud: ' + (firestoreErr && (firestoreErr.code || firestoreErr.message) || 'unknown error') + '. The event was NOT saved locally as published. Fix Firestore rules/permissions, then retry (your form data is kept).');
+                        } else {
+                            // Only cache locally after a successful cloud write,
+                            // using the exact Firestore document ID.
+                            const localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
+                            localEvents.unshift({ id: newDocId, ...eventData });
+                            localStorage.setItem('verba_events', JSON.stringify(localEvents));
+                            showToast('Event published successfully in Firestore!');
+                            eventForm.reset();
+                        }
                     }
                     loadAdminEvents();
                 } catch (error) {

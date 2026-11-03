@@ -240,8 +240,10 @@
                 .replace(/'/g, "&#039;");
         }
 
+        let eventsFetchError = null;
         async function fetchEvents() {
             let fetched = [];
+            eventsFetchError = null;
             try {
                 if (typeof db !== 'undefined' && db) {
                     const snapshot = await db.collection('events').get();
@@ -257,7 +259,8 @@
                     }
                 }
             } catch (err) {
-                console.warn("Firestore fetch events warning:", err);
+                eventsFetchError = err;
+                console.warn("Firestore fetch events error:", err);
             }
 
             const local = JSON.parse(localStorage.getItem('verba_events')) || [];
@@ -331,7 +334,11 @@
             listContainer.innerHTML = '';
             
             if (eventsData.length === 0) {
-                listContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">No upcoming events at this time. Check back soon!</div>';
+                if (eventsFetchError) {
+                    listContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: #b91c1c;">Could not load events from the database. Please refresh the page or check back soon.</div>';
+                } else {
+                    listContainer.innerHTML = '<div style="padding: 2rem; text-align: center; color: #666;">No upcoming events at this time. Check back soon!</div>';
+                }
                 return;
             }
 
