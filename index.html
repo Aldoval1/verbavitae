@@ -231,15 +231,26 @@
                 console.warn('Error loading home events from Firestore:', err);
             }
 
+            try {
+                const local = JSON.parse(localStorage.getItem('verba_events')) || [];
+                local.forEach(loc => {
+                    if (!events.some(e => String(e.id) === String(loc.id) || e.title === loc.title)) {
+                        events.push(loc);
+                    }
+                });
+            } catch (e) {}
+
             if (events.length === 0) {
-                try {
-                    events = JSON.parse(localStorage.getItem('verba_events')) || [];
-                } catch (e) {}
+                board.innerHTML = '<p class="no-events">Currently, there are no events scheduled for this week.</p>';
+                return;
             }
 
-            if (events.length === 0) return;
+            events.sort((a, b) => {
+                const da = a.date ? new Date(a.date).getTime() : 9999999999999;
+                const db = b.date ? new Date(b.date).getTime() : 9999999999999;
+                return da - db;
+            });
 
-            events.sort((a, b) => new Date(a.date || 0) - new Date(b.date || 0));
             const upcoming = events.slice(0, 4);
 
             board.innerHTML = `
@@ -256,6 +267,14 @@
                 </div>
             `;
         }
+
+        if (typeof auth !== 'undefined' && auth) {
+            auth.onAuthStateChanged(() => loadHomeEvents());
+        }
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'verba_events') loadHomeEvents();
+        });
+        window.addEventListener('focus', loadHomeEvents);
         document.addEventListener('DOMContentLoaded', loadHomeEvents);
     </script>
     <!-- 3D Book Interactive Experience -->

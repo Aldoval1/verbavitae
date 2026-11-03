@@ -213,8 +213,8 @@ service cloud.firestore {
       return isSignedIn() &&
         request.auth.token.email != null &&
         (
-          request.auth.token.email == 'aaronbacallao06@gmail.com' ||
-          request.auth.token.email.matches('.*@theverbavitae\\.org$')
+          request.auth.token.email.matches('(?i)^aaronbacallao06@gmail\\.com$') ||
+          request.auth.token.email.matches('(?i).*@theverbavitae\\.org$')
         );
     }
 

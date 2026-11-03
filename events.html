@@ -222,9 +222,7 @@
                 } else {
                     userRegisteredEventIds.clear();
                 }
-                if (eventsData.length > 0) {
-                    selectEvent(currentIndex);
-                }
+                fetchEvents();
             });
         }
 
@@ -240,32 +238,31 @@
                 .replace(/'/g, "&#039;");
         }
 
-        let eventsFetchError = null;
-        async function fetchEvents() {
-            let fetched = [];
-            eventsFetchError = null;
-            try {
-                if (typeof db !== 'undefined' && db) {
-                    const snapshot = await db.collection('events').get();
-                    snapshot.forEach(doc => {
-                        fetched.push({ id: doc.id, ...doc.data() });
-                    });
-                    try {
-                        const regSnap = await db.collection('event_registrations').get();
-                        allEventRegistrations = [];
-                        regSnap.forEach(doc => allEventRegistrations.push({ id: doc.id, ...doc.data() }));
-                    } catch (regErr) {
-                        console.warn("Could not read event_registrations collection:", regErr);
-                    }
-                }
-            } catch (err) {
-                eventsFetchError = err;
-                console.warn("Firestore fetch events error:", err);
-            }
+        let unsubscribeEventsSnapshot = null;
 
+
+        function setupRealtimeEventsListener() {
+            if (typeof db !== 'undefined' && db && !unsubscribeEventsSnapshot) {
+                try {
+                    unsubscribeEventsSnapshot = db.collection('events').onSnapshot(snapshot => {
+                        let fetched = [];
+                        snapshot.forEach(doc => {
+                            fetched.push({ id: doc.id, ...doc.data() });
+                        });
+                        processAndRenderEvents(fetched);
+                    }, err => {
+                        console.warn("Firestore real-time events warning:", err);
+                    });
+                } catch (e) {
+                    console.warn("Could not attach events onSnapshot:", e);
+                }
+            }
+        }
+
+        function processAndRenderEvents(fetched) {
             const local = JSON.parse(localStorage.getItem('verba_events')) || [];
             local.forEach(loc => {
-                if (!fetched.some(e => e.id === loc.id || e.title === loc.title)) {
+                if (!fetched.some(e => String(e.id) === String(loc.id) || e.title === loc.title)) {
                     fetched.push(loc);
                 }
             });
@@ -276,10 +273,16 @@
                 let day = "12";
                 let month = "AUG";
                 if (ev.date) {
-                    const parts = ev.date.split('-');
-                    if (parts.length === 3) {
-                        day = parseInt(parts[2], 10).toString();
-                        month = monthNames[parseInt(parts[1], 10) - 1] || "AUG";
+                    const dObj = new Date(String(ev.date).includes('T') ? ev.date : (ev.date + 'T00:00:00'));
+                    if (!isNaN(dObj.getTime())) {
+                        day = dObj.getDate().toString();
+                        month = monthNames[dObj.getMonth()] || "AUG";
+                    } else {
+                        const parts = String(ev.date).split('-');
+                        if (parts.length === 3) {
+                            day = parseInt(parts[2], 10).toString();
+                            month = monthNames[parseInt(parts[1], 10) - 1] || "AUG";
+                        }
                     }
                 }
                 const firestoreRegCount = allEventRegistrations.filter(r => r.eventId === ev.id || r.id === ev.id || r.eventTitle === ev.title).length;
@@ -291,6 +294,9 @@
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
                 const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
 
+                const rawLat = parseFloat(ev.lat);
+                const rawLng = parseFloat(ev.lng);
+
                 return {
                     id: ev.id || ('evt_' + Math.random()),
                     title: ev.title || 'Community Event',
@@ -299,8 +305,8 @@
                     dateStr: ev.date || '',
                     brief: (ev.description || '').slice(0, 70) + ((ev.description || '').length > 70 ? '...' : ''),
                     location: address,
-                    lat: ev.lat ? parseFloat(ev.lat) : null,
-                    lng: ev.lng ? parseFloat(ev.lng) : null,
+                    lat: !isNaN(rawLat) ? rawLat : null,
+                    lng: !isNaN(rawLng) ? rawLng : null,
                     mapsUrl: mapsUrl,
                     directionsUrl: directionsUrl,
                     time: ev.time || 'TBD',
@@ -324,9 +330,44 @@
                 };
             });
 
+            // Sort upcoming events chronologically
+            eventsData.sort((a, b) => {
+                const da = a.dateStr ? new Date(a.dateStr).getTime() : 9999999999999;
+                const db = b.dateStr ? new Date(b.dateStr).getTime() : 9999999999999;
+                return da - db;
+            });
+
             renderEventList();
-            if (eventsData.length > 0) selectEvent(0);
-            else selectEvent(-1);
+            if (eventsData.length > 0) {
+                const targetIdx = (currentIndex >= 0 && currentIndex < eventsData.length) ? currentIndex : 0;
+                selectEvent(targetIdx);
+            } else {
+                selectEvent(-1);
+            }
+        }
+
+        async function fetchEvents() {
+            let fetched = [];
+            try {
+                if (typeof db !== 'undefined' && db) {
+                    const snapshot = await db.collection('events').get();
+                    snapshot.forEach(doc => {
+                        fetched.push({ id: doc.id, ...doc.data() });
+                    });
+                    try {
+                        const regSnap = await db.collection('event_registrations').get();
+                        allEventRegistrations = [];
+                        regSnap.forEach(doc => allEventRegistrations.push({ id: doc.id, ...doc.data() }));
+                    } catch (regErr) {
+                        console.warn("Could not read event_registrations collection:", regErr);
+                    }
+                }
+            } catch (err) {
+                console.warn("Firestore fetch events warning:", err);
+            }
+
+            processAndRenderEvents(fetched);
+            setupRealtimeEventsListener();
         }
 
         function renderEventList() {
@@ -477,58 +518,89 @@
 
         function updateEventMap(event) {
             const mapEl = document.getElementById('eventDetailMap');
-            if (!mapEl) return;
+            if (!mapEl || typeof L === 'undefined') return;
 
             const defaultLat = 25.7562;
             const defaultLng = -80.3755;
-            let lat = event.lat || defaultLat;
-            let lng = event.lng || defaultLng;
+            let lat = (!isNaN(parseFloat(event.lat))) ? parseFloat(event.lat) : defaultLat;
+            let lng = (!isNaN(parseFloat(event.lng))) ? parseFloat(event.lng) : defaultLng;
 
-            if (!detailMap) {
-                detailMap = L.map('eventDetailMap').setView([lat, lng], 14);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '© OpenStreetMap contributors'
-                }).addTo(detailMap);
-
-                detailMarker = L.marker([lat, lng]).addTo(detailMap);
-            } else {
-                detailMap.setView([lat, lng], 14);
-                detailMarker.setLatLng([lat, lng]);
+            // Reset container if Leaflet internal id exists without an active instance
+            if (mapEl._leaflet_id && !detailMap) {
+                mapEl._leaflet_id = null;
             }
 
-            const popupHtml = `<b>${escapeHtml(event.title)}</b><br><i class="fas fa-map-marker-alt"></i> ${escapeHtml(event.location)}`;
-            detailMarker.bindPopup(popupHtml).openPopup();
+            if (!detailMap) {
+                try {
+                    detailMap = L.map('eventDetailMap').setView([lat, lng], 14);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(detailMap);
+
+                    detailMarker = L.marker([lat, lng]).addTo(detailMap);
+                } catch (e) {
+                    console.warn("Leaflet map init warning:", e);
+                    return;
+                }
+            } else {
+                try {
+                    detailMap.setView([lat, lng], 14);
+                    if (detailMarker) {
+                        detailMarker.setLatLng([lat, lng]);
+                    } else {
+                        detailMarker = L.marker([lat, lng]).addTo(detailMap);
+                    }
+                } catch (e) {
+                    console.warn("Leaflet map view set warning:", e);
+                }
+            }
+
+            if (detailMarker) {
+                const popupHtml = `<b>${escapeHtml(event.title)}</b><br><i class="fas fa-map-marker-alt"></i> ${escapeHtml(event.location)}`;
+                detailMarker.bindPopup(popupHtml).openPopup();
+            }
 
             // If coordinates were not saved, try geocoding address on the fly
-            if (!event.lat || !event.lng) {
+            if ((!event.lat || !event.lng) && event.location) {
                 fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(event.location)}&limit=1`)
                     .then(res => res.json())
                     .then(data => {
-                        if (data && data.length > 0) {
+                        if (data && data.length > 0 && detailMap && detailMarker) {
                             const newLat = parseFloat(data[0].lat);
                             const newLng = parseFloat(data[0].lon);
-                            detailMap.setView([newLat, newLng], 15);
-                            detailMarker.setLatLng([newLat, newLng]);
-                            detailMarker.bindPopup(popupHtml).openPopup();
+                            if (!isNaN(newLat) && !isNaN(newLng)) {
+                                detailMap.setView([newLat, newLng], 15);
+                                detailMarker.setLatLng([newLat, newLng]);
+                                const popupHtml = `<b>${escapeHtml(event.title)}</b><br><i class="fas fa-map-marker-alt"></i> ${escapeHtml(event.location)}`;
+                                detailMarker.bindPopup(popupHtml).openPopup();
+                            }
                         }
                     })
                     .catch(e => console.warn(e));
             }
 
             setTimeout(() => {
-                if (detailMap) detailMap.invalidateSize();
+                if (detailMap) {
+                    try { detailMap.invalidateSize(); } catch(err){}
+                }
             }, 250);
         }
 
         function selectEvent(index) {
-            if (eventsData.length === 0 || index === -1) {
+            const panel = document.getElementById('event-details-panel');
+            const mapContainer = document.getElementById('e-map-container');
+
+            if (eventsData.length === 0 || index === -1 || !eventsData[index]) {
+                if (mapContainer) mapContainer.style.display = 'none';
                 document.getElementById('e-location').innerText = 'N/A';
                 document.getElementById('e-title').innerText = 'No Upcoming Events';
                 document.getElementById('e-desc').innerHTML = '<p>Check back later for new events.</p>';
                 document.getElementById('e-time').innerText = '--:--';
                 document.getElementById('e-link').style.display = 'none';
-                document.getElementById('e-directions-btn').style.display = 'none';
+                const dirBtn = document.getElementById('e-directions-btn');
+                if (dirBtn) dirBtn.style.display = 'none';
+                if (panel) panel.classList.remove('fade');
                 return;
             }
 
@@ -536,66 +608,86 @@
             
             const items = document.querySelectorAll('.event-item');
             items.forEach((item, i) => {
-                if(i === index) item.classList.add('active');
+                if (i === index) item.classList.add('active');
                 else item.classList.remove('active');
             });
             
             const event = eventsData[index];
-            const panel = document.getElementById('event-details-panel');
-            
-            panel.classList.add('fade');
+            if (panel) panel.classList.add('fade');
             
             setTimeout(() => {
-                document.getElementById('e-location').textContent = event.location;
-                document.getElementById('e-title').innerText = event.title;
-                
-                const dirBtn = document.getElementById('e-directions-btn');
-                if (dirBtn) {
-                    dirBtn.style.display = 'inline-flex';
-                    dirBtn.href = event.directionsUrl;
-                }
+                try {
+                    if (mapContainer) mapContainer.style.display = 'block';
+                    document.getElementById('e-location').textContent = event.location || 'Miami, FL';
+                    document.getElementById('e-title').innerText = event.title || 'Event Details';
+                    
+                    const dirBtn = document.getElementById('e-directions-btn');
+                    if (dirBtn) {
+                        dirBtn.style.display = 'inline-flex';
+                        dirBtn.href = event.directionsUrl;
+                    }
 
-                updateEventMap(event);
+                    try {
+                        updateEventMap(event);
+                    } catch (mapErr) {
+                        console.warn("Map update error:", mapErr);
+                    }
 
-                document.getElementById('e-desc').innerHTML = event.desc;
-                document.getElementById('e-time').innerText = event.time;
-                
-                const btn = document.getElementById('e-link');
-                btn.style.display = 'inline-block';
-                
-                if (!isUserLoggedIn()) {
-                    btn.innerHTML = `<i class="fas fa-lock"></i> LOG IN TO REGISTER (${escapeHtml(event.serviceHours)} HOURS)`;
-                    btn.style.backgroundColor = '#d97706';
-                    btn.onclick = (e) => {
-                        e.preventDefault();
-                        alert('You must be logged into your Verba Vitae account to register for events. Redirecting to login...');
-                        window.location.href = 'login.html';
-                    };
-                } else if (isEventRegistered(event.id)) {
-                    btn.innerHTML = '<i class="fas fa-check"></i> REGISTERED <span style="font-size:0.75rem; opacity:0.85; margin-left:6px;">(Click to Cancel)</span>';
-                    btn.style.backgroundColor = '#38a169';
-                    btn.onclick = (e) => {
-                        e.preventDefault();
-                        if (confirm(`You are registered for "${event.title}". Would you like to cancel your registration and release your volunteer slot?`)) {
-                            unregisterFromEvent(event.id);
+                    document.getElementById('e-desc').innerHTML = event.desc;
+                    document.getElementById('e-time').innerText = event.time || 'TBD';
+                    
+                    const btn = document.getElementById('e-link');
+                    if (btn) {
+                        btn.style.display = 'inline-block';
+                        
+                        if (!isUserLoggedIn()) {
+                            btn.innerHTML = `<i class="fas fa-lock"></i> LOG IN TO REGISTER (${escapeHtml(event.serviceHours)} HOURS)`;
+                            btn.style.backgroundColor = '#d97706';
+                            btn.onclick = (e) => {
+                                e.preventDefault();
+                                alert('You must be logged into your Verba Vitae account to register for events. Redirecting to login...');
+                                window.location.href = 'login.html';
+                            };
+                        } else if (isEventRegistered(event.id)) {
+                            btn.innerHTML = '<i class="fas fa-check"></i> REGISTERED <span style="font-size:0.75rem; opacity:0.85; margin-left:6px;">(Click to Cancel)</span>';
+                            btn.style.backgroundColor = '#38a169';
+                            btn.onclick = (e) => {
+                                e.preventDefault();
+                                if (confirm(`You are registered for "${event.title}". Would you like to cancel your registration and release your volunteer slot?`)) {
+                                    unregisterFromEvent(event.id);
+                                }
+                            };
+                        } else if (event.slotsLeft <= 0) {
+                            btn.innerText = 'FULL (NO SLOTS LEFT)';
+                            btn.style.backgroundColor = '#a0aec0';
+                            btn.onclick = (e) => { e.preventDefault(); alert('Sorry, this event has reached maximum volunteer capacity!'); };
+                        } else {
+                            btn.innerText = `REGISTER NOW (${event.serviceHours} HOURS)`;
+                            btn.style.backgroundColor = '#1d0c8d';
+                            btn.onclick = (e) => {
+                                e.preventDefault();
+                                registerForEvent(event.id);
+                            };
                         }
-                    };
-                } else if (event.slotsLeft <= 0) {
-                    btn.innerText = 'FULL (NO SLOTS LEFT)';
-                    btn.style.backgroundColor = '#a0aec0';
-                    btn.onclick = (e) => { e.preventDefault(); alert('Sorry, this event has reached maximum volunteer capacity!'); };
-                } else {
-                    btn.innerText = `REGISTER NOW (${event.serviceHours} HOURS)`;
-                    btn.style.backgroundColor = '#1d0c8d';
-                    btn.onclick = (e) => {
-                        e.preventDefault();
-                        registerForEvent(event.id);
-                    };
+                    }
+                } catch (renderErr) {
+                    console.error("Error rendering event details:", renderErr);
+                } finally {
+                    if (panel) panel.classList.remove('fade');
                 }
-                
-                panel.classList.remove('fade');
-            }, 300);
+            }, 100);
         }
+
+        // Instant cross-tab & live updates
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'verba_events' || e.key === 'verba_registered_events') {
+                fetchEvents();
+            }
+        });
+
+        window.addEventListener('focus', () => {
+            fetchEvents();
+        });
 
         document.addEventListener('DOMContentLoaded', fetchEvents);
 

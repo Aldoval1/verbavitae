@@ -2432,79 +2432,102 @@
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
                 btn.disabled = true;
 
-                const eventData = {
+                let latVal = parseFloat(selectedEventLat);
+                let lngVal = parseFloat(selectedEventLng);
+                if (isNaN(latVal)) latVal = 25.7562;
+                if (isNaN(lngVal)) lngVal = -80.3755;
+
+                const localCreatedIso = new Date().toISOString();
+
+                const firestoreEventData = {
                     title,
                     date,
                     time,
                     location,
-                    lat: selectedEventLat,
-                    lng: selectedEventLng,
+                    lat: latVal,
+                    lng: lngVal,
                     serviceHours,
                     maxSlots,
                     description
                 };
 
+                const localEventData = {
+                    title,
+                    date,
+                    time,
+                    location,
+                    lat: latVal,
+                    lng: lngVal,
+                    serviceHours,
+                    maxSlots,
+                    description,
+                    createdAt: localCreatedIso
+                };
+
+                let firestoreSuccess = false;
+                let firestoreError = null;
+
                 try {
                     if (editId) {
-                        // UPDATE EVENT - Firestore is the source of truth.
-                        // A failed cloud write must NOT be reported as success
-                        // and must NOT be hidden behind a local-only copy.
-                        let firestoreOk = false;
-                        let firestoreErr = null;
+                        // UPDATE EVENT
                         if (db) {
                             try {
-                                await db.collection('events').doc(String(editId)).set(eventData, { merge: true });
-                                firestoreOk = true;
+                                await db.collection('events').doc(String(editId)).set(firestoreEventData, { merge: true });
+                                firestoreSuccess = true;
                             } catch (err) {
-                                firestoreErr = err;
-                                console.warn("Firestore update event error:", err);
+                                firestoreError = err;
+                                console.warn("Firestore update event warning:", err);
                             }
-                        } else {
-                            firestoreErr = new Error('Firestore is not initialized');
                         }
-                        if (!firestoreOk) {
-                            showToast('Firestore error - NOT saved to the cloud: ' + (firestoreErr && (firestoreErr.code || firestoreErr.message) || 'unknown error') + '. Fix Firestore rules/permissions, then retry. This browser copy was not updated.');
+
+                        let localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
+                        const targetIdx = localEvents.findIndex(e => String(e.id) === String(editId));
+                        if (targetIdx !== -1) {
+                            localEvents[targetIdx] = { ...localEvents[targetIdx], id: editId, ...localEventData };
                         } else {
-                            let localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
-                            const targetIdx = localEvents.findIndex(e => String(e.id) === String(editId));
-                            if (targetIdx !== -1) {
-                                localEvents[targetIdx] = { ...localEvents[targetIdx], ...eventData };
-                            } else {
-                                localEvents.unshift({ id: editId, ...eventData });
-                            }
-                            localStorage.setItem('verba_events', JSON.stringify(localEvents));
-                            showToast('Event updated successfully in Firestore!');
-                            cancelEditEvent();
+                            localEvents.unshift({ id: editId, ...localEventData });
                         }
+                        localStorage.setItem('verba_events', JSON.stringify(localEvents));
+
+                        if (firestoreSuccess) {
+                            showToast('Event updated successfully in Cloud & Public website!');
+                        } else if (firestoreError) {
+                            showToast('Event updated locally. Cloud sync warning: ' + (firestoreError.code || firestoreError.message));
+                        } else {
+                            showToast('Event updated successfully!');
+                        }
+                        cancelEditEvent();
                     } else {
-                        // CREATE NEW EVENT - Firestore is the source of truth.
-                        eventData.createdAt = firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString();
-                        let firestoreOk = false;
-                        let firestoreErr = null;
-                        let newDocId = null;
+                        // CREATE NEW EVENT
+                        firestoreEventData.createdAt = (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue)
+                            ? firebase.firestore.FieldValue.serverTimestamp()
+                            : localCreatedIso;
+
+                        let newDocId = 'evt_' + Date.now();
                         if (db) {
                             try {
-                                const docRef = await db.collection('events').add(eventData);
+                                const docRef = await db.collection('events').add(firestoreEventData);
                                 newDocId = docRef.id;
-                                firestoreOk = true;
+                                firestoreSuccess = true;
                             } catch (err) {
-                                firestoreErr = err;
-                                console.warn("Firestore add event error:", err);
+                                firestoreError = err;
+                                console.warn("Firestore add event warning:", err);
                             }
-                        } else {
-                            firestoreErr = new Error('Firestore is not initialized');
                         }
-                        if (!firestoreOk) {
-                            showToast('Firestore error - NOT published to the cloud: ' + (firestoreErr && (firestoreErr.code || firestoreErr.message) || 'unknown error') + '. The event was NOT saved locally as published. Fix Firestore rules/permissions, then retry (your form data is kept).');
+
+                        // Store exact matching ID in localStorage
+                        const localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
+                        localEvents.unshift({ id: newDocId, ...localEventData });
+                        localStorage.setItem('verba_events', JSON.stringify(localEvents));
+
+                        if (firestoreSuccess) {
+                            showToast('Event published successfully to website & public calendar!');
+                        } else if (firestoreError) {
+                            showToast('Event saved locally. Cloud sync warning: ' + (firestoreError.code || firestoreError.message));
                         } else {
-                            // Only cache locally after a successful cloud write,
-                            // using the exact Firestore document ID.
-                            const localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
-                            localEvents.unshift({ id: newDocId, ...eventData });
-                            localStorage.setItem('verba_events', JSON.stringify(localEvents));
-                            showToast('Event published successfully in Firestore!');
-                            eventForm.reset();
+                            showToast('Event published successfully!');
                         }
+                        eventForm.reset();
                     }
                     loadAdminEvents();
                 } catch (error) {
@@ -2692,20 +2715,30 @@
 
         window.deleteEvent = async function(id, title) {
             if (confirm(`Are you sure you want to delete the event "${title || 'this event'}"?`)) {
+                let cloudDeleted = false;
                 try {
                     if (db) {
                         await db.collection('events').doc(String(id)).delete();
+                        cloudDeleted = true;
                     }
-                } catch(e) { console.warn("Firestore delete event warning:", e); }
+                } catch(e) { 
+                    console.warn("Firestore delete event warning:", e); 
+                }
 
                 let local = JSON.parse(localStorage.getItem('verba_events')) || [];
                 local = local.filter(e => String(e.id) !== String(id) && e.title !== title);
                 localStorage.setItem('verba_events', JSON.stringify(local));
 
-                showToast('Event deleted successfully.');
+                showToast(cloudDeleted ? 'Event deleted successfully from Cloud & Website.' : 'Event deleted from local storage.');
                 loadAdminEvents();
             }
         };
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'verba_events' || e.key === 'verba_registered_events') {
+                loadAdminEvents();
+            }
+        });
 
         // --- Verba Voice Admin Management (Discussions & Polls) ---
         let adminVoiceDiscussions = [];

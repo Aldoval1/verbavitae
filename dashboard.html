@@ -608,6 +608,12 @@
 
             fetchDashboardEvents();
 
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'verba_events' || e.key === 'verba_registered_events') {
+                    fetchDashboardEvents();
+                }
+            });
+
             prevMonthBtn.addEventListener('click', () => {
                 currentDate.setMonth(currentDate.getMonth() - 1);
                 renderCalendar();

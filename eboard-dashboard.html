@@ -1169,6 +1169,12 @@
                 });
             }
 
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'verba_events') {
+                    loadEboardEvents();
+                }
+            });
+
             // Product Form logic
             const productForm = document.getElementById('productForm');
             const catSelect = document.getElementById('productCategory');
