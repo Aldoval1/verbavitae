@@ -152,6 +152,7 @@ rules_version = '2';
 //   - isPinned: bool (optional)
 //   - isLocked: bool (optional)
 //   - fromTheConversation: list (optional, <= 100 items)
+//   - poll: map (optional, <= 10 keys) - community poll / votación
 //
 // Collection: voices
 // Document ID: {voiceId}
@@ -401,7 +402,7 @@ service cloud.firestore {
 
     function isValidDiscussion(data) {
       return data is map &&
-        data.keys().size() <= 25 &&
+        data.keys().size() <= 30 &&
         isValidOptionalString(data, 'id', 150) &&
         isValidOptionalString(data, 'title', 300) &&
         isValidOptionalString(data, 'author', 200) &&
@@ -411,7 +412,8 @@ service cloud.firestore {
         isValidOptionalString(data, 'chapterRange', 200) &&
         isValidOptionalString(data, 'type', 100) &&
         isValidOptionalString(data, 'status', 100) &&
-        (!('fromTheConversation' in data) || (data.fromTheConversation is list && data.fromTheConversation.size() <= 100));
+        (!('fromTheConversation' in data) || (data.fromTheConversation is list && data.fromTheConversation.size() <= 100)) &&
+        (!('poll' in data) || (data.poll is map && data.poll.keys().size() <= 10));
     }
 
     function isValidVoice(data) {
@@ -604,7 +606,14 @@ service cloud.firestore {
     // Reading Club Discussions
     match /discussions/{discussionId} {
       allow read: if true;
-      allow create, update: if isStaff() && isValidDiscussion(request.resource.data);
+      allow create: if isStaff() && isValidDiscussion(request.resource.data);
+      allow update: if (isStaff() && isValidDiscussion(request.resource.data)) ||
+        (
+          isSignedIn() &&
+          isNotExpelled() &&
+          isValidDiscussion(request.resource.data) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['poll'])
+        );
       allow delete: if isStaff();
     }
 

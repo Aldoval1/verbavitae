@@ -179,6 +179,26 @@
                 </div>
             </div>
 
+            <!-- Community Poll Widget -->
+            <section class="poll-widget-card" id="voicePollSection" style="display: none;">
+                <div class="poll-widget-header">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <span class="poll-icon-pill"><i class="fas fa-square-poll-vertical"></i></span>
+                        <div>
+                            <h3 class="poll-widget-title" id="pollWidgetTitle">Community Poll / Votación</h3>
+                            <span class="poll-widget-subtitle" id="pollWidgetSubtitle">Cast your vote to shape our literary choices and club decisions</span>
+                        </div>
+                    </div>
+                    <span class="poll-total-badge" id="pollTotalBadge">0 Votes</span>
+                </div>
+                <div class="poll-options-container" id="pollOptionsContainer">
+                    <!-- Dynamic poll options or result bars injected via JS -->
+                </div>
+                <div class="poll-widget-footer" id="pollWidgetFooter">
+                    <!-- Dynamic vote submission buttons / vote state info -->
+                </div>
+            </section>
+
             <!-- "From the Conversation" Permanent Highlight Reel -->
             <section class="from-conversation-box" id="fromConversationBox" style="display: none;">
                 <div class="from-conv-header">
@@ -312,8 +332,9 @@
                 <div class="modal-form-row">
                     <div class="modal-form-group">
                         <label for="mDiscType">Discussion Type</label>
-                        <select id="mDiscType">
+                        <select id="mDiscType" onchange="toggleModalPollBuilder()">
                             <option value="Book Discussion">Book Discussion</option>
+                            <option value="Poll / Votación">Poll / Votación (Community Poll)</option>
                             <option value="Chapter Discussion">Chapter Discussion</option>
                             <option value="Open Question">Open Question</option>
                             <option value="Debate">Debate</option>
@@ -323,6 +344,20 @@
                     <div class="modal-form-group">
                         <label for="mChapterRange">Chapter / Page Range (optional)</label>
                         <input type="text" id="mChapterRange" placeholder="e.g. Chapters 1 – 6">
+                    </div>
+                </div>
+
+                <!-- Modal Dynamic Poll Builder -->
+                <div id="mPollContainer" style="display: none; background: #f7fafc; padding: 14px; border-radius: 8px; border: 1px dashed #cbd5e0; margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="font-weight: 700; font-size: 0.88rem; color: #2b6cb0; margin: 0;">
+                            <i class="fas fa-list-ol"></i> Poll Options (Opciones de Votación)
+                        </label>
+                        <button type="button" class="btn-admin-action" onclick="addModalPollOption()" style="padding: 4px 10px; font-size: 0.78rem;">+ Add Option</button>
+                    </div>
+                    <p style="font-size: 0.8rem; color: var(--voice-text-muted); margin: 0 0 8px 0;">Add at least 2 selectable options for members to vote on.</p>
+                    <div id="mPollOptionsList" style="display: flex; flex-direction: column; gap: 8px;">
+                        <!-- Injected dynamic inputs -->
                     </div>
                 </div>
 

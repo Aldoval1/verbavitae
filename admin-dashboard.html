@@ -353,18 +353,19 @@
     <!-- Tab Navigation -->
     <nav class="admin-top-nav">
         <a href="#" class="tab-link active" data-tab="opportunities"><i class="fas fa-file-signature"></i> Opportunities &amp; Applications <span class="tab-badge" id="adminAppsCountBadge">0</span></a>
-        <a href="#" class="tab-link" data-tab="store">Store</a>
-        <a href="#" class="tab-link" data-tab="events">Add Events</a>
-        <a href="#" class="tab-link" data-tab="services">Verba Services</a>
+        <a href="#" class="tab-link" data-tab="store"><i class="fas fa-store"></i> Store</a>
+        <a href="#" class="tab-link" data-tab="events"><i class="fas fa-calendar-alt"></i> Events</a>
+        <a href="#" class="tab-link" data-tab="services"><i class="fas fa-print"></i> Verba Services</a>
         <div class="nav-dropdown">
-            <button class="dropbtn">Members <i class="fas fa-caret-down"></i></button>
+            <button class="dropbtn"><i class="fas fa-users-cog"></i> Members <i class="fas fa-caret-down"></i></button>
             <div class="dropdown-content">
                 <a href="#" class="tab-link" data-tab="members-manage">Member Management</a>
                 <a href="#" class="tab-link" data-tab="members-invite">Send Invitations</a>
             </div>
         </div>
-        <a href="#" class="tab-link" data-tab="gallery">Gallery</a>
-        <a href="#" class="tab-link" data-tab="news">News &amp; Updates</a>
+        <a href="#" class="tab-link" data-tab="gallery"><i class="fas fa-images"></i> Gallery</a>
+        <a href="#" class="tab-link" data-tab="voice"><i class="fas fa-comments"></i> Verba Voice</a>
+        <a href="#" class="tab-link" data-tab="news"><i class="fas fa-newspaper"></i> News &amp; Updates</a>
     </nav>
 
     <main class="dash-main">
@@ -681,29 +682,47 @@
         <!-- TAB: Add Events -->
         <div class="tab-panel" id="tab-events">
             <section class="admin-card">
-                <h2><i class="fas fa-calendar-plus"></i> Add Calendar Event</h2>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <h2 id="eventFormHeading" style="margin: 0;"><i class="fas fa-calendar-plus"></i> Add Calendar Event</h2>
+                        <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin: 4px 0 0 0;">
+                            Create and manage volunteer opportunities, service events, and community activities.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="events.html" target="_blank" class="admin-btn" style="text-decoration:none; padding: 8px 16px; font-size: 0.85rem; background: #2b6cb0; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-external-link-alt"></i> View Public Events
+                        </a>
+                        <button type="button" onclick="loadAdminEvents()" class="admin-btn" style="padding: 8px 14px; font-size: 0.85rem; background: transparent; border: 1px solid var(--admin-border); color: var(--admin-text);">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
                 <form id="eventForm" class="admin-form">
+                    <input type="hidden" id="editEventId">
+
                     <div class="form-group">
-                        <label for="eventTitle">Event Title</label>
+                        <label for="eventTitle">Event Title *</label>
                         <input type="text" id="eventTitle" required placeholder="e.g. Community Cleanup & Service Day">
                     </div>
                     <div class="form-group" style="display: flex; gap: 15px;">
                         <div style="flex: 1;">
-                            <label for="eventDate">Date</label>
+                            <label for="eventDate">Date *</label>
                             <input type="date" id="eventDate" required>
                         </div>
                         <div style="flex: 1;">
-                            <label for="eventTime">Hours of the Event (Time)</label>
+                            <label for="eventTime">Hours of the Event (Time) *</label>
                             <input type="text" id="eventTime" required placeholder="e.g. 10:00 AM - 2:00 PM">
                         </div>
                     </div>
                     <div class="form-group" style="display: flex; gap: 15px;">
                         <div style="flex: 1;">
-                            <label for="eventServiceHours">Service Hours Provided</label>
+                            <label for="eventServiceHours">Service Hours Provided *</label>
                             <input type="number" id="eventServiceHours" required placeholder="e.g. 4" min="0" step="0.5">
                         </div>
                         <div style="flex: 1;">
-                            <label for="eventMaxSlots">Volunteer Slots Limit</label>
+                            <label for="eventMaxSlots">Volunteer Slots Limit *</label>
                             <input type="number" id="eventMaxSlots" required placeholder="e.g. 20" min="1" value="20">
                         </div>
                     </div>
@@ -711,7 +730,7 @@
                     <div class="form-group">
                         <label for="eventLocation" style="display: flex; align-items: center; gap: 8px; font-weight: 600; margin-bottom: 8px;">
                             <i class="fas fa-map-marker-alt" style="color: #e53e3e;"></i> 
-                            <span>Event Address & Venue Location</span>
+                            <span>Event Address & Venue Location *</span>
                         </label>
                         <div style="display: flex; gap: 10px; margin-bottom: 10px; align-items: stretch;">
                             <input type="text" id="eventLocation" required placeholder="Type address (e.g. 11200 SW 8th St, Miami, FL)" autocomplete="off" style="flex: 1 1 auto; width: 0; min-width: 0; padding: 12px 14px; font-size: 0.95rem; border: 1px solid #3182ce; background: #ffffff; color: #1a202c; position: relative; z-index: 10; cursor: text; pointer-events: auto;">
@@ -726,14 +745,26 @@
                     </div>
 
                     <div class="form-group">
-                        <label for="eventDescription">Event Description & Volunteer Objectives</label>
+                        <label for="eventDescription">Event Description & Volunteer Objectives *</label>
                         <textarea id="eventDescription" rows="4" required placeholder="Provide a detailed description of the event, volunteer duties, and instructions..." style="width: 100%; padding: 10px; font-family: 'Montserrat', sans-serif; border: 1px solid var(--admin-border); border-radius: 4px; box-sizing: border-box;"></textarea>
                     </div>
-                    <button type="submit" class="admin-btn"><i class="fas fa-paper-plane"></i> Publish Event</button>
+
+                    <div style="display: flex; gap: 12px; align-items: center;">
+                        <button type="submit" id="btnSaveEvent" class="admin-btn"><i class="fas fa-paper-plane"></i> Publish Event</button>
+                        <button type="button" id="btnCancelEditEvent" onclick="cancelEditEvent()" class="admin-btn" style="display: none; background: #718096;"><i class="fas fa-times"></i> Cancel Edit</button>
+                    </div>
                 </form>
 
                 <div style="margin-top: 35px; border-top: 2px solid var(--admin-border); padding-top: 20px;">
-                    <h3 style="font-size: 1.2rem; color: var(--admin-primary); margin-bottom: 15px;"><i class="fas fa-list-check"></i> Published Events</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                        <h3 style="font-size: 1.2rem; color: var(--admin-primary); margin: 0;"><i class="fas fa-list-check"></i> Published Events</h3>
+                        <div style="display: flex; gap: 8px; align-items: center;">
+                            <span id="adminEventsCountBadge" style="background: rgba(49, 130, 206, 0.12); color: #3182ce; padding: 4px 12px; border-radius: 12px; font-weight: 700; font-size: 0.82rem;">0 Events</span>
+                            <button type="button" class="admin-btn" style="padding: 4px 10px; font-size: 0.8rem; background: var(--admin-accent);" onclick="filterAdminEventsList('all')">All</button>
+                            <button type="button" class="admin-btn" style="padding: 4px 10px; font-size: 0.8rem; background: #718096;" onclick="filterAdminEventsList('upcoming')">Upcoming</button>
+                            <button type="button" class="admin-btn" style="padding: 4px 10px; font-size: 0.8rem; background: #718096;" onclick="filterAdminEventsList('past')">Past</button>
+                        </div>
+                    </div>
                     <div id="adminEventsList" class="member-list">
                         <!-- Populated by JS -->
                     </div>
@@ -833,24 +864,210 @@
         <!-- TAB: Gallery -->
         <div class="tab-panel" id="tab-gallery">
             <section class="admin-card">
-                <h2><i class="fas fa-images"></i> Manage Gallery Albums</h2>
-                <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin-bottom: 15px;">Create and manage photo albums displayed on the homepage.</p>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="margin: 0;"><i class="fas fa-images"></i> Manage Gallery Albums</h2>
+                        <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin: 4px 0 0 0;">Create and manage photo albums displayed on the public gallery and homepage.</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="gallery.html" target="_blank" class="admin-btn" style="text-decoration:none; padding: 8px 16px; font-size: 0.85rem; background: #2b6cb0; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-external-link-alt"></i> View Public Gallery
+                        </a>
+                        <button type="button" onclick="loadAlbums()" class="admin-btn" style="padding: 8px 14px; font-size: 0.85rem; background: transparent; border: 1px solid var(--admin-border); color: var(--admin-text);">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
                 
-                <form id="albumForm" class="admin-form" style="margin-bottom: 30px; border-bottom: 1px solid var(--admin-border); padding-bottom: 20px;">
+                <form id="albumForm" class="admin-form" style="margin-bottom: 30px; border-bottom: 1px solid var(--admin-border); padding-bottom: 25px;">
                     <div class="form-group">
-                        <label for="albumTitle">Album Title</label>
+                        <label for="albumTitle">Album Title *</label>
                         <input type="text" id="albumTitle" required placeholder="e.g. Spring Gala 2026">
                     </div>
-                    <div class="form-group">
-                        <label for="albumCoverInput">Cover Image</label>
-                        <input type="file" id="albumCoverInput" accept="image/*" required>
+                    <div class="form-group" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 250px;">
+                            <label for="albumCoverInput">Upload Cover Image File</label>
+                            <input type="file" id="albumCoverInput" accept="image/*">
+                        </div>
+                        <div style="flex: 1; min-width: 250px;">
+                            <label for="albumCoverUrlInput">Or Cover Image URL</label>
+                            <input type="url" id="albumCoverUrlInput" placeholder="https://example.com/cover.jpg">
+                        </div>
                     </div>
-                    <button type="submit" class="admin-btn">Create Album</button>
+                    <small style="color: var(--admin-text-muted); display: block; margin-top: -8px; margin-bottom: 15px;">
+                        <i class="fas fa-info-circle"></i> Choose an image file from your device, or paste a direct web image link.
+                    </small>
+                    <button type="submit" class="admin-btn"><i class="fas fa-folder-plus"></i> Create Album</button>
                 </form>
 
-                <h3>Current Albums</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0;"><i class="fas fa-photo-film"></i> Current Albums</h3>
+                    <span id="adminAlbumsCountBadge" style="background: rgba(49, 130, 206, 0.12); color: #3182ce; padding: 4px 12px; border-radius: 12px; font-weight: 700; font-size: 0.82rem;">0 Albums</span>
+                </div>
                 <div class="member-list" id="albumList">
                     <!-- Dynamic Albums -->
+                </div>
+            </section>
+        </div>
+
+        <!-- TAB: Verba Voice (Discussions & Polls) -->
+        <div class="tab-panel" id="tab-voice">
+            <section class="admin-card">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px;">
+                    <div>
+                        <h2 style="margin: 0;"><i class="fas fa-comments" style="color: var(--admin-accent);"></i> Verba Voice - Discussions &amp; Community Polls</h2>
+                        <p style="color: var(--admin-text-muted); font-size: 0.9rem; margin: 4px 0 0 0;">
+                            Create book discussions, launch interactive community polls (votaciones), monitor community votes, and manage topics.
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <a href="voice.html" target="_blank" class="admin-btn" style="text-decoration:none; padding: 8px 16px; font-size: 0.85rem; background: #2b6cb0; display: inline-flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-external-link-alt"></i> View Public Verba Voice
+                        </a>
+                        <button type="button" onclick="loadAdminVoiceDiscussions()" class="admin-btn" style="padding: 8px 14px; font-size: 0.85rem; background: transparent; border: 1px solid var(--admin-border); color: var(--admin-text);">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Overview -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                    <div style="background: #f7fafc; border: 1px solid var(--admin-border); border-radius: 8px; padding: 15px;">
+                        <div style="font-size: 0.8rem; color: var(--admin-text-muted); text-transform: uppercase; font-weight: 700;">Total Topics</div>
+                        <div id="voiceStatTotal" style="font-size: 1.8rem; font-weight: 800; color: var(--admin-primary); margin-top: 5px;">0</div>
+                    </div>
+                    <div style="background: #ebf8ff; border: 1px solid #bee3f8; border-radius: 8px; padding: 15px;">
+                        <div style="font-size: 0.8rem; color: #2b6cb0; text-transform: uppercase; font-weight: 700;">Active Polls</div>
+                        <div id="voiceStatPolls" style="font-size: 1.8rem; font-weight: 800; color: #2b6cb0; margin-top: 5px;">0</div>
+                    </div>
+                    <div style="background: #f0fff4; border: 1px solid #c6f6d5; border-radius: 8px; padding: 15px;">
+                        <div style="font-size: 0.8rem; color: #22543d; text-transform: uppercase; font-weight: 700;">Total Votes Cast</div>
+                        <div id="voiceStatVotes" style="font-size: 1.8rem; font-weight: 800; color: #2f855a; margin-top: 5px;">0</div>
+                    </div>
+                    <div style="background: #fffaf0; border: 1px solid #feebc8; border-radius: 8px; padding: 15px;">
+                        <div style="font-size: 0.8rem; color: #744210; text-transform: uppercase; font-weight: 700;">Community Voices</div>
+                        <div id="voiceStatVoices" style="font-size: 1.8rem; font-weight: 800; color: #d69e2e; margin-top: 5px;">0</div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px;">
+                    <!-- Left: Create / Edit Topic & Poll Form -->
+                    <div style="background: #f7fafc; padding: 22px; border-radius: 8px; border: 1px solid var(--admin-border);">
+                        <h3 id="adminVoiceFormHeading" style="font-size: 1.15rem; color: var(--admin-primary); margin-top: 0; margin-bottom: 15px;">
+                            <i class="fas fa-plus-circle"></i> Create Discussion / Poll
+                        </h3>
+                        <form id="adminVoiceForm">
+                            <input type="hidden" id="adminVoiceEditId">
+
+                            <div class="form-group" style="margin-bottom: 14px;">
+                                <label for="adminVoiceType" style="font-weight: 600; font-size: 0.85rem;">Content Type</label>
+                                <select id="adminVoiceType" onchange="toggleAdminVoicePollFields()" style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; font-family: inherit;">
+                                    <option value="Book Discussion">Book Discussion</option>
+                                    <option value="Poll / Votación">Poll / Votación (Community Poll)</option>
+                                    <option value="Chapter Discussion">Chapter Discussion</option>
+                                    <option value="Open Question">Open Question</option>
+                                    <option value="Debate">Debate</option>
+                                    <option value="Creative Response">Creative Response</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group" style="display: flex; gap: 12px; margin-bottom: 14px;">
+                                <div style="flex: 1.5;">
+                                    <label for="adminVoiceTitle" style="font-weight: 600; font-size: 0.85rem;">Book or Subject Title *</label>
+                                    <input type="text" id="adminVoiceTitle" required placeholder="e.g. Next Month Book Selection" style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; box-sizing: border-box;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="adminVoiceAuthor" style="font-weight: 600; font-size: 0.85rem;">Author / Focus</label>
+                                    <input type="text" id="adminVoiceAuthor" placeholder="e.g. Verba Vitae Board" style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; box-sizing: border-box;">
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 14px;">
+                                <label for="adminVoiceQuestion" style="font-weight: 600; font-size: 0.85rem;">Central Question / Poll Prompt *</label>
+                                <input type="text" id="adminVoiceQuestion" required placeholder="e.g. Which book should we read for next month's selection?" style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; box-sizing: border-box;">
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 14px;">
+                                <label for="adminVoiceDesc" style="font-weight: 600; font-size: 0.85rem;">Description &amp; Context *</label>
+                                <textarea id="adminVoiceDesc" rows="3" required placeholder="Provide context, details, and guidelines for voting or discussion..." style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; box-sizing: border-box; font-family: inherit;"></textarea>
+                            </div>
+
+                            <!-- POLL OPTIONS BUILDER (Shows when Content Type is Poll / Votación) -->
+                            <div id="adminVoicePollBuilder" style="display: none; background: #ffffff; border: 1px solid #bee3f8; border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                    <label style="font-weight: 700; font-size: 0.9rem; color: #2b6cb0; margin: 0;">
+                                        <i class="fas fa-list-ol"></i> Poll Options (Opciones de Votación)
+                                    </label>
+                                    <button type="button" onclick="addAdminPollOptionInput()" class="admin-btn" style="padding: 4px 10px; font-size: 0.78rem; background: #3182ce;">
+                                        <i class="fas fa-plus"></i> Add Option
+                                    </button>
+                                </div>
+                                <p style="font-size: 0.8rem; color: var(--admin-text-muted); margin: 0 0 10px 0;">
+                                    Provide at least 2 options for community members to vote on.
+                                </p>
+                                <div id="adminPollOptionsList" style="display: flex; flex-direction: column; gap: 8px;">
+                                    <!-- Injected inputs -->
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="display: flex; gap: 12px; margin-bottom: 14px;">
+                                <div style="flex: 1;">
+                                    <label for="adminVoiceChapter" style="font-weight: 600; font-size: 0.85rem;">Chapter / Tag</label>
+                                    <input type="text" id="adminVoiceChapter" placeholder="e.g. Vote Ends Nov 30" style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; box-sizing: border-box;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label for="adminVoiceStatus" style="font-weight: 600; font-size: 0.85rem;">Status</label>
+                                    <select id="adminVoiceStatus" style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; font-family: inherit;">
+                                        <option value="active">Active</option>
+                                        <option value="upcoming">Upcoming</option>
+                                        <option value="archived">Archived</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 15px;">
+                                <label for="adminVoiceCover" style="font-weight: 600; font-size: 0.85rem;">Cover Image URL (optional)</label>
+                                <input type="url" id="adminVoiceCover" placeholder="https://example.com/cover.jpg or leave blank for default" style="width: 100%; padding: 10px; border: 1px solid var(--admin-border); border-radius: 4px; box-sizing: border-box;">
+                            </div>
+
+                            <div class="form-group" style="display: flex; gap: 20px; margin-bottom: 18px; flex-wrap: wrap;">
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.88rem;">
+                                    <input type="checkbox" id="adminVoicePinned" style="width: 16px; height: 16px;">
+                                    <span>Pin to top</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.88rem;">
+                                    <input type="checkbox" id="adminVoiceLocked" style="width: 16px; height: 16px;">
+                                    <span>Lock (prevent new comments/votes)</span>
+                                </label>
+                            </div>
+
+                            <div style="display: flex; gap: 10px;">
+                                <button type="submit" id="btnSaveAdminVoice" class="admin-btn" style="flex: 1;">
+                                    <i class="fas fa-paper-plane"></i> Publish to Verba Voice
+                                </button>
+                                <button type="button" id="btnCancelEditVoice" onclick="cancelAdminVoiceEdit()" class="admin-btn" style="display: none; background: #718096;">
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Right: Manage Published Topics & Polls -->
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="admin-btn" id="btnVoiceFilterAll" style="padding: 5px 12px; font-size: 0.8rem; background: var(--admin-accent);" onclick="filterAdminVoice('all')">All</button>
+                                <button class="admin-btn" id="btnVoiceFilterPoll" style="padding: 5px 12px; font-size: 0.8rem; background: #718096;" onclick="filterAdminVoice('poll')"><i class="fas fa-square-poll-vertical"></i> Polls</button>
+                                <button class="admin-btn" id="btnVoiceFilterActive" style="padding: 5px 12px; font-size: 0.8rem; background: #718096;" onclick="filterAdminVoice('active')">Active</button>
+                                <button class="admin-btn" id="btnVoiceFilterArchived" style="padding: 5px 12px; font-size: 0.8rem; background: #718096;" onclick="filterAdminVoice('archived')">Archived</button>
+                            </div>
+                            <span id="adminVoiceFilterCount" style="font-size: 0.82rem; color: var(--admin-text-muted); font-weight: 600;">0 topics</span>
+                        </div>
+
+                        <div id="adminVoiceDiscussionsList" class="member-list" style="max-height: 600px; overflow-y: auto;">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -920,9 +1137,18 @@
 
             if (tabName === 'events') {
                 initAdminEventMap();
+                loadAdminEvents();
                 setTimeout(() => {
                     if (adminMap) adminMap.invalidateSize();
                 }, 200);
+            }
+
+            if (tabName === 'gallery') {
+                loadAlbums();
+            }
+
+            if (tabName === 'voice') {
+                loadAdminVoiceDiscussions();
             }
         }
 
@@ -1855,44 +2081,79 @@
         const albumForm = document.getElementById('albumForm');
         const albumList = document.getElementById('albumList');
         const albumCoverInput = document.getElementById('albumCoverInput');
+        const albumCoverUrlInput = document.getElementById('albumCoverUrlInput');
 
         if (albumForm) {
             albumForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const title = document.getElementById('albumTitle').value.trim();
-                const file = albumCoverInput.files[0];
+                const file = albumCoverInput ? albumCoverInput.files[0] : null;
+                const manualUrl = albumCoverUrlInput ? albumCoverUrlInput.value.trim() : '';
                 const btn = e.target.querySelector('button[type="submit"]');
 
-                if (!title || !file) {
-                    showToast('Please provide a title and an image.');
+                if (!title) {
+                    showToast('Please provide an album title.');
                     return;
                 }
 
-                btn.textContent = 'Uploading...';
+                if (!file && !manualUrl) {
+                    showToast('Please select a cover image file or paste a cover image URL.');
+                    return;
+                }
+
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
                 btn.disabled = true;
 
-                try {
-                    // Upload to Firebase Storage
-                    const storageRef = storage.ref();
-                    const fileRef = storageRef.child(`albums/${Date.now()}_${file.name}`);
-                    await fileRef.put(file);
-                    const downloadURL = await fileRef.getDownloadURL();
+                let downloadURL = manualUrl || 'images/verbavitaelogoblue.png';
 
-                    // Save to Firestore
-                    await db.collection('albums').add({
+                try {
+                    if (file && typeof storage !== 'undefined' && storage && storage.ref) {
+                        try {
+                            const storageRef = storage.ref();
+                            const fileRef = storageRef.child(`albums/${Date.now()}_${file.name}`);
+                            await fileRef.put(file);
+                            downloadURL = await fileRef.getDownloadURL();
+                        } catch (storageErr) {
+                            console.warn("Storage upload warning:", storageErr);
+                            if (!manualUrl) {
+                                showToast('Image upload failed. You can paste an image URL instead.');
+                                btn.innerHTML = '<i class="fas fa-folder-plus"></i> Create Album';
+                                btn.disabled = false;
+                                return;
+                            }
+                        }
+                    }
+
+                    const albumPayload = {
                         title: title,
                         coverUrl: downloadURL,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                        photos: [downloadURL],
+                        createdAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+                    };
+
+                    let newDocId = 'alb_' + Date.now();
+                    if (db) {
+                        try {
+                            const docRef = await db.collection('albums').add(albumPayload);
+                            newDocId = docRef.id;
+                        } catch (dbErr) {
+                            console.warn("Firestore album add warning:", dbErr);
+                        }
+                    }
+
+                    // Save to localStorage cache
+                    const localAlbums = JSON.parse(localStorage.getItem('verba_albums')) || [];
+                    localAlbums.unshift({ id: newDocId, ...albumPayload });
+                    localStorage.setItem('verba_albums', JSON.stringify(localAlbums));
 
                     showToast('Album created successfully!');
                     albumForm.reset();
                     loadAlbums();
                 } catch (error) {
                     console.error("Error creating album:", error);
-                    showToast('Failed to create album. Check your Firebase Storage rules.');
+                    showToast('Failed to create album. Please try again.');
                 } finally {
-                    btn.textContent = 'Create Album';
+                    btn.innerHTML = '<i class="fas fa-folder-plus"></i> Create Album';
                     btn.disabled = false;
                 }
             });
@@ -1901,48 +2162,85 @@
         async function loadAlbums() {
             if (!albumList) return;
             albumList.innerHTML = '<p style="padding: 10px; color: var(--admin-text-muted);">Loading albums...</p>';
+            let albums = [];
+
             try {
-                const snapshot = await db.collection('albums').orderBy('createdAt', 'desc').get();
-                albumList.innerHTML = '';
-                if (snapshot.empty) {
-                    albumList.innerHTML = '<p class="no-events" style="padding: 10px; color: var(--admin-text-muted);">No albums created yet.</p>';
-                    return;
+                if (db) {
+                    const snapshot = await db.collection('albums').get();
+                    snapshot.forEach(doc => {
+                        albums.push({ id: doc.id, ...doc.data() });
+                    });
                 }
-                
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const item = document.createElement('div');
-                    item.className = 'member-item';
-                    const safeDocId = escapeJsSingleQuote(doc.id);
-                    const safeTitle = escapeJsSingleQuote(data.title || '');
-                    item.innerHTML = `
-                        <div class="member-info" style="display:flex; align-items:center; gap: 15px;">
-                            <img src="${escapeAdminHtml(data.coverUrl)}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;">
-                            <strong>${escapeAdminHtml(data.title)}</strong>
-                        </div>
-                        <div style="display:flex; gap:10px;">
-                            <button class="btn-hide" onclick="openPhotoManager('${safeDocId}', '${safeTitle}')">Manage Photos</button>
-                            <button class="btn-expel" onclick="deleteAlbum('${safeDocId}')">Delete</button>
-                        </div>
-                    `;
-                    albumList.appendChild(item);
-                });
             } catch(error) {
-                console.error("Error loading albums:", error);
-                albumList.innerHTML = '<p style="color:#e53e3e; padding: 10px;">Error loading albums.</p>';
+                console.error("Error loading albums from Firestore:", error);
             }
+
+            const local = JSON.parse(localStorage.getItem('verba_albums')) || [];
+            local.forEach(loc => {
+                if (!albums.some(a => String(a.id) === String(loc.id) || a.title === loc.title)) {
+                    albums.push(loc);
+                }
+            });
+
+            // Sort newest first
+            albums.sort((a, b) => {
+                const tA = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : (new Date(a.createdAt || 0).getTime() || 0);
+                const tB = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : (new Date(b.createdAt || 0).getTime() || 0);
+                return tB - tA;
+            });
+
+            const badge = document.getElementById('adminAlbumsCountBadge');
+            if (badge) badge.textContent = `${albums.length} Album${albums.length === 1 ? '' : 's'}`;
+
+            albumList.innerHTML = '';
+            if (albums.length === 0) {
+                albumList.innerHTML = '<p class="no-events" style="padding: 15px; color: var(--admin-text-muted);">No albums created yet.</p>';
+                return;
+            }
+
+            albums.forEach(album => {
+                const item = document.createElement('div');
+                item.className = 'member-item';
+                const safeDocId = escapeJsSingleQuote(album.id);
+                const safeTitle = escapeJsSingleQuote(album.title || '');
+                const photoCount = Array.isArray(album.photos) ? album.photos.length : 1;
+                item.innerHTML = `
+                    <div class="member-info" style="display:flex; align-items:center; gap: 15px;">
+                        <img src="${escapeAdminHtml(album.coverUrl || 'images/verbavitaelogoblue.png')}" style="width: 54px; height: 54px; object-fit: cover; border-radius: 6px; border: 1px solid var(--admin-border);" onerror="this.onerror=null; this.src='images/verbavitaelogoblue.png';">
+                        <div>
+                            <strong style="font-size: 1.05rem; color: var(--admin-primary);">${escapeAdminHtml(album.title)}</strong>
+                            <div style="font-size: 0.8rem; color: var(--admin-text-muted); margin-top: 3px;">
+                                <span><i class="fas fa-images"></i> ${photoCount} Photo${photoCount === 1 ? '' : 's'}</span>
+                                <span style="margin: 0 6px;">&bull;</span>
+                                <a href="album.html?id=${encodeURIComponent(album.id)}" target="_blank" style="color: var(--admin-accent); text-decoration: underline;">View Public Album</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; align-items: center;">
+                        <button class="btn-hide" onclick="openPhotoManager('${safeDocId}', '${safeTitle}')"><i class="fas fa-images"></i> Manage Photos</button>
+                        <button class="btn-expel" onclick="deleteAlbum('${safeDocId}', '${safeTitle}')"><i class="fas fa-trash-alt"></i> Delete</button>
+                    </div>
+                `;
+                albumList.appendChild(item);
+            });
         }
 
-        window.deleteAlbum = async function(id) {
-            if (confirm('Are you sure you want to delete this album?')) {
+        window.deleteAlbum = async function(id, title) {
+            if (confirm(`Are you sure you want to delete the album "${title || 'this album'}"?`)) {
                 try {
-                    await db.collection('albums').doc(id).delete();
-                    showToast('Album deleted.');
-                    loadAlbums();
+                    if (db) {
+                        await db.collection('albums').doc(String(id)).delete();
+                    }
                 } catch(error) {
                     console.error("Error deleting album:", error);
-                    showToast('Failed to delete album.');
                 }
+
+                let local = JSON.parse(localStorage.getItem('verba_albums')) || [];
+                local = local.filter(a => String(a.id) !== String(id) && a.title !== title);
+                localStorage.setItem('verba_albums', JSON.stringify(local));
+
+                showToast('Album deleted.');
+                loadAlbums();
             }
         };
 
@@ -2061,13 +2359,67 @@
             }
         }
 
-        // --- Event Publishing Management ---
+        // --- Event Publishing & Management ---
         const eventForm = document.getElementById('eventForm');
         const adminEventsList = document.getElementById('adminEventsList');
+        let currentAdminEventFilter = 'all';
+        let cachedAdminEvents = [];
+
+        window.filterAdminEventsList = function(filter) {
+            currentAdminEventFilter = filter;
+            renderAdminEventsListUI();
+        };
+
+        window.editEvent = function(id) {
+            const ev = cachedAdminEvents.find(e => String(e.id) === String(id));
+            if (!ev) {
+                showToast('Event not found.');
+                return;
+            }
+            document.getElementById('editEventId').value = ev.id;
+            document.getElementById('eventTitle').value = ev.title || '';
+            document.getElementById('eventDate').value = ev.date || '';
+            document.getElementById('eventTime').value = ev.time || '';
+            document.getElementById('eventServiceHours').value = ev.serviceHours || 0;
+            document.getElementById('eventMaxSlots').value = ev.maxSlots || 20;
+            document.getElementById('eventLocation').value = ev.location || '';
+            document.getElementById('eventDescription').value = ev.description || '';
+
+            if (ev.lat && ev.lng) {
+                selectedEventLat = parseFloat(ev.lat);
+                selectedEventLng = parseFloat(ev.lng);
+                if (!adminMap) initAdminEventMap();
+                if (adminMap && eventMarker) {
+                    adminMap.setView([selectedEventLat, selectedEventLng], 15);
+                    eventMarker.setLatLng([selectedEventLat, selectedEventLng]);
+                }
+            }
+
+            const heading = document.getElementById('eventFormHeading');
+            if (heading) heading.innerHTML = `<i class="fas fa-edit"></i> Edit Event: ${escapeAdminHtml(ev.title)}`;
+            const btnSave = document.getElementById('btnSaveEvent');
+            if (btnSave) btnSave.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            const btnCancel = document.getElementById('btnCancelEditEvent');
+            if (btnCancel) btnCancel.style.display = 'inline-block';
+
+            document.getElementById('tab-events').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.cancelEditEvent = function() {
+            document.getElementById('editEventId').value = '';
+            if (eventForm) eventForm.reset();
+            const heading = document.getElementById('eventFormHeading');
+            if (heading) heading.innerHTML = '<i class="fas fa-calendar-plus"></i> Add Calendar Event';
+            const btnSave = document.getElementById('btnSaveEvent');
+            if (btnSave) btnSave.innerHTML = '<i class="fas fa-paper-plane"></i> Publish Event';
+            const btnCancel = document.getElementById('btnCancelEditEvent');
+            if (btnCancel) btnCancel.style.display = 'none';
+        };
 
         if (eventForm) {
             eventForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                const editId = document.getElementById('editEventId').value.trim();
                 const title = document.getElementById('eventTitle').value.trim();
                 const date = document.getElementById('eventDate').value;
                 const time = document.getElementById('eventTime').value.trim();
@@ -2075,9 +2427,9 @@
                 const serviceHours = parseFloat(document.getElementById('eventServiceHours').value) || 0;
                 const maxSlots = parseInt(document.getElementById('eventMaxSlots').value, 10) || 20;
                 const description = document.getElementById('eventDescription').value.trim();
-                const btn = e.target.querySelector('button[type="submit"]');
+                const btn = document.getElementById('btnSaveEvent');
 
-                btn.textContent = 'Publishing...';
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
                 btn.disabled = true;
 
                 const eventData = {
@@ -2089,28 +2441,60 @@
                     lng: selectedEventLng,
                     serviceHours,
                     maxSlots,
-                    description,
-                    createdAt: firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+                    description
                 };
 
                 try {
-                    if (db) {
-                        await db.collection('events').add(eventData);
+                    if (editId) {
+                        // UPDATE EVENT
+                        if (db) {
+                            try {
+                                await db.collection('events').doc(String(editId)).set(eventData, { merge: true });
+                            } catch (err) {
+                                console.warn("Firestore update event warning:", err);
+                            }
+                        }
+
+                        let localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
+                        const targetIdx = localEvents.findIndex(e => String(e.id) === String(editId));
+                        if (targetIdx !== -1) {
+                            localEvents[targetIdx] = { ...localEvents[targetIdx], ...eventData };
+                        } else {
+                            localEvents.unshift({ id: editId, ...eventData });
+                        }
+                        localStorage.setItem('verba_events', JSON.stringify(localEvents));
+
+                        showToast('Event updated successfully!');
+                        cancelEditEvent();
+                    } else {
+                        // CREATE NEW EVENT
+                        eventData.createdAt = firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString();
+                        let newDocId = 'evt_' + Date.now();
+                        if (db) {
+                            try {
+                                const docRef = await db.collection('events').add(eventData);
+                                newDocId = docRef.id;
+                            } catch (err) {
+                                console.warn("Firestore add event warning:", err);
+                            }
+                        }
+
+                        // Store exact matching ID in localStorage
+                        const localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
+                        localEvents.unshift({ id: newDocId, ...eventData });
+                        localStorage.setItem('verba_events', JSON.stringify(localEvents));
+
+                        showToast('Event published successfully!');
+                        eventForm.reset();
                     }
+                    loadAdminEvents();
                 } catch (error) {
-                    console.warn("Firestore event publish warning:", error);
+                    console.error("Error saving event:", error);
+                    showToast('Failed to save event.');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = editId ? '<i class="fas fa-save"></i> Save Changes' : '<i class="fas fa-paper-plane"></i> Publish Event';
                 }
-
-                // Save to local storage
-                const localEvents = JSON.parse(localStorage.getItem('verba_events')) || [];
-                localEvents.unshift({ id: 'evt_' + Date.now(), ...eventData });
-                localStorage.setItem('verba_events', JSON.stringify(localEvents));
-
-                showToast('Event published successfully!');
-                eventForm.reset();
-                loadAdminEvents();
-                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish Event';
-                btn.disabled = false;
             });
         }
 
@@ -2147,7 +2531,7 @@
 
         async function loadAdminEvents() {
             if (!adminEventsList) return;
-            adminEventsList.innerHTML = '<p style="padding: 10px; color: var(--admin-text-muted);">Loading events...</p>';
+            adminEventsList.innerHTML = '<p style="padding: 10px; color: var(--admin-text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading events...</p>';
             let events = [];
 
             try {
@@ -2168,47 +2552,83 @@
                 }
             });
 
+            // Sort upcoming first
+            events.sort((a, b) => new Date(a.date || '9999-12-31') - new Date(b.date || '9999-12-31'));
+            cachedAdminEvents = events;
+
+            const badge = document.getElementById('adminEventsCountBadge');
+            if (badge) badge.textContent = `${events.length} Event${events.length === 1 ? '' : 's'}`;
+
+            await fetchAllEventRegistrations();
+            renderAdminEventsListUI();
+        }
+
+        function renderAdminEventsListUI() {
+            if (!adminEventsList) return;
+            const now = new Date();
+            const todayStr = now.toISOString().split('T')[0];
+
+            let filtered = cachedAdminEvents.filter(ev => {
+                if (currentAdminEventFilter === 'upcoming') {
+                    return !ev.date || ev.date >= todayStr;
+                }
+                if (currentAdminEventFilter === 'past') {
+                    return ev.date && ev.date < todayStr;
+                }
+                return true;
+            });
+
             adminEventsList.innerHTML = '';
-            if (events.length === 0) {
-                adminEventsList.innerHTML = '<p style="padding: 10px; color: var(--admin-text-muted);">No published events yet.</p>';
+            if (filtered.length === 0) {
+                adminEventsList.innerHTML = '<p style="padding: 15px; color: var(--admin-text-muted); text-align: center;">No events found for this filter.</p>';
                 return;
             }
 
-            // Get registrations (Firestore + localStorage)
-            const allRegistrations = await fetchAllEventRegistrations();
-
-            events.forEach(ev => {
+            filtered.forEach(ev => {
                 const item = document.createElement('div');
                 item.className = 'member-item';
                 item.style.flexDirection = 'column';
                 item.style.alignItems = 'flex-start';
-                item.style.gap = '8px';
+                item.style.gap = '10px';
                 item.style.marginBottom = '15px';
-                
+                item.style.padding = '18px';
+
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location || '')}`;
-                const registeredForThis = allRegistrations.filter(r => String(r.id) === String(ev.id) || String(r.eventId) === String(ev.id) || r.title === ev.title);
+                const registeredForThis = cachedAllEventRegistrations.filter(r => String(r.id) === String(ev.id) || String(r.eventId) === String(ev.id) || r.title === ev.title);
                 const regCount = registeredForThis.length;
                 const maxSlots = parseInt(ev.maxSlots, 10) || 20;
                 const safeEvId = escapeJsSingleQuote(ev.id);
                 const safeEvTitle = escapeJsSingleQuote(ev.title || '');
 
+                const isPast = ev.date && ev.date < todayStr;
+                const statusBadge = isPast 
+                    ? `<span style="background:#edf2f7; color:#4a5568; padding:3px 10px; border-radius:12px; font-size:0.78rem; font-weight:700;"><i class="fas fa-history"></i> Past Event</span>`
+                    : `<span style="background:#c6f6d5; color:#22543d; padding:3px 10px; border-radius:12px; font-size:0.78rem; font-weight:700;"><i class="fas fa-clock"></i> Upcoming</span>`;
+
                 item.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                        <strong style="font-size:1.1rem; color:var(--admin-primary);">${escapeAdminHtml(ev.title)}</strong>
+                    <div style="display:flex; justify-content:space-between; width:100%; align-items:center; flex-wrap:wrap; gap:8px;">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <strong style="font-size:1.15rem; color:var(--admin-primary);">${escapeAdminHtml(ev.title)}</strong>
+                            ${statusBadge}
+                        </div>
                         <div style="display:flex; gap:8px;">
-                            <span style="background:#feebc8; color:#744210; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:700;"><i class="fas fa-users"></i> ${regCount} / ${maxSlots} Slots Filled</span>
-                            <span style="background:#e3f2fd; color:#1976d2; padding:3px 10px; border-radius:12px; font-size:0.8rem; font-weight:600;"><i class="fas fa-award"></i> ${parseFloat(ev.serviceHours) || 0} Hours</span>
+                            <span style="background:#feebc8; color:#744210; padding:4px 12px; border-radius:12px; font-size:0.8rem; font-weight:700;"><i class="fas fa-users"></i> ${regCount} / ${maxSlots} Slots Filled</span>
+                            <span style="background:#e3f2fd; color:#1976d2; padding:4px 12px; border-radius:12px; font-size:0.8rem; font-weight:600;"><i class="fas fa-award"></i> ${parseFloat(ev.serviceHours) || 0} Hours</span>
                         </div>
                     </div>
-                    <div style="font-size:0.9rem; color:var(--admin-text-muted); display:flex; gap:15px; flex-wrap:wrap;">
-                        <span><i class="far fa-calendar"></i> ${escapeAdminHtml(ev.date)}</span>
-                        <span><i class="far fa-clock"></i> ${escapeAdminHtml(ev.time)}</span>
-                        <span><i class="fas fa-map-marker-alt"></i> <a href="${escapeAdminHtml(mapsUrl)}" target="_blank" style="color:var(--admin-accent); text-decoration:underline;">${escapeAdminHtml(ev.location)}</a></span>
+                    <div style="font-size:0.9rem; color:var(--admin-text-muted); display:flex; gap:18px; flex-wrap:wrap;">
+                        <span><i class="far fa-calendar" style="color:#3182ce;"></i> ${escapeAdminHtml(ev.date || 'TBD')}</span>
+                        <span><i class="far fa-clock" style="color:#3182ce;"></i> ${escapeAdminHtml(ev.time || 'TBD')}</span>
+                        <span><i class="fas fa-map-marker-alt" style="color:#e53e3e;"></i> <a href="${escapeAdminHtml(mapsUrl)}" target="_blank" style="color:var(--admin-accent); text-decoration:underline;">${escapeAdminHtml(ev.location || 'Location')}</a></span>
                     </div>
-                    <p style="font-size:0.9rem; color:var(--admin-text); margin:8px 0 0 0; line-height:1.5; white-space: pre-line;">${escapeAdminHtml(ev.description || '')}</p>
-                    <div style="margin-top:8px; align-self:flex-end; display:flex; gap:10px;">
-                        <button class="admin-btn" style="padding:4px 12px; font-size:0.8rem; background:#3182ce;" onclick="viewEventAttendees('${safeEvId}', '${safeEvTitle}')"><i class="fas fa-users"></i> View Attendees (${regCount})</button>
-                        <button class="btn-expel" onclick="deleteEvent('${safeEvId}')">Delete Event</button>
+                    <p style="font-size:0.9rem; color:var(--admin-text); margin:4px 0 0 0; line-height:1.5; white-space: pre-line;">${escapeAdminHtml(ev.description || '')}</p>
+                    <div style="margin-top:10px; width:100%; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; border-top:1px solid var(--admin-border); padding-top:10px;">
+                        <a href="events.html" target="_blank" style="font-size:0.82rem; color:var(--admin-accent); text-decoration:none;"><i class="fas fa-external-link-alt"></i> Public Event Page</a>
+                        <div style="display:flex; gap:10px;">
+                            <button class="admin-btn" style="padding:5px 14px; font-size:0.82rem; background:#dd6b20;" onclick="editEvent('${safeEvId}')"><i class="fas fa-edit"></i> Edit</button>
+                            <button class="admin-btn" style="padding:5px 14px; font-size:0.82rem; background:#3182ce;" onclick="viewEventAttendees('${safeEvId}', '${safeEvTitle}')"><i class="fas fa-users"></i> Attendees (${regCount})</button>
+                            <button class="btn-expel" onclick="deleteEvent('${safeEvId}', '${safeEvTitle}')"><i class="fas fa-trash-alt"></i> Delete</button>
+                        </div>
                     </div>
                 `;
                 adminEventsList.appendChild(item);
@@ -2251,20 +2671,518 @@
             document.getElementById('attendeesModal').style.display = 'none';
         };
 
-        window.deleteEvent = async function(id) {
-            if (confirm('Are you sure you want to delete this event?')) {
+        window.deleteEvent = async function(id, title) {
+            if (confirm(`Are you sure you want to delete the event "${title || 'this event'}"?`)) {
                 try {
                     if (db) {
                         await db.collection('events').doc(String(id)).delete();
                     }
-                } catch(e) { console.warn(e); }
+                } catch(e) { console.warn("Firestore delete event warning:", e); }
 
                 let local = JSON.parse(localStorage.getItem('verba_events')) || [];
-                local = local.filter(e => String(e.id) !== String(id));
+                local = local.filter(e => String(e.id) !== String(id) && e.title !== title);
                 localStorage.setItem('verba_events', JSON.stringify(local));
 
-                showToast('Event deleted.');
+                showToast('Event deleted successfully.');
                 loadAdminEvents();
+            }
+        };
+
+        // --- Verba Voice Admin Management (Discussions & Polls) ---
+        let adminVoiceDiscussions = [];
+        let currentAdminVoiceFilter = 'all';
+
+        function toggleAdminVoicePollFields() {
+            const type = document.getElementById('adminVoiceType').value;
+            const pollBuilder = document.getElementById('adminVoicePollBuilder');
+            if (type === 'Poll / Votación') {
+                pollBuilder.style.display = 'block';
+                const list = document.getElementById('adminPollOptionsList');
+                if (list.children.length === 0) {
+                    addAdminPollOptionInput('Option 1');
+                    addAdminPollOptionInput('Option 2');
+                }
+            } else {
+                pollBuilder.style.display = 'none';
+            }
+        }
+        window.toggleAdminVoicePollFields = toggleAdminVoicePollFields;
+
+        function addAdminPollOptionInput(initialVal = '') {
+            const list = document.getElementById('adminPollOptionsList');
+            const idx = list.children.length + 1;
+            const row = document.createElement('div');
+            row.className = 'admin-poll-option-row';
+            row.style.display = 'flex';
+            row.style.gap = '8px';
+            row.style.alignItems = 'center';
+
+            row.innerHTML = `
+                <input type="text" class="admin-poll-opt-input" placeholder="Option ${idx} text..." value="${escapeAdminHtml(initialVal)}" required style="flex: 1; padding: 8px 10px; border: 1px solid var(--admin-border); border-radius: 4px; font-size: 0.88rem;">
+                <button type="button" onclick="removeAdminPollOptionInput(this)" class="admin-btn" style="padding: 6px 10px; background: #e53e3e; font-size: 0.8rem;" title="Remove Option">&times;</button>
+            `;
+            list.appendChild(row);
+        }
+        window.addAdminPollOptionInput = addAdminPollOptionInput;
+
+        function removeAdminPollOptionInput(btn) {
+            const list = document.getElementById('adminPollOptionsList');
+            if (list.children.length <= 2) {
+                showToast('A poll must have at least 2 options.');
+                return;
+            }
+            btn.parentElement.remove();
+        }
+        window.removeAdminPollOptionInput = removeAdminPollOptionInput;
+
+        window.filterAdminVoice = function(filter) {
+            currentAdminVoiceFilter = filter;
+            ['All', 'Poll', 'Active', 'Archived'].forEach(name => {
+                const b = document.getElementById('btnVoiceFilter' + name);
+                if (b) {
+                    if (filter.toLowerCase() === name.toLowerCase()) {
+                        b.style.background = 'var(--admin-accent)';
+                    } else {
+                        b.style.background = '#718096';
+                    }
+                }
+            });
+            renderAdminVoiceDiscussionsUI();
+        };
+
+        async function loadAdminVoiceDiscussions() {
+            const listEl = document.getElementById('adminVoiceDiscussionsList');
+            if (!listEl) return;
+            listEl.innerHTML = '<p style="padding: 15px; color: var(--admin-text-muted);"><i class="fas fa-spinner fa-spin"></i> Loading discussions and polls...</p>';
+
+            let items = [];
+            if (db) {
+                try {
+                    const snap = await db.collection('discussions').get();
+                    snap.forEach(doc => {
+                        items.push({ id: doc.id, ...doc.data() });
+                    });
+                } catch (e) {
+                    console.warn("Could not load discussions from Firestore:", e);
+                }
+            }
+
+            const local = JSON.parse(localStorage.getItem('verba_voice_discussions')) || [];
+            local.forEach(loc => {
+                if (!items.some(i => String(i.id) === String(loc.id) || i.title === loc.title)) {
+                    items.push(loc);
+                }
+            });
+
+            // Sort pinned first, then newest
+            items.sort((a, b) => {
+                if (a.isPinned && !b.isPinned) return -1;
+                if (!a.isPinned && b.isPinned) return 1;
+                const tA = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : (new Date(a.createdAt || 0).getTime() || 0);
+                const tB = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : (new Date(b.createdAt || 0).getTime() || 0);
+                return tB - tA;
+            });
+
+            adminVoiceDiscussions = items;
+
+            // Update stats
+            let pollsCount = 0;
+            let totalVotes = 0;
+            items.forEach(item => {
+                if (item.poll || item.type === 'Poll / Votación') {
+                    pollsCount++;
+                    if (item.poll && item.poll.totalVotes) {
+                        totalVotes += parseInt(item.poll.totalVotes, 10) || 0;
+                    }
+                }
+            });
+
+            // Count total voices
+            let totalVoices = 0;
+            try {
+                const localVoices = JSON.parse(localStorage.getItem('verba_voice_voices')) || [];
+                totalVoices = localVoices.length;
+            } catch (e) {}
+
+            document.getElementById('voiceStatTotal').textContent = items.length;
+            document.getElementById('voiceStatPolls').textContent = pollsCount;
+            document.getElementById('voiceStatVotes').textContent = totalVotes;
+            document.getElementById('voiceStatVoices').textContent = totalVoices;
+
+            renderAdminVoiceDiscussionsUI();
+        }
+        window.loadAdminVoiceDiscussions = loadAdminVoiceDiscussions;
+
+        function renderAdminVoiceDiscussionsUI() {
+            const listEl = document.getElementById('adminVoiceDiscussionsList');
+            if (!listEl) return;
+
+            let filtered = adminVoiceDiscussions.filter(d => {
+                if (currentAdminVoiceFilter === 'poll') {
+                    return d.poll || d.type === 'Poll / Votación';
+                }
+                if (currentAdminVoiceFilter === 'active') {
+                    return d.status === 'active';
+                }
+                if (currentAdminVoiceFilter === 'archived') {
+                    return d.status === 'archived';
+                }
+                return true;
+            });
+
+            const countEl = document.getElementById('adminVoiceFilterCount');
+            if (countEl) countEl.textContent = `${filtered.length} topic${filtered.length === 1 ? '' : 's'}`;
+
+            listEl.innerHTML = '';
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<p style="padding: 20px; text-align: center; color: var(--admin-text-muted);">No topics or polls match this filter.</p>';
+                return;
+            }
+
+            filtered.forEach(d => {
+                const card = document.createElement('div');
+                card.className = 'member-item';
+                card.style.flexDirection = 'column';
+                card.style.alignItems = 'flex-start';
+                card.style.gap = '10px';
+                card.style.marginBottom = '15px';
+                card.style.padding = '18px';
+
+                const safeId = escapeJsSingleQuote(d.id);
+                const safeTitle = escapeJsSingleQuote(d.title || '');
+                const isPoll = Boolean(d.poll || d.type === 'Poll / Votación');
+
+                // Poll Preview Markup
+                let pollPreviewHtml = '';
+                if (isPoll && d.poll && Array.isArray(d.poll.options)) {
+                    const totalV = parseInt(d.poll.totalVotes, 10) || 0;
+                    pollPreviewHtml = `
+                        <div style="width: 100%; background: #ffffff; border: 1px solid #bee3f8; border-radius: 6px; padding: 12px; margin-top: 6px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <strong style="font-size: 0.85rem; color: #2b6cb0;"><i class="fas fa-square-poll-vertical"></i> Live Poll Results</strong>
+                                <span style="font-size: 0.8rem; font-weight: 700; color: #2b6cb0;">${totalV} Total Vote${totalV === 1 ? '' : 's'}</span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                ${d.poll.options.map(opt => {
+                                    const optVotes = parseInt(opt.votes, 10) || 0;
+                                    const pct = totalV > 0 ? Math.round((optVotes / totalV) * 100) : 0;
+                                    return `
+                                        <div>
+                                            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 2px;">
+                                                <span>${escapeAdminHtml(opt.text)}</span>
+                                                <span style="font-weight: 600; color: #4a5568;">${optVotes} (${pct}%)</span>
+                                            </div>
+                                            <div style="width: 100%; height: 6px; background: #edf2f7; border-radius: 3px; overflow: hidden;">
+                                                <div style="width: ${pct}%; height: 100%; background: #3182ce; border-radius: 3px; transition: width 0.3s;"></div>
+                                            </div>
+                                        </div>
+                                    `;
+                                }).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; width: 100%; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <strong style="font-size: 1.1rem; color: var(--admin-primary);">${escapeAdminHtml(d.title)}</strong>
+                            ${isPoll ? '<span style="background: #ebf8ff; color: #2b6cb0; border: 1px solid #bee3f8; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-square-poll-vertical"></i> Poll / Votación</span>' : `<span style="background: #edf2f7; color: #4a5568; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 600;">${escapeAdminHtml(d.type || 'Book Discussion')}</span>`}
+                            ${d.isPinned ? '<span style="background: #fefcbf; color: #744210; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-thumbtack"></i> Pinned</span>' : ''}
+                            ${d.isLocked ? '<span style="background: #fed7d7; color: #9b2c2c; padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-lock"></i> Locked</span>' : ''}
+                            <span style="background: ${d.status === 'active' ? '#c6f6d5; color: #22543d;' : (d.status === 'upcoming' ? '#feebc8; color: #744210;' : '#edf2f7; color: #4a5568;')} padding: 2px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: 700;">${escapeAdminHtml((d.status || 'active').toUpperCase())}</span>
+                        </div>
+                        <span style="font-size: 0.8rem; color: var(--admin-text-muted);">${escapeAdminHtml(d.author || 'Verba Vitae')}</span>
+                    </div>
+
+                    <p style="font-size: 0.95rem; font-weight: 600; color: var(--admin-text); margin: 2px 0;">${escapeAdminHtml(d.question || '')}</p>
+                    <p style="font-size: 0.85rem; color: var(--admin-text-muted); margin: 0; line-height: 1.4;">${escapeAdminHtml(d.description || '')}</p>
+
+                    ${pollPreviewHtml}
+
+                    <div style="margin-top: 10px; width: 100%; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--admin-border); padding-top: 10px;">
+                        <a href="voice.html?id=${encodeURIComponent(d.id)}" target="_blank" style="font-size: 0.82rem; color: var(--admin-accent); text-decoration: none;"><i class="fas fa-external-link-alt"></i> View on Verba Voice</a>
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button type="button" class="admin-btn" style="padding: 4px 10px; font-size: 0.78rem; background: #3182ce;" onclick="editVoiceDiscussion('${safeId}')"><i class="fas fa-edit"></i> Edit</button>
+                            <button type="button" class="admin-btn" style="padding: 4px 10px; font-size: 0.78rem; background: ${d.isPinned ? '#d69e2e' : '#718096'};" onclick="togglePinVoiceDiscussion('${safeId}')"><i class="fas fa-thumbtack"></i> ${d.isPinned ? 'Unpin' : 'Pin'}</button>
+                            <button type="button" class="admin-btn" style="padding: 4px 10px; font-size: 0.78rem; background: ${d.isLocked ? '#e53e3e' : '#718096'};" onclick="toggleLockVoiceDiscussion('${safeId}')"><i class="fas fa-lock"></i> ${d.isLocked ? 'Unlock' : 'Lock'}</button>
+                            <button type="button" class="admin-btn" style="padding: 4px 10px; font-size: 0.78rem; background: #718096;" onclick="toggleArchiveVoiceDiscussion('${safeId}')"><i class="fas fa-archive"></i> ${d.status === 'archived' ? 'Reopen' : 'Archive'}</button>
+                            <button type="button" class="btn-expel" style="padding: 4px 10px; font-size: 0.78rem;" onclick="deleteVoiceDiscussion('${safeId}', '${safeTitle}')"><i class="fas fa-trash-alt"></i> Delete</button>
+                        </div>
+                    </div>
+                `;
+                listEl.appendChild(card);
+            });
+        }
+
+        const adminVoiceForm = document.getElementById('adminVoiceForm');
+        if (adminVoiceForm) {
+            adminVoiceForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const editId = document.getElementById('adminVoiceEditId').value.trim();
+                const type = document.getElementById('adminVoiceType').value;
+                const title = document.getElementById('adminVoiceTitle').value.trim();
+                const author = document.getElementById('adminVoiceAuthor').value.trim();
+                const question = document.getElementById('adminVoiceQuestion').value.trim();
+                const description = document.getElementById('adminVoiceDesc').value.trim();
+                const chapterRange = document.getElementById('adminVoiceChapter').value.trim();
+                const status = document.getElementById('adminVoiceStatus').value;
+                const coverImage = document.getElementById('adminVoiceCover').value.trim();
+                const isPinned = document.getElementById('adminVoicePinned').checked;
+                const isLocked = document.getElementById('adminVoiceLocked').checked;
+                const btn = document.getElementById('btnSaveAdminVoice');
+
+                let pollData = null;
+                if (type === 'Poll / Votación') {
+                    const optInputs = document.querySelectorAll('#adminPollOptionsList .admin-poll-opt-input');
+                    const options = [];
+                    optInputs.forEach((input, i) => {
+                        const val = input.value.trim();
+                        if (val) {
+                            options.push({ id: 'opt_' + i, text: val, votes: 0 });
+                        }
+                    });
+                    if (options.length < 2) {
+                        showToast('Please provide at least 2 poll options.');
+                        return;
+                    }
+
+                    // Preserve existing poll vote counts and voters if editing
+                    if (editId) {
+                        const existing = adminVoiceDiscussions.find(d => String(d.id) === String(editId));
+                        if (existing && existing.poll && Array.isArray(existing.poll.options)) {
+                            options.forEach(opt => {
+                                const prev = existing.poll.options.find(p => p.text.toLowerCase() === opt.text.toLowerCase());
+                                if (prev) opt.votes = prev.votes || 0;
+                            });
+                            pollData = {
+                                question: question,
+                                options: options,
+                                voters: existing.poll.voters || {},
+                                totalVotes: existing.poll.totalVotes || 0,
+                                isClosed: isLocked
+                            };
+                        } else {
+                            pollData = {
+                                question: question,
+                                options: options,
+                                voters: {},
+                                totalVotes: 0,
+                                isClosed: isLocked
+                            };
+                        }
+                    } else {
+                        pollData = {
+                            question: question,
+                            options: options,
+                            voters: {},
+                            totalVotes: 0,
+                            isClosed: isLocked
+                        };
+                    }
+                }
+
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+                btn.disabled = true;
+
+                const payload = {
+                    title,
+                    author: author || 'Verba Vitae Community',
+                    question,
+                    description,
+                    type,
+                    chapterRange,
+                    status,
+                    coverImage: coverImage || 'images/slide1.jpg',
+                    isPinned,
+                    isLocked
+                };
+                if (pollData) {
+                    payload.poll = pollData;
+                }
+
+                try {
+                    if (editId) {
+                        if (db) {
+                            try {
+                                await db.collection('discussions').doc(editId).set(payload, { merge: true });
+                            } catch (err) {
+                                console.warn("Firestore update discussion warning:", err);
+                            }
+                        }
+
+                        let local = JSON.parse(localStorage.getItem('verba_voice_discussions')) || [];
+                        const targetIdx = local.findIndex(d => String(d.id) === String(editId));
+                        if (targetIdx !== -1) {
+                            local[targetIdx] = { ...local[targetIdx], ...payload };
+                        } else {
+                            local.unshift({ id: editId, ...payload });
+                        }
+                        localStorage.setItem('verba_voice_discussions', JSON.stringify(local));
+
+                        showToast('Topic / Poll updated successfully!');
+                        cancelAdminVoiceEdit();
+                    } else {
+                        payload.createdAt = firebase.firestore.FieldValue ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString();
+                        payload.fromTheConversation = [];
+
+                        let newDocId = 'disc_' + Date.now();
+                        if (db) {
+                            try {
+                                const docRef = await db.collection('discussions').add(payload);
+                                newDocId = docRef.id;
+                            } catch (err) {
+                                console.warn("Firestore add discussion warning:", err);
+                            }
+                        }
+
+                        payload.id = newDocId;
+                        const local = JSON.parse(localStorage.getItem('verba_voice_discussions')) || [];
+                        local.unshift(payload);
+                        localStorage.setItem('verba_voice_discussions', JSON.stringify(local));
+
+                        showToast('Discussion / Poll published to Verba Voice!');
+                        cancelAdminVoiceEdit();
+                    }
+                    loadAdminVoiceDiscussions();
+                } catch (error) {
+                    console.error("Error saving voice discussion:", error);
+                    showToast('Failed to save discussion / poll.');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Publish to Verba Voice';
+                }
+            });
+        }
+
+        window.editVoiceDiscussion = function(id) {
+            const disc = adminVoiceDiscussions.find(d => String(d.id) === String(id));
+            if (!disc) {
+                showToast('Discussion not found.');
+                return;
+            }
+
+            document.getElementById('adminVoiceEditId').value = disc.id;
+            document.getElementById('adminVoiceType').value = disc.type || 'Book Discussion';
+            document.getElementById('adminVoiceTitle').value = disc.title || '';
+            document.getElementById('adminVoiceAuthor').value = disc.author || '';
+            document.getElementById('adminVoiceQuestion').value = disc.question || '';
+            document.getElementById('adminVoiceDesc').value = disc.description || '';
+            document.getElementById('adminVoiceChapter').value = disc.chapterRange || '';
+            document.getElementById('adminVoiceStatus').value = disc.status || 'active';
+            document.getElementById('adminVoiceCover').value = disc.coverImage && !disc.coverImage.includes('images/slide1.jpg') ? disc.coverImage : '';
+            document.getElementById('adminVoicePinned').checked = Boolean(disc.isPinned);
+            document.getElementById('adminVoiceLocked').checked = Boolean(disc.isLocked);
+
+            toggleAdminVoicePollFields();
+
+            if (disc.poll && Array.isArray(disc.poll.options)) {
+                const list = document.getElementById('adminPollOptionsList');
+                list.innerHTML = '';
+                disc.poll.options.forEach(opt => {
+                    addAdminPollOptionInput(opt.text);
+                });
+            }
+
+            const heading = document.getElementById('adminVoiceFormHeading');
+            if (heading) heading.innerHTML = `<i class="fas fa-edit"></i> Edit: ${escapeAdminHtml(disc.title)}`;
+            const btnSave = document.getElementById('btnSaveAdminVoice');
+            if (btnSave) btnSave.innerHTML = '<i class="fas fa-save"></i> Save Changes';
+            const btnCancel = document.getElementById('btnCancelEditVoice');
+            if (btnCancel) btnCancel.style.display = 'inline-block';
+
+            document.getElementById('tab-voice').scrollIntoView({ behavior: 'smooth' });
+        };
+
+        window.cancelAdminVoiceEdit = function() {
+            document.getElementById('adminVoiceEditId').value = '';
+            if (adminVoiceForm) adminVoiceForm.reset();
+            const list = document.getElementById('adminPollOptionsList');
+            if (list) list.innerHTML = '';
+            toggleAdminVoicePollFields();
+
+            const heading = document.getElementById('adminVoiceFormHeading');
+            if (heading) heading.innerHTML = '<i class="fas fa-plus-circle"></i> Create Discussion / Poll';
+            const btnSave = document.getElementById('btnSaveAdminVoice');
+            if (btnSave) btnSave.innerHTML = '<i class="fas fa-paper-plane"></i> Publish to Verba Voice';
+            const btnCancel = document.getElementById('btnCancelEditVoice');
+            if (btnCancel) btnCancel.style.display = 'none';
+        };
+
+        window.togglePinVoiceDiscussion = async function(id) {
+            const disc = adminVoiceDiscussions.find(d => String(d.id) === String(id));
+            if (!disc) return;
+            const newPinned = !disc.isPinned;
+            if (db) {
+                try {
+                    await db.collection('discussions').doc(id).update({ isPinned: newPinned });
+                } catch (e) { console.warn(e); }
+            }
+            disc.isPinned = newPinned;
+            let local = JSON.parse(localStorage.getItem('verba_voice_discussions')) || [];
+            const idx = local.findIndex(d => String(d.id) === String(id));
+            if (idx !== -1) {
+                local[idx].isPinned = newPinned;
+                localStorage.setItem('verba_voice_discussions', JSON.stringify(local));
+            }
+            showToast(newPinned ? 'Topic pinned to top.' : 'Topic unpinned.');
+            loadAdminVoiceDiscussions();
+        };
+
+        window.toggleLockVoiceDiscussion = async function(id) {
+            const disc = adminVoiceDiscussions.find(d => String(d.id) === String(id));
+            if (!disc) return;
+            const newLocked = !disc.isLocked;
+            if (db) {
+                try {
+                    await db.collection('discussions').doc(id).update({ isLocked: newLocked });
+                } catch (e) { console.warn(e); }
+            }
+            disc.isLocked = newLocked;
+            let local = JSON.parse(localStorage.getItem('verba_voice_discussions')) || [];
+            const idx = local.findIndex(d => String(d.id) === String(id));
+            if (idx !== -1) {
+                local[idx].isLocked = newLocked;
+                localStorage.setItem('verba_voice_discussions', JSON.stringify(local));
+            }
+            showToast(newLocked ? 'Discussion locked.' : 'Discussion unlocked.');
+            loadAdminVoiceDiscussions();
+        };
+
+        window.toggleArchiveVoiceDiscussion = async function(id) {
+            const disc = adminVoiceDiscussions.find(d => String(d.id) === String(id));
+            if (!disc) return;
+            const newStatus = disc.status === 'archived' ? 'active' : 'archived';
+            if (db) {
+                try {
+                    await db.collection('discussions').doc(id).update({ status: newStatus });
+                } catch (e) { console.warn(e); }
+            }
+            disc.status = newStatus;
+            let local = JSON.parse(localStorage.getItem('verba_voice_discussions')) || [];
+            const idx = local.findIndex(d => String(d.id) === String(id));
+            if (idx !== -1) {
+                local[idx].status = newStatus;
+                localStorage.setItem('verba_voice_discussions', JSON.stringify(local));
+            }
+            showToast(`Topic moved to ${newStatus}.`);
+            loadAdminVoiceDiscussions();
+        };
+
+        window.deleteVoiceDiscussion = async function(id, title) {
+            if (confirm(`Are you sure you want to delete "${title || 'this discussion/poll'}"? This action cannot be undone.`)) {
+                try {
+                    if (db) {
+                        await db.collection('discussions').doc(String(id)).delete();
+                    }
+                } catch (e) { console.warn(e); }
+
+                let local = JSON.parse(localStorage.getItem('verba_voice_discussions')) || [];
+                local = local.filter(d => String(d.id) !== String(id) && d.title !== title);
+                localStorage.setItem('verba_voice_discussions', JSON.stringify(local));
+
+                showToast('Discussion / Poll deleted.');
+                loadAdminVoiceDiscussions();
             }
         };
 
@@ -2689,6 +3607,7 @@
                     loadStaticInventory();
                     loadAlbums();
                     loadAdminEvents();
+                    loadAdminVoiceDiscussions();
                     loadBookPickups();
                     loadPrintWindows();
                     loadPrintRequests();
@@ -2709,11 +3628,17 @@
             <h2 id="photoManagerTitle"><i class="fas fa-images"></i> Manage Photos</h2>
             
             <form id="uploadPhotosForm" class="admin-form" style="margin-bottom: 20px;">
-                <div class="form-group">
-                    <label for="albumPhotosInput">Add Photos</label>
-                    <input type="file" id="albumPhotosInput" multiple accept="image/*" required>
+                <div class="form-group" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 240px;">
+                        <label for="albumPhotosInput">Upload Photo Files</label>
+                        <input type="file" id="albumPhotosInput" multiple accept="image/*">
+                    </div>
+                    <div style="flex: 1; min-width: 240px;">
+                        <label for="albumPhotosUrlsInput">Or Direct Image URL(s)</label>
+                        <textarea id="albumPhotosUrlsInput" rows="2" placeholder="Paste image URL(s), one per line or separated by commas..." style="width: 100%; padding: 8px; font-family: inherit; font-size: 0.85rem; border: 1px solid var(--admin-border); border-radius: 4px; box-sizing: border-box;"></textarea>
+                    </div>
                 </div>
-                <button type="submit" class="admin-btn">Upload Photos</button>
+                <button type="submit" class="admin-btn"><i class="fas fa-plus"></i> Add Photos to Album</button>
             </form>
 
             <div id="albumPhotosGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:15px;">
@@ -2744,48 +3669,120 @@
             if (!currentManageAlbumId) return;
 
             const files = document.getElementById('albumPhotosInput').files;
-            if (files.length === 0) return;
+            const urlsText = document.getElementById('albumPhotosUrlsInput') ? document.getElementById('albumPhotosUrlsInput').value.trim() : '';
+
+            if ((!files || files.length === 0) && !urlsText) {
+                showToast('Please select image files or enter image URLs.');
+                return;
+            }
 
             const btn = e.target.querySelector('button[type="submit"]');
-            btn.textContent = 'Uploading...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
             btn.disabled = true;
 
             try {
-                const albumRef = db.collection('albums').doc(currentManageAlbumId);
-                const albumDoc = await albumRef.get();
-                let photos = albumDoc.data().photos || [];
-
-                for (let i = 0; i < files.length; i++) {
-                    const file = files[i];
-                    const storageRef = storage.ref();
-                    const fileRef = storageRef.child(`albums/${currentManageAlbumId}/${Date.now()}_${file.name}`);
-                    await fileRef.put(file);
-                    const url = await fileRef.getDownloadURL();
-                    photos.push(url);
+                let photos = [];
+                let albumData = null;
+                if (db) {
+                    try {
+                        const albumRef = db.collection('albums').doc(currentManageAlbumId);
+                        const albumDoc = await albumRef.get();
+                        if (albumDoc.exists) {
+                            albumData = albumDoc.data();
+                            photos = Array.isArray(albumData.photos) ? [...albumData.photos] : [];
+                        }
+                    } catch (err) {
+                        console.warn("Could not fetch album doc:", err);
+                    }
                 }
 
-                await albumRef.update({ photos: photos });
-                showToast('Photos uploaded successfully!');
+                if (!albumData) {
+                    // Try local cache
+                    const localAlbums = JSON.parse(localStorage.getItem('verba_albums')) || [];
+                    const localItem = localAlbums.find(a => String(a.id) === String(currentManageAlbumId));
+                    if (localItem && Array.isArray(localItem.photos)) {
+                        photos = [...localItem.photos];
+                    }
+                }
+
+                // Add URL photos
+                if (urlsText) {
+                    const parsedUrls = urlsText.split(/[\n,]+/).map(u => u.trim()).filter(u => u.length > 0);
+                    photos.push(...parsedUrls);
+                }
+
+                // Upload files if any
+                if (files && files.length > 0) {
+                    for (let i = 0; i < files.length; i++) {
+                        const file = files[i];
+                        if (typeof storage !== 'undefined' && storage && storage.ref) {
+                            try {
+                                const storageRef = storage.ref();
+                                const fileRef = storageRef.child(`albums/${currentManageAlbumId}/${Date.now()}_${file.name}`);
+                                await fileRef.put(file);
+                                const url = await fileRef.getDownloadURL();
+                                photos.push(url);
+                            } catch (uploadErr) {
+                                console.warn("Storage upload error:", uploadErr);
+                                showToast(`Failed uploading ${file.name}. Consider using direct image URLs.`);
+                            }
+                        }
+                    }
+                }
+
+                if (db) {
+                    try {
+                        await db.collection('albums').doc(currentManageAlbumId).update({ photos: photos });
+                    } catch (err) {
+                        console.warn("Firestore album photos update warning:", err);
+                    }
+                }
+
+                // Update local storage cache
+                const localAlbums = JSON.parse(localStorage.getItem('verba_albums')) || [];
+                const targetIdx = localAlbums.findIndex(a => String(a.id) === String(currentManageAlbumId));
+                if (targetIdx !== -1) {
+                    localAlbums[targetIdx].photos = photos;
+                    localStorage.setItem('verba_albums', JSON.stringify(localAlbums));
+                }
+
+                showToast('Photos added successfully!');
                 uploadPhotosForm.reset();
                 loadAlbumPhotos(currentManageAlbumId);
             } catch (error) {
                 console.error("Error uploading photos:", error);
-                showToast('Failed to upload photos.');
+                showToast('Failed to add photos to album.');
             } finally {
-                btn.textContent = 'Upload Photos';
+                btn.innerHTML = '<i class="fas fa-plus"></i> Add Photos to Album';
                 btn.disabled = false;
             }
         });
 
         async function loadAlbumPhotos(albumId) {
             const grid = document.getElementById('albumPhotosGrid');
-            grid.innerHTML = '<p>Loading photos...</p>';
+            grid.innerHTML = '<p style="padding: 15px; color: var(--admin-text-muted);">Loading photos...</p>';
             try {
-                const doc = await db.collection('albums').doc(albumId).get();
-                const photos = doc.data().photos || [];
+                let photos = [];
+                if (db) {
+                    try {
+                        const doc = await db.collection('albums').doc(albumId).get();
+                        if (doc.exists) {
+                            photos = doc.data().photos || [];
+                        }
+                    } catch (e) {
+                        console.warn(e);
+                    }
+                }
+                if (photos.length === 0) {
+                    const localAlbums = JSON.parse(localStorage.getItem('verba_albums')) || [];
+                    const localItem = localAlbums.find(a => String(a.id) === String(albumId));
+                    if (localItem && Array.isArray(localItem.photos)) {
+                        photos = localItem.photos;
+                    }
+                }
                 
                 if (photos.length === 0) {
-                    grid.innerHTML = '<p>No photos in this album.</p>';
+                    grid.innerHTML = '<p style="padding: 15px; color: var(--admin-text-muted); grid-column: 1 / -1;">No photos in this album yet.</p>';
                     return;
                 }
 
@@ -2793,27 +3790,42 @@
                 const safeAlbumId = escapeJsSingleQuote(albumId);
                 photos.forEach((url, index) => {
                     html += `
-                        <div style="position:relative; width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden;">
-                            <img src="${escapeAdminHtml(url)}" style="width:100%; height:100%; object-fit:cover;">
-                            <button onclick="deleteAlbumPhoto('${safeAlbumId}', ${index})" style="position:absolute; top:5px; right:5px; background:red; color:white; border:none; border-radius:50%; width:25px; height:25px; cursor:pointer;">&times;</button>
+                        <div style="position:relative; width:100%; aspect-ratio:1; border-radius:8px; overflow:hidden; border: 1px solid var(--admin-border); background: #f0f0f0;">
+                            <img src="${escapeAdminHtml(url)}" style="width:100%; height:100%; object-fit:cover;" onerror="this.onerror=null; this.src='images/verbavitaelogoblue.png';">
+                            <button type="button" onclick="deleteAlbumPhoto('${safeAlbumId}', ${index})" title="Delete photo" style="position:absolute; top:5px; right:5px; background:rgba(229,62,62,0.9); color:white; border:none; border-radius:50%; width:28px; height:28px; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:14px;">&times;</button>
                         </div>
                     `;
                 });
                 grid.innerHTML = html;
             } catch (error) {
                 console.error("Error loading photos:", error);
-                grid.innerHTML = '<p style="color:red;">Error loading photos.</p>';
+                grid.innerHTML = '<p style="color:red; padding:15px;">Error loading photos.</p>';
             }
         }
 
         window.deleteAlbumPhoto = async function(albumId, index) {
             if (!confirm('Delete this photo?')) return;
             try {
-                const albumRef = db.collection('albums').doc(albumId);
-                const doc = await albumRef.get();
-                let photos = doc.data().photos || [];
-                photos.splice(index, 1);
-                await albumRef.update({ photos: photos });
+                let photos = [];
+                if (db) {
+                    const albumRef = db.collection('albums').doc(albumId);
+                    const doc = await albumRef.get();
+                    if (doc.exists) {
+                        photos = doc.data().photos || [];
+                        photos.splice(index, 1);
+                        await albumRef.update({ photos: photos });
+                    }
+                }
+                const localAlbums = JSON.parse(localStorage.getItem('verba_albums')) || [];
+                const targetIdx = localAlbums.findIndex(a => String(a.id) === String(albumId));
+                if (targetIdx !== -1) {
+                    if (!photos.length && localAlbums[targetIdx].photos) {
+                        localAlbums[targetIdx].photos.splice(index, 1);
+                    } else {
+                        localAlbums[targetIdx].photos = photos;
+                    }
+                    localStorage.setItem('verba_albums', JSON.stringify(localAlbums));
+                }
                 showToast('Photo deleted.');
                 loadAlbumPhotos(albumId);
             } catch(error) {

@@ -301,6 +301,16 @@
             const author = d.author ? `by ${escapeHtml(d.author)}` : '';
             const chapterTag = d.chapterRange ? `· ${escapeHtml(d.chapterRange)}` : '';
             const createdByName = d.createdBy ? escapeHtml(d.createdBy.name) : 'Admin';
+            const isPoll = Boolean(d.poll || d.type === 'Poll / Votación');
+            const pollTotalVotes = d.poll && d.poll.totalVotes ? d.poll.totalVotes : 0;
+
+            const typeTag = isPoll 
+                ? `<span class="card-type-tag" style="background: rgba(49, 130, 206, 0.95);"><i class="fas fa-square-poll-vertical"></i> Poll / Votación</span>`
+                : `<span class="card-type-tag">${escapeHtml(d.type || 'Book Discussion')}</span>`;
+
+            const joinBtnLabel = isPoll
+                ? `<i class="fas fa-square-poll-vertical"></i> View &amp; Vote`
+                : `<i class="fas fa-door-open"></i> Join Discussion`;
 
             return `
                 <article class="discussion-card ${d.isPinned ? 'pinned' : ''}" data-id="${escapeHtml(d.id)}">
@@ -309,7 +319,7 @@
                         <img src="${escapeHtml(coverImg)}" alt="${escapeHtml(d.title)}" class="card-cover-img" loading="lazy">
                         <div class="card-cover-gradient"></div>
                         <div class="card-cover-info">
-                            <span class="card-type-tag">${escapeHtml(d.type || 'Book Discussion')}</span>
+                            ${typeTag}
                             <h3 class="card-book-title">${escapeHtml(d.title)}</h3>
                             <p class="card-book-author">${author} ${chapterTag}</p>
                         </div>
@@ -323,6 +333,7 @@
                                 <span>${createdByName}</span>
                             </div>
                             <div class="card-counts">
+                                ${isPoll ? `<span style="font-weight: 700; color: #2b6cb0;"><i class="fas fa-check-to-slot"></i> ${pollTotalVotes} Votes</span>` : ''}
                                 <span><i class="far fa-comment-dots"></i> ${discVoiceCount} Voices</span>
                                 <span><i class="fas fa-reply"></i> ${discReplyCount} Replies</span>
                             </div>
@@ -330,7 +341,7 @@
                     </div>
                     <div class="card-footer">
                         <button class="btn-join-discussion" onclick="openDiscussion('${escapeHtml(d.id)}')">
-                            <i class="fas fa-door-open"></i> Join Discussion
+                            ${joinBtnLabel}
                         </button>
                     </div>
                 </article>
@@ -442,8 +453,235 @@
             }
         }
 
+        renderPollWidget(disc);
         renderVoicesFeed();
     }
+
+    // --- Community Poll (Votación) Widget Controller ---
+    let selectedPollOptionId = null;
+    let pollInVotingMode = false;
+
+    function renderPollWidget(disc) {
+        const pollSec = document.getElementById('voicePollSection');
+        if (!pollSec) return;
+
+        const isPoll = Boolean(disc.poll || disc.type === 'Poll / Votación');
+        if (!isPoll) {
+            pollSec.style.display = 'none';
+            return;
+        }
+
+        pollSec.style.display = 'block';
+
+        const poll = disc.poll || {
+            question: disc.question,
+            options: [],
+            voters: {},
+            totalVotes: 0,
+            isClosed: disc.isLocked || disc.status === 'archived'
+        };
+
+        const totalVotes = parseInt(poll.totalVotes, 10) || 0;
+        const authUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        let voterKey = (authUser && authUser.uid) || (currentUser && currentUser.uid) || (currentUser && currentUser.email);
+        if (!voterKey) {
+            let guestId = localStorage.getItem('verba_guest_voter_id');
+            if (!guestId) {
+                guestId = 'guest_' + Date.now() + Math.random().toString(36).substring(2);
+                localStorage.setItem('verba_guest_voter_id', guestId);
+            }
+            voterKey = guestId;
+        }
+
+        const userVotedOptId = poll.voters ? poll.voters[voterKey] : null;
+        const isClosed = Boolean(poll.isClosed || disc.isLocked || disc.status === 'archived');
+
+        const titleEl = document.getElementById('pollWidgetTitle');
+        if (titleEl) titleEl.textContent = poll.question || disc.question || 'Community Poll / Votación';
+        const totalBadge = document.getElementById('pollTotalBadge');
+        if (totalBadge) totalBadge.textContent = `${totalVotes} Vote${totalVotes === 1 ? '' : 's'}`;
+
+        const container = document.getElementById('pollOptionsContainer');
+        const footer = document.getElementById('pollWidgetFooter');
+        if (!container || !footer) return;
+
+        const options = Array.isArray(poll.options) ? poll.options : [];
+
+        // Voting Mode: user has not voted yet or clicked "Change Vote", and poll is open
+        if ((!userVotedOptId || pollInVotingMode) && !isClosed) {
+            container.innerHTML = options.map((opt) => {
+                const isSelected = selectedPollOptionId === opt.id || (!selectedPollOptionId && userVotedOptId === opt.id);
+                return `
+                    <button type="button" class="poll-option-btn ${isSelected ? 'selected' : ''}" onclick="selectPollOption('${escapeHtml(opt.id)}')">
+                        <span class="poll-radio-indicator"></span>
+                        <span style="font-weight: 500;">${escapeHtml(opt.text)}</span>
+                    </button>
+                `;
+            }).join('');
+
+            footer.innerHTML = `
+                <div style="font-size: 0.85rem; color: var(--voice-text-muted);">
+                    <i class="fas fa-shield-halved"></i> Anonymous community vote &bull; One vote per member
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    ${userVotedOptId ? `<button type="button" class="btn-vote-change" onclick="cancelChangeVote()"><i class="fas fa-times"></i> Cancel</button>` : ''}
+                    <button type="button" class="btn-vote-submit" id="btnSubmitPollVote" onclick="submitPollVote('${escapeHtml(disc.id)}')" ${selectedPollOptionId ? '' : 'disabled'}>
+                        <i class="fas fa-check-to-slot"></i> ${userVotedOptId ? 'Update Vote' : 'Submit Vote / Votar'}
+                    </button>
+                </div>
+            `;
+        } else {
+            // Results Mode: percentage bars & vote counts
+            container.innerHTML = options.map((opt) => {
+                const optVotes = parseInt(opt.votes, 10) || 0;
+                const pct = totalVotes > 0 ? Math.round((optVotes / totalVotes) * 100) : 0;
+                const isUserPick = userVotedOptId === opt.id;
+
+                return `
+                    <div class="poll-result-row ${isUserPick ? 'user-pick' : ''}">
+                        <div class="poll-result-info">
+                            <span style="display: flex; align-items: center; gap: 8px;">
+                                <span>${escapeHtml(opt.text)}</span>
+                                ${isUserPick ? '<span style="font-size: 0.75rem; background: #3182ce; color: #fff; padding: 2px 8px; border-radius: 12px; font-weight: 700;"><i class="fas fa-check-circle"></i> Your Vote</span>' : ''}
+                            </span>
+                            <span style="color: ${isUserPick ? '#2b6cb0' : '#4a5568'}; font-weight: 700; font-size: 0.88rem;">${optVotes} vote${optVotes === 1 ? '' : 's'} (${pct}%)</span>
+                        </div>
+                        <div class="poll-result-bar-bg">
+                            <div class="poll-result-bar-fill" style="width: ${pct}%;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            footer.innerHTML = `
+                <div style="font-size: 0.85rem; color: ${isClosed ? '#718096' : '#2f855a'}; font-weight: 600;">
+                    ${isClosed ? '<i class="fas fa-lock"></i> Voting has concluded for this poll' : '<i class="fas fa-check-double"></i> Your vote has been recorded'}
+                </div>
+                ${!isClosed ? `
+                    <button type="button" class="btn-vote-change" onclick="allowChangePollVote('${escapeHtml(disc.id)}')">
+                        <i class="fas fa-redo"></i> Change Vote
+                    </button>
+                ` : ''}
+            `;
+        }
+    }
+
+    function selectPollOption(optId) {
+        selectedPollOptionId = optId;
+        const btns = document.querySelectorAll('.poll-option-btn');
+        btns.forEach(btn => {
+            const attr = btn.getAttribute('onclick') || '';
+            if (attr.includes(`'${optId}'`)) {
+                btn.classList.add('selected');
+            } else {
+                btn.classList.remove('selected');
+            }
+        });
+        const submitBtn = document.getElementById('btnSubmitPollVote');
+        if (submitBtn) submitBtn.disabled = false;
+    }
+    window.selectPollOption = selectPollOption;
+
+    function allowChangePollVote(discId) {
+        pollInVotingMode = true;
+        const disc = discussions.find(d => d.id === discId);
+        if (disc) renderPollWidget(disc);
+    }
+    window.allowChangePollVote = allowChangePollVote;
+
+    function cancelChangeVote() {
+        pollInVotingMode = false;
+        selectedPollOptionId = null;
+        const disc = discussions.find(d => d.id === currentDiscussionId);
+        if (disc) renderPollWidget(disc);
+    }
+    window.cancelChangeVote = cancelChangeVote;
+
+    async function submitPollVote(discId) {
+        if (!selectedPollOptionId) {
+            alert('Please select an option to vote.');
+            return;
+        }
+
+        const disc = discussions.find(d => d.id === discId);
+        if (!disc || !disc.poll) return;
+
+        const btn = document.getElementById('btnSubmitPollVote');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            btn.disabled = true;
+        }
+
+        await castPollVote(discId, selectedPollOptionId);
+        pollInVotingMode = false;
+        selectedPollOptionId = null;
+    }
+    window.submitPollVote = submitPollVote;
+
+    async function castPollVote(discId, chosenOptId) {
+        const disc = discussions.find(d => d.id === discId);
+        if (!disc) return;
+
+        if (!disc.poll) {
+            disc.poll = {
+                question: disc.question,
+                options: [],
+                voters: {},
+                totalVotes: 0,
+                isClosed: false
+            };
+        }
+
+        const poll = disc.poll;
+        if (!poll.voters) poll.voters = {};
+        if (!Array.isArray(poll.options)) poll.options = [];
+
+        const authUser = (typeof firebase !== 'undefined' && firebase.auth) ? firebase.auth().currentUser : null;
+        let voterKey = (authUser && authUser.uid) || (currentUser && currentUser.uid) || (currentUser && currentUser.email);
+        if (!voterKey) {
+            let guestId = localStorage.getItem('verba_guest_voter_id');
+            if (!guestId) {
+                guestId = 'guest_' + Date.now() + Math.random().toString(36).substring(2);
+                localStorage.setItem('verba_guest_voter_id', guestId);
+            }
+            voterKey = guestId;
+        }
+
+        const previousVoteOptId = poll.voters[voterKey];
+
+        // If previously voted for a different option, decrement previous
+        if (previousVoteOptId && previousVoteOptId !== chosenOptId) {
+            const prevOpt = poll.options.find(o => o.id === previousVoteOptId);
+            if (prevOpt && prevOpt.votes > 0) prevOpt.votes -= 1;
+            if (poll.totalVotes > 0) poll.totalVotes -= 1;
+        }
+
+        // Add new vote if not identical
+        if (previousVoteOptId !== chosenOptId) {
+            const newOpt = poll.options.find(o => o.id === chosenOptId);
+            if (newOpt) {
+                newOpt.votes = (parseInt(newOpt.votes, 10) || 0) + 1;
+                poll.totalVotes = (parseInt(poll.totalVotes, 10) || 0) + 1;
+                poll.voters[voterKey] = chosenOptId;
+            }
+        }
+
+        // Firestore update (Permitted by firestore.rules affectedKeys().hasOnly(['poll']))
+        if (typeof db !== 'undefined' && db) {
+            try {
+                await db.collection('discussions').doc(discId).update({
+                    poll: poll
+                });
+            } catch (err) {
+                console.warn("Could not save poll vote to Firestore:", err);
+            }
+        }
+
+        saveLocalData();
+        renderPollWidget(disc);
+        renderDiscussions();
+    }
+    window.castPollVote = castPollVote;
 
     function goBackToHub() {
         currentDiscussionId = null;
@@ -955,6 +1193,50 @@
     window.deleteDiscussionPrompt = deleteDiscussionPrompt;
 
     // --- Create & Edit Discussion Modal ---
+    function toggleModalPollBuilder() {
+        const type = document.getElementById('mDiscType').value;
+        const container = document.getElementById('mPollContainer');
+        if (container) {
+            if (type === 'Poll / Votación') {
+                container.style.display = 'block';
+                const list = document.getElementById('mPollOptionsList');
+                if (list && list.children.length === 0) {
+                    addModalPollOption('Option 1');
+                    addModalPollOption('Option 2');
+                }
+            } else {
+                container.style.display = 'none';
+            }
+        }
+    }
+    window.toggleModalPollBuilder = toggleModalPollBuilder;
+
+    function addModalPollOption(initialVal = '') {
+        const list = document.getElementById('mPollOptionsList');
+        if (!list) return;
+        const idx = list.children.length + 1;
+        const div = document.createElement('div');
+        div.style.display = 'flex';
+        div.style.gap = '8px';
+        div.style.alignItems = 'center';
+        div.innerHTML = `
+            <input type="text" class="m-poll-opt-input" placeholder="Option ${idx} text..." value="${escapeHtml(initialVal)}" style="flex: 1; padding: 8px 10px; border: 1px solid var(--voice-border); border-radius: 4px; font-size: 0.88rem;">
+            <button type="button" class="btn-admin-action danger" onclick="removeModalPollOption(this)" style="padding: 4px 8px; font-size: 0.8rem;" title="Remove Option">&times;</button>
+        `;
+        list.appendChild(div);
+    }
+    window.addModalPollOption = addModalPollOption;
+
+    function removeModalPollOption(btn) {
+        const list = document.getElementById('mPollOptionsList');
+        if (list && list.children.length <= 2) {
+            alert('A poll must have at least 2 options.');
+            return;
+        }
+        btn.parentElement.remove();
+    }
+    window.removeModalPollOption = removeModalPollOption;
+
     function openCreateModal() {
         if (!isAdmin) return;
         document.getElementById('modalFormTitle').textContent = 'Create New Discussion';
@@ -969,6 +1251,11 @@
         document.getElementById('mStatus').value = 'active';
         document.getElementById('mIsPinned').checked = false;
 
+        const pollContainer = document.getElementById('mPollContainer');
+        if (pollContainer) pollContainer.style.display = 'none';
+        const pollList = document.getElementById('mPollOptionsList');
+        if (pollList) pollList.innerHTML = '';
+
         document.getElementById('voiceModalOverlay').classList.add('show');
     }
 
@@ -979,7 +1266,7 @@
         const d = discussions.find(item => item.id === discId);
         if (!d) return;
 
-        document.getElementById('modalFormTitle').textContent = 'Edit Discussion';
+        document.getElementById('modalFormTitle').textContent = 'Edit Discussion / Poll';
         document.getElementById('editDiscussionId').value = d.id;
         document.getElementById('mBookTitle').value = d.title || '';
         document.getElementById('mAuthor').value = d.author || '';
@@ -990,6 +1277,24 @@
         document.getElementById('mDiscType').value = d.type || 'Book Discussion';
         document.getElementById('mStatus').value = d.status || 'active';
         document.getElementById('mIsPinned').checked = !!d.isPinned;
+
+        const pollContainer = document.getElementById('mPollContainer');
+        const pollList = document.getElementById('mPollOptionsList');
+        if (pollContainer && pollList) {
+            pollList.innerHTML = '';
+            if (d.poll && Array.isArray(d.poll.options)) {
+                pollContainer.style.display = 'block';
+                d.poll.options.forEach(opt => {
+                    addModalPollOption(opt.text);
+                });
+            } else if (d.type === 'Poll / Votación') {
+                pollContainer.style.display = 'block';
+                addModalPollOption('Option 1');
+                addModalPollOption('Option 2');
+            } else {
+                pollContainer.style.display = 'none';
+            }
+        }
 
         document.getElementById('voiceModalOverlay').classList.add('show');
     }
@@ -1020,6 +1325,40 @@
             return;
         }
 
+        let pollData = null;
+        if (type === 'Poll / Votación') {
+            const inputs = document.querySelectorAll('#mPollOptionsList .m-poll-opt-input');
+            const options = [];
+            inputs.forEach((inp, idx) => {
+                const val = inp.value.trim();
+                if (val) options.push({ id: 'opt_' + idx, text: val, votes: 0 });
+            });
+            if (options.length < 2) {
+                alert('Please provide at least 2 poll options for voting.');
+                return;
+            }
+            if (editId) {
+                const existing = discussions.find(item => item.id === editId);
+                if (existing && existing.poll && Array.isArray(existing.poll.options)) {
+                    options.forEach(opt => {
+                        const prev = existing.poll.options.find(p => p.text.toLowerCase() === opt.text.toLowerCase());
+                        if (prev) opt.votes = prev.votes || 0;
+                    });
+                    pollData = {
+                        question: question,
+                        options: options,
+                        voters: existing.poll.voters || {},
+                        totalVotes: existing.poll.totalVotes || 0,
+                        isClosed: false
+                    };
+                } else {
+                    pollData = { question, options, voters: {}, totalVotes: 0, isClosed: false };
+                }
+            } else {
+                pollData = { question, options, voters: {}, totalVotes: 0, isClosed: false };
+            }
+        }
+
         if (editId) {
             // Edit existing
             const d = discussions.find(item => item.id === editId);
@@ -1033,19 +1372,23 @@
                 d.type = type;
                 d.status = status;
                 d.isPinned = isPinned;
+                if (pollData) d.poll = pollData;
+
+                const updatePayload = {
+                    title: d.title,
+                    author: d.author,
+                    question: d.question,
+                    description: d.description,
+                    coverImage: d.coverImage,
+                    chapterRange: d.chapterRange,
+                    type: d.type,
+                    status: d.status,
+                    isPinned: d.isPinned
+                };
+                if (pollData) updatePayload.poll = pollData;
 
                 if (typeof db !== 'undefined' && db) {
-                    db.collection('discussions').doc(d.id).update({
-                        title: d.title,
-                        author: d.author,
-                        question: d.question,
-                        description: d.description,
-                        coverImage: d.coverImage,
-                        chapterRange: d.chapterRange,
-                        type: d.type,
-                        status: d.status,
-                        isPinned: d.isPinned
-                    }).catch(e => console.warn(e));
+                    db.collection('discussions').doc(d.id).update(updatePayload).catch(e => console.warn(e));
                 }
             }
         } else {
@@ -1068,6 +1411,7 @@
                 createdAt: new Date().toISOString(),
                 fromTheConversation: []
             };
+            if (pollData) newDisc.poll = pollData;
             discussions.unshift(newDisc);
 
             if (typeof db !== 'undefined' && db) {

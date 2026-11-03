@@ -195,42 +195,49 @@
             const grid = document.getElementById('publicGalleryGrid');
             if (!grid) return;
             
+            let albums = [];
+
             try {
-                if (typeof db === 'undefined' || !db) {
-                    showEmptyState();
-                    return;
+                if (typeof db !== 'undefined' && db) {
+                    let snapshot;
+                    try {
+                        snapshot = await db.collection('albums').orderBy('createdAt', 'desc').get();
+                    } catch (orderErr) {
+                        console.warn("orderBy query failed, attempting standard get():", orderErr);
+                        snapshot = await db.collection('albums').get();
+                    }
+
+                    if (snapshot && !snapshot.empty) {
+                        snapshot.forEach(doc => {
+                            albums.push({ id: doc.id, ...doc.data() });
+                        });
+                    }
                 }
-
-                let snapshot;
-                try {
-                    snapshot = await db.collection('albums').orderBy('createdAt', 'desc').get();
-                } catch (orderErr) {
-                    console.warn("orderBy query failed, attempting standard get():", orderErr);
-                    snapshot = await db.collection('albums').get();
-                }
-
-                if (!snapshot || snapshot.empty) {
-                    showEmptyState();
-                    return;
-                }
-                
-                const albums = [];
-                snapshot.forEach(doc => {
-                    albums.push({ id: doc.id, ...doc.data() });
-                });
-
-                // Client-side sort if createdAt exists
-                albums.sort((a, b) => {
-                    const tA = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : (a.createdAt || 0);
-                    const tB = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : (b.createdAt || 0);
-                    return tB - tA;
-                });
-
-                renderAlbumCards(albums);
             } catch (error) {
-                console.error("Error fetching albums:", error);
-                showEmptyState();
+                console.warn("Error fetching albums from Firestore:", error);
             }
+
+            // Merge with local storage cache
+            const local = JSON.parse(localStorage.getItem('verba_albums')) || [];
+            local.forEach(loc => {
+                if (!albums.some(a => String(a.id) === String(loc.id) || a.title === loc.title)) {
+                    albums.push(loc);
+                }
+            });
+
+            if (albums.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            // Client-side sort if createdAt exists
+            albums.sort((a, b) => {
+                const tA = a.createdAt && a.createdAt.toMillis ? a.createdAt.toMillis() : (new Date(a.createdAt || 0).getTime() || 0);
+                const tB = b.createdAt && b.createdAt.toMillis ? b.createdAt.toMillis() : (new Date(b.createdAt || 0).getTime() || 0);
+                return tB - tA;
+            });
+
+            renderAlbumCards(albums);
         }
 
         document.addEventListener('DOMContentLoaded', fetchAlbums);

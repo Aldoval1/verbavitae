@@ -436,6 +436,35 @@
             selectEvent(currentIndex);
         }
 
+        async function unregisterFromEvent(eventId) {
+            const ev = eventsData.find(e => e.id === eventId);
+            if (!ev) return;
+
+            const userUid = currentUser ? currentUser.uid : '';
+            userRegisteredEventIds.delete(ev.id);
+
+            let registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+            registered = registered.filter(r => r.id !== eventId && (!userUid || r.userId !== userUid));
+            localStorage.setItem('verba_registered_events', JSON.stringify(registered));
+
+            if (typeof db !== 'undefined' && db && userUid) {
+                try {
+                    await Promise.all([
+                        db.collection('users').doc(userUid).collection('registered_events').doc(ev.id).delete(),
+                        db.collection('event_registrations').doc(`${userUid}_${ev.id}`).delete()
+                    ]);
+                } catch (err) {
+                    console.warn("Firestore event unregister warning:", err);
+                }
+            }
+
+            ev.regCount = Math.max(0, (ev.regCount || 1) - 1);
+            ev.slotsLeft = Math.max(0, ev.maxSlots - ev.regCount);
+
+            alert(`Your registration for "${ev.title}" has been cancelled. Your volunteer slot has been released.`);
+            selectEvent(currentIndex);
+        }
+
         let detailMap = null;
         let detailMarker = null;
 
@@ -536,9 +565,14 @@
                         window.location.href = 'login.html';
                     };
                 } else if (isEventRegistered(event.id)) {
-                    btn.innerText = '✓ REGISTERED';
+                    btn.innerHTML = '<i class="fas fa-check"></i> REGISTERED <span style="font-size:0.75rem; opacity:0.85; margin-left:6px;">(Click to Cancel)</span>';
                     btn.style.backgroundColor = '#38a169';
-                    btn.onclick = (e) => { e.preventDefault(); alert('You are already registered for this event!'); };
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        if (confirm(`You are registered for "${event.title}". Would you like to cancel your registration and release your volunteer slot?`)) {
+                            unregisterFromEvent(event.id);
+                        }
+                    };
                 } else if (event.slotsLeft <= 0) {
                     btn.innerText = 'FULL (NO SLOTS LEFT)';
                     btn.style.backgroundColor = '#a0aec0';

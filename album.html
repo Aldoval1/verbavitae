@@ -184,28 +184,41 @@
             }
 
             try {
-                if (typeof db === 'undefined' || !db) {
-                    throw new Error("Firestore instance not initialized");
+                let data = null;
+                if (typeof db !== 'undefined' && db) {
+                    try {
+                        const doc = await db.collection('albums').doc(albumId).get();
+                        if (doc.exists) {
+                            data = doc.data();
+                        }
+                    } catch (e) {
+                        console.warn("Firestore fetch error:", e);
+                    }
                 }
 
-                const doc = await db.collection('albums').doc(albumId).get();
-                if (!doc.exists) {
+                if (!data) {
+                    const localAlbums = JSON.parse(localStorage.getItem('verba_albums')) || [];
+                    data = localAlbums.find(a => String(a.id) === String(albumId));
+                }
+
+                if (!data) {
                     titleEl.textContent = 'ALBUM NOT FOUND';
                     grid.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding: 40px; color: #666;">This album does not exist.</p>';
                     return;
                 }
 
-                const data = doc.data();
                 titleEl.textContent = (data.title || 'ALBUM').toUpperCase();
                 let photos = Array.isArray(data.photos) ? [...data.photos] : [];
 
                 if (photos.length === 0) {
                     try {
-                        const subSnap = await db.collection('albums').doc(albumId).collection('photos').get();
-                        subSnap.forEach(pDoc => {
-                            const pData = pDoc.data();
-                            if (pData && pData.url) photos.push(pData.url);
-                        });
+                        if (typeof db !== 'undefined' && db) {
+                            const subSnap = await db.collection('albums').doc(albumId).collection('photos').get();
+                            subSnap.forEach(pDoc => {
+                                const pData = pDoc.data();
+                                if (pData && pData.url) photos.push(pData.url);
+                            });
+                        }
                     } catch (subErr) {}
                 }
 
