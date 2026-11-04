@@ -10,11 +10,11 @@
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Permanent+Marker&family=Titan+One&family=Caveat+Brush:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Permanent+Marker&family=Titan+One&family=Caveat+Brush:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Bespoke Stylesheet with Cache Busting -->
-    <link rel="stylesheet" href="css/verbainmotion.css?v=20260922_008">
+    <link rel="stylesheet" href="css/verbainmotion.css?v=20261103_dict">
 </head>
 <body>
 
@@ -65,11 +65,236 @@
                 <p class="hero-motion-subtitle">Verba Vitae Creative Lab</p>
             </div>
 
-            <!-- Phase 2 Reveal: Manifesto Statement -->
-            <div class="hero-reveal-block" id="hero-reveal-block-2">
-                <div class="hero-reveal-statement">
-                    Literature was never meant to remain still.
-                    <span>We transform original writing and poetry into short-form visual cinema through claymation, hand-crafted illustration, stop-motion, and immersive sound.</span>
+            <!-- Stage 3: 3D Floating Dictionary & Page-Flip Sequence -->
+            <div class="hero-dict-scene" id="hero-dict-scene">
+                <div class="dict-book-3d" id="dict-book-3d">
+                    
+                    <!-- Spine & Back Hardcover Base -->
+                    <div class="dict-back-cover" id="dict-back-cover"></div>
+                    <div class="dict-spine-hinge" id="dict-spine-hinge"></div>
+                    <div class="dict-page-stack-edges" id="dict-page-stack-edges"></div>
+
+                    <!-- Target Right Page (Uncovered after leaves flip): Definition of Creative Lab -->
+                    <div class="dict-target-page" id="dict-target-page">
+                        <div class="dict-page-paper-bg" id="dict-page-paper-bg"></div>
+                        <div class="dict-page-gutter-shadow" id="dict-page-gutter-shadow"></div>
+
+                        <div class="dict-page-inner">
+                            <!-- Running Header -->
+                            <div class="dict-running-header dict-fade-on-blackout">
+                                <span>CREATIVE — CRESCENDO</span>
+                                <span class="dict-page-num">412</span>
+                            </div>
+
+                            <!-- Upper Preceding Entry for Authentic Lexicon Context -->
+                            <div class="dict-entry dict-entry-minor dict-fade-on-blackout">
+                                <span class="dict-headword-minor">cre·a·tive</span>
+                                <span class="dict-pron">/kriˈeɪ.tɪv/</span>
+                                <span class="dict-pos">adj.</span>
+                                <span class="dict-def-text">Having the quality or power of creating; characterized by originality of thought and expressive human craft.</span>
+                            </div>
+
+                            <div class="dict-ornament-divider dict-fade-on-blackout"></div>
+
+                            <!-- Main Featured Entry: CREATIVE LAB -->
+                            <div class="dict-entry dict-entry-featured" id="dict-featured-entry">
+                                <div class="dict-headword-row">
+                                    <span class="dict-spotlight-word" id="dict-spotlight-word">Creative Lab</span>
+                                </div>
+                                <div class="dict-meta-row dict-fade-on-blackout">
+                                    <span class="dict-pron">/kriˈeɪ.tɪv ˈlæb/</span>
+                                    <span class="dict-pos">n. phr.</span>
+                                    <span class="dict-etym">[Lat. <em>verba vitae</em>, living words]</span>
+                                </div>
+                                <ol class="dict-def-list dict-fade-on-blackout">
+                                    <li>
+                                        An experimental sanctuary within <em>Verba Vitae</em> where original literature and poetry escape the static page—transformed into living short-form cinema through physical claymation, hand-crafted illustration, stop-motion, and immersive sound.
+                                    </li>
+                                    <li>
+                                        A multidisciplinary atelier uniting writers, sculptors, animators, and audio architects to give human words palpable, tactile weight.
+                                    </li>
+                                </ol>
+                                <blockquote class="dict-quote dict-fade-on-blackout">
+                                    “In the <strong>Creative Lab</strong>, verse is no longer read in silence—it is sculpted, illuminated, and breathed into motion.”
+                                </blockquote>
+                            </div>
+
+                            <div class="dict-ornament-divider dict-fade-on-blackout"></div>
+
+                            <!-- Lower Entry for Authentic Lexicon Context -->
+                            <div class="dict-entry dict-entry-minor dict-fade-on-blackout">
+                                <span class="dict-headword-minor">cre·scen·do</span>
+                                <span class="dict-pron">/krəˈʃen.doʊ/</span>
+                                <span class="dict-pos">n.</span>
+                                <span class="dict-def-text">A gradual, climactic increase in intensity, resonance, or visual drama within an artistic work.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Flipping Leaves (Leaf 6 is bottom-most flipping page, Leaf 1 is top-most) -->
+                    <!-- Leaf 6: Flips last, its back becomes the final Left Page of the open spread -->
+                    <div class="dict-leaf" id="dict-leaf-6" data-leaf-index="5">
+                        <div class="dict-leaf-face dict-leaf-front">
+                            <div class="dict-running-header"><span>CONFLUENCE — CRAFT</span><span>410</span></div>
+                            <div class="dict-columns">
+                                <p><strong>con·flu·ence</strong> <em>/ˈkɒn.flu.əns/ n.</em> The flowing together of distinct artistic mediums—poetry, sculpture, and cinema—into a single current.</p>
+                                <p><strong>con·stel·la·tion</strong> <em>/ˌkɒn.stəˈleɪ.ʃən/ n.</em> A luminous gathering of creators and storytellers.</p>
+                                <p><strong>con·tour</strong> <em>/ˈkɒn.tʊər/ n.</em> The tactile outline of a sculpted figure or hand-drawn frame.</p>
+                                <p><strong>craft</strong> <em>/krɑːft/ n.</em> Skillful, patient manual creation; the tangible imprint of the artist's hand on clay and paper.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                        <div class="dict-leaf-face dict-leaf-back">
+                            <div class="dict-running-header"><span>411</span><span>CRAFT — CREATE</span></div>
+                            <div class="dict-columns">
+                                <p><strong>craft·work</strong> <em>/ˈkrɑːft.wɜːk/ n.</em> Physical artistry shaped by hand rather than synthetic automation.</p>
+                                <p><strong>cre·ate</strong> <em>/kriˈeɪt/ v.</em> To bring into existence out of imagination, verse, and raw matter.</p>
+                                <p><strong>cre·a·tion</strong> <em>/kriˈeɪ.ʃən/ n.</em> An original work of art or literature endowed with life and motion.</p>
+                                <p><strong>cre·a·tor</strong> <em>/kriˈeɪ.tər/ n.</em> One who shapes worlds from words, pigment, clay, and sound.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                    </div>
+
+                    <!-- Leaf 5 -->
+                    <div class="dict-leaf" id="dict-leaf-5" data-leaf-index="4">
+                        <div class="dict-leaf-face dict-leaf-front">
+                            <div class="dict-running-header"><span>CLAYMATION — CODEX</span><span>318</span></div>
+                            <div class="dict-columns">
+                                <p><strong>clay·ma·tion</strong> <em>/kleɪˈmeɪ.ʃən/ n.</em> Stop-motion animation using malleable clay figures sculpted and posed frame by frame.</p>
+                                <p><strong>co·alesce</strong> <em>/ˌkoʊ.əˈles/ v.</em> To unite diverse voices into a singular visual poem.</p>
+                                <p><strong>co·dex</strong> <em>/ˈkoʊ.deks/ n.</em> An ancient manuscript volume of preserved literature and illuminated verse.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                        <div class="dict-leaf-face dict-leaf-back">
+                            <div class="dict-running-header"><span>319</span><span>COLLAGE — COMPOSITE</span></div>
+                            <div class="dict-columns">
+                                <p><strong>col·lage</strong> <em>/kəˈlɑːʒ/ n.</em> An assemblage of layered textures, paper cutouts, and hand-inked frames.</p>
+                                <p><strong>col·or·ist</strong> <em>/ˈkʌl.ər.ɪst/ n.</em> A visual artist who evokes mood through shadow and tone.</p>
+                                <p><strong>com·po·si·tion</strong> <em>/ˌkɒm.pəˈzɪʃ.ən/ n.</em> The intentional arrangement of light, voice, and movement.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                    </div>
+
+                    <!-- Leaf 4 -->
+                    <div class="dict-leaf" id="dict-leaf-4" data-leaf-index="3">
+                        <div class="dict-leaf-face dict-leaf-front">
+                            <div class="dict-running-header"><span>CHIAROSCURO — CHRONICLE</span><span>244</span></div>
+                            <div class="dict-columns">
+                                <p><strong>chia·ro·scu·ro</strong> <em>/kiˌɑː.rəˈskjʊə.roʊ/ n.</em> The dramatic interplay of light and deep shadow in visual storytelling.</p>
+                                <p><strong>cho·rus</strong> <em>/ˈkɔː.rəs/ n.</em> A collective spoken cadence resonating across an audience.</p>
+                                <p><strong>chron·i·cle</strong> <em>/ˈkrɒn.ɪ.kəl/ n.</em> A living record of human memory and poetic expression.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                        <div class="dict-leaf-face dict-leaf-back">
+                            <div class="dict-running-header"><span>245</span><span>CINEMA — CLAY</span></div>
+                            <div class="dict-columns">
+                                <p><strong>cin·e·ma</strong> <em>/ˈsɪn.ə.mə/ n.</em> The art of moving images; poetry projected through time and light.</p>
+                                <p><strong>cin·e·mat·ic</strong> <em>/ˌsɪn.əˈmæt.ɪk/ adj.</em> Possessing the atmospheric depth and emotional scale of film.</p>
+                                <p><strong>clay</strong> <em>/kleɪ/ n.</em> Earthy, tactile matter capable of holding the fingerprint of its sculptor.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                    </div>
+
+                    <!-- Leaf 3 -->
+                    <div class="dict-leaf" id="dict-leaf-3" data-leaf-index="2">
+                        <div class="dict-leaf-face dict-leaf-front">
+                            <div class="dict-running-header"><span>BALLAD — BREATH</span><span>162</span></div>
+                            <div class="dict-columns">
+                                <p><strong>bal·lad</strong> <em>/ˈbæl.əd/ n.</em> A narrative poem rich in rhythm, meant to be spoken and felt aloud.</p>
+                                <p><strong>be·spoke</strong> <em>/bɪˈspoʊk/ adj.</em> Crafted individually by hand for a singular artistic vision.</p>
+                                <p><strong>breath</strong> <em>/breθ/ n.</em> The vital pause and vocal warmth that animates spoken verse.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                        <div class="dict-leaf-face dict-leaf-back">
+                            <div class="dict-running-header"><span>163</span><span>BRUSHWORK — CADENCE</span></div>
+                            <div class="dict-columns">
+                                <p><strong>brush·work</strong> <em>/ˈbrʌʃ.wɜːk/ n.</em> The distinctive stroke and texture of an illustrator's hand.</p>
+                                <p><strong>ca·dence</strong> <em>/ˈkeɪ.dəns/ n.</em> The musical rise and fall of the voice in spoken literature.</p>
+                                <p><strong>can·vas</strong> <em>/ˈkæn.vəs/ n.</em> Any space where imagination takes visible form.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                    </div>
+
+                    <!-- Leaf 2 -->
+                    <div class="dict-leaf" id="dict-leaf-2" data-leaf-index="1">
+                        <div class="dict-leaf-face dict-leaf-front">
+                            <div class="dict-running-header"><span>ANTHOLOGY — APERTURE</span><span>088</span></div>
+                            <div class="dict-columns">
+                                <p><strong>an·thol·o·gy</strong> <em>/ænˈθɒl.ə.dʒi/ n.</em> A curated collection of literary and visual works.</p>
+                                <p><strong>ap·er·ture</strong> <em>/ˈæp.ər.tʃər/ n.</em> The opening through which light enters to capture a single frame.</p>
+                                <p><strong>ar·ma·ture</strong> <em>/ˈɑːr.mə.tʃər/ n.</em> The hiddeninner skeleton supporting a sculpted stop-motion figure.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                        <div class="dict-leaf-face dict-leaf-back">
+                            <div class="dict-running-header"><span>089</span><span>ARTIFACT — ATELIER</span></div>
+                            <div class="dict-columns">
+                                <p><strong>ar·ti·fact</strong> <em>/ˈɑːr.tɪ.fækt/ n.</em> A physical object shaped by human creativity and cultural memory.</p>
+                                <p><strong>ar·ti·san</strong> <em>/ˈɑːr.tɪ.zən/ n.</em> A maker skilled in tactile, expressive handcraft.</p>
+                                <p><strong>a·tel·ier</strong> <em>/ˌæt.əlˈjeɪ/ n.</em> A workshop or studio where artists collaborate on experimental works.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                    </div>
+
+                    <!-- Leaf 1 (First page seen when cover opens) -->
+                    <div class="dict-leaf" id="dict-leaf-1" data-leaf-index="0">
+                        <div class="dict-leaf-face dict-leaf-front">
+                            <div class="dict-running-header"><span>AETHER — ALCHEMY</span><span>014</span></div>
+                            <div class="dict-columns">
+                                <p><strong>ae·ther</strong> <em>/ˈiː.θər/ n.</em> The luminous medium through which sound, light, and imagination travel.</p>
+                                <p><strong>al·che·my</strong> <em>/ˈæl.kə.mi/ n.</em> The seemingly magical transmutation of written words into living visual cinema.</p>
+                                <p><strong>al·le·go·ry</strong> <em>/ˈæl.ɪ.ɡɔːr.i/ n.</em> A story or visual metaphor revealing deeper human truth.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                        <div class="dict-leaf-face dict-leaf-back">
+                            <div class="dict-running-header"><span>015</span><span>ALLITERATION — ANIMA</span></div>
+                            <div class="dict-columns">
+                                <p><strong>al·lit·er·a·tion</strong> <em>/əˌlɪt.əˈreɪ.ʃən/ n.</em> The rhythmic echoing of consonant sounds in verse.</p>
+                                <p><strong>am·bi·ence</strong> <em>/ˈæm.bi.əns/ n.</em> The atmospheric character and acoustic mood of a scene.</p>
+                                <p><strong>an·i·ma</strong> <em>/ˈæn.ɪ.mə/ n.</em> Breath, soul, or vital life bestowed upon still matter.</p>
+                            </div>
+                            <div class="dict-leaf-shade"></div>
+                        </div>
+                    </div>
+
+                    <!-- Front Hardcover (Swings open from 0deg to -175deg) -->
+                    <div class="dict-front-cover" id="dict-front-cover">
+                        <!-- Outer Leather & Gold Foil Face -->
+                        <div class="dict-cover-face dict-cover-outer">
+                            <div class="dict-cover-gold-frame">
+                                <div class="dict-cover-corner tl"></div>
+                                <div class="dict-cover-corner tr"></div>
+                                <div class="dict-cover-corner bl"></div>
+                                <div class="dict-cover-corner br"></div>
+                                <span class="dict-cover-edition">EDITION MMXXVI</span>
+                                <h3 class="dict-cover-title">LEXICON</h3>
+                                <div class="dict-cover-divider"></div>
+                                <p class="dict-cover-subtitle">VERBA VITAE</p>
+                                <div class="dict-cover-emblem">
+                                    <i class="fas fa-feather-alt"></i>
+                                </div>
+                                <span class="dict-cover-footer">DICTIONARY OF LIVING ARTS</span>
+                            </div>
+                        </div>
+                        <!-- Inner Marbled Endpaper Face (Becomes left side when cover opens) -->
+                        <div class="dict-cover-face dict-cover-inner">
+                            <div class="dict-ex-libris">
+                                <span class="ex-libris-top">EX LIBRIS</span>
+                                <h4>VERBA VITAE</h4>
+                                <p>ARCHIVE OF POETICS &amp; MOTION</p>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -400,6 +625,6 @@
     </footer>
 
     <!-- Interactive Script with Cache Busting -->
-    <script src="js/verbainmotion.js?v=20260922_006"></script>
+    <script src="js/verbainmotion.js?v=20261103_dict"></script>
 </body>
 </html>
