@@ -311,7 +311,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="js/firebase-init.js"></script>
-    <script src="js/opportunities-data.js?v=20260921"></script>
+    <script src="js/opportunities-data.js?v=20261104_roles_v2"></script>
 </head>
 <body>
     <!-- Top Nav -->
@@ -386,10 +386,13 @@
 
                     <select class="apps-filter-select" id="appRoleFilter" onchange="filterApplications()">
                         <option value="all">All Roles</option>
-                        <option value="project-lead">Project Lead</option>
-                        <option value="claymation-animator">Claymation Animator</option>
-                        <option value="illustration-artist">Illustration & Motion Artist</option>
-                        <option value="video-editor">Video Editor & Post-Production</option>
+                        <option value="project-lead">Project Lead &amp; Creative Director</option>
+                        <option value="artist-3d-2d">3D / 2D Artist</option>
+                        <option value="social-media">Social Media &amp; Content</option>
+                        <option value="video-editor">Video Editor &amp; Sound Designer</option>
+                        <option value="stem-engineering">STEM &amp; Creative Engineering</option>
+                        <option value="claymation-animator">Claymation Animator (Legacy)</option>
+                        <option value="illustration-artist">Illustration &amp; Motion Artist (Legacy)</option>
                     </select>
 
                     <select class="apps-filter-select" id="appStatusFilter" onchange="filterApplications()">

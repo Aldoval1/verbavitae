@@ -211,7 +211,75 @@
                     <p class="step-desc">You can apply for one or multiple roles. The following section will dynamically adapt questions to your selections.</p>
 
                     <div class="role-select-grid" id="roleSelectGrid">
-                        <!-- Populated by JS from opportunities-data.js -->
+                        <!-- Role 1: Project Lead -->
+                        <div class="role-select-card" id="roleCard_project-lead" onclick="toggleRoleSelection('project-lead')">
+                            <div class="role-select-check">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="role-select-info">
+                                <h4 class="role-select-title">
+                                    <i class="fas fa-compass"></i>
+                                    Project Lead &amp; Creative Director
+                                </h4>
+                                <p class="role-select-desc">Coordinates the project from beginning to end, guiding the creative vision and production timeline.</p>
+                            </div>
+                        </div>
+
+                        <!-- Role 2: 3D / 2D Artist -->
+                        <div class="role-select-card" id="roleCard_artist-3d-2d" onclick="toggleRoleSelection('artist-3d-2d')">
+                            <div class="role-select-check">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="role-select-info">
+                                <h4 class="role-select-title">
+                                    <i class="fas fa-shapes"></i>
+                                    3D / 2D Artist
+                                </h4>
+                                <p class="role-select-desc">Creates 3D digital sculptures, models, tactile physical assets, and expressive 2D animation sequences.</p>
+                            </div>
+                        </div>
+
+                        <!-- Role 3: Social Media & Content -->
+                        <div class="role-select-card" id="roleCard_social-media" onclick="toggleRoleSelection('social-media')">
+                            <div class="role-select-check">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="role-select-info">
+                                <h4 class="role-select-title">
+                                    <i class="fas fa-hashtag"></i>
+                                    Social Media &amp; Content
+                                </h4>
+                                <p class="role-select-desc">Shapes the public narrative, behind-the-scenes teasers, and release campaigns across Instagram, TikTok, and digital channels.</p>
+                            </div>
+                        </div>
+
+                        <!-- Role 4: Video Editor & Sound Designer -->
+                        <div class="role-select-card" id="roleCard_video-editor" onclick="toggleRoleSelection('video-editor')">
+                            <div class="role-select-check">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="role-select-info">
+                                <h4 class="role-select-title">
+                                    <i class="fas fa-film"></i>
+                                    Video Editor &amp; Sound Designer
+                                </h4>
+                                <p class="role-select-desc">Combines all creative elements, audio narration, and visual layers into a cinematic final video.</p>
+                            </div>
+                        </div>
+
+                        <!-- Role 5: STEM & Creative Engineering -->
+                        <div class="role-select-card" id="roleCard_stem-engineering" onclick="toggleRoleSelection('stem-engineering')">
+                            <div class="role-select-check">
+                                <i class="fas fa-check"></i>
+                            </div>
+                            <div class="role-select-info">
+                                <h4 class="role-select-title">
+                                    <i class="fas fa-laptop-code"></i>
+                                    STEM &amp; Creative Engineering
+                                </h4>
+                                <p class="role-select-desc">Bridges engineering, computer science, and technology with the creative arts through coding, rigging, and pipeline tools.</p>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="roleSelectionError" style="display:none; color: #e53e3e; font-size: 0.9rem; font-weight: 700; margin-top: 10px;">
@@ -331,8 +399,8 @@
     </footer>
 
     <!-- Logic Scripts -->
-    <script src="js/opportunities-data.js?v=20260921"></script>
-    <script src="js/application.js?v=20260921"></script>
+    <script src="js/opportunities-data.js?v=20261104_roles_v2"></script>
+    <script src="js/application.js?v=20261104_roles_v2"></script>
 
     <script>
         // Burger Menu Toggle
