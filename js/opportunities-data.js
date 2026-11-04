@@ -6,7 +6,7 @@
 const VERBA_OPPORTUNITIES = [
     {
         id: 'poetry-in-motion',
-        title: 'Poetry in Motion',
+        title: 'Verba in Motion',
         tagline: 'Be part of Verba in Motion',
         subtitle: 'Bring literature to life through animation, illustration, and film.',
         heroImage: 'images/slide1.jpg',
@@ -124,7 +124,7 @@ No previous professional experience is required. Students interested in art, lit
                 },
                 {
                     id: 'lead_motivation',
-                    label: 'Why are you interested in being a Project Lead for Poetry in Motion?',
+                    label: 'Why are you interested in being a Project Lead for Verba in Motion?',
                     type: 'textarea',
                     required: true,
                     placeholder: 'What excites you about guiding this production?'
