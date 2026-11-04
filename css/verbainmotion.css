@@ -1058,6 +1058,12 @@ body {
 /* ==========================================================================
    Roles Section (Architectural, 0px border radius)
    ========================================================================== */
+
+@media (min-width: 1025px) {
+    .role-arch-card.role-arch-wide {
+        grid-column: span 2;
+    }
+}
 .roles-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);

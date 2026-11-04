@@ -28,51 +28,51 @@ No previous professional experience is required. Students interested in art, lit
         roles: [
             {
                 id: 'project-lead',
-                title: 'Project Lead',
+                title: 'Project Lead & Creative Director',
                 icon: 'fa-compass',
                 shortDesc: 'Coordinates the project from beginning to end, guiding the creative vision and production timeline.',
                 responsibilities: [
                     'Organize the creative team and facilitate team communications.',
                     'Help develop the concept for the selected poem or text.',
                     'Create and maintain a realistic production timeline.',
-                    'Coordinate animators, illustrators, narrators, and editors.',
+                    'Coordinate animators, illustrators, engineers, narrators, and editors.',
                     'Monitor overall progress and address creative hurdles.',
                     'Help review and approve the final production before release.'
                 ],
                 qualities: 'Strong organizational skills, collaborative mindset, passion for storytelling and creative direction.'
             },
             {
-                id: 'claymation-animator',
-                title: 'Claymation Animator',
+                id: 'artist-3d-2d',
+                title: '3D / 2D Artist',
                 icon: 'fa-shapes',
-                shortDesc: 'Creates clay characters, objects, environments, and stop-motion sequences that embody the literature.',
+                shortDesc: 'Creates 3D digital sculptures, models, tactile physical assets, and expressive 2D animation sequences.',
                 responsibilities: [
-                    'Design and sculpt clay characters and props based on the text.',
-                    'Build tactile environments, mini-sets, and scenes.',
-                    'Plan and storyboard stop-motion sequences.',
-                    'Capture high-quality frame-by-frame sequences.',
-                    'Interpret the literary work visually through motion and texture.',
-                    'Collaborate closely with the Project Lead and Video Editor.'
+                    'Design and sculpt 3D character models, props, and environments.',
+                    'Create 2D frame-by-frame animation, cel art, and illustrated overlays.',
+                    'Develop textures, physical-digital hybrid materials, and lighting setups.',
+                    'Plan and storyboard dynamic camera layouts and visual transitions.',
+                    'Interpret literary and poetic themes visually through motion.',
+                    'Collaborate closely with the Project Lead, Engineers, and Video Editor.'
                 ],
-                qualities: 'Patience, tactile craft or sculpture interest, visual curiosity, attention to detail.'
+                qualities: 'Interest in 3D modeling, sculpting, or 2D animation (all levels welcome), visual creativity, and attention to detail.'
             },
             {
-                id: 'illustration-artist',
-                title: 'Illustration & Motion Artist',
-                icon: 'fa-paint-brush',
-                shortDesc: 'Creates hand-drawn or digital artwork, backgrounds, and expressive 2D motion elements.',
+                id: 'social-media',
+                title: 'Social Media & Content',
+                icon: 'fa-hashtag',
+                shortDesc: 'Shapes the public narrative, behind-the-scenes teasers, and release campaigns across Instagram, TikTok, and digital channels.',
                 responsibilities: [
-                    'Create illustrations, character concepts, and atmospheric backgrounds.',
-                    'Develop the unified visual style and aesthetic palette of the piece.',
-                    'Create simple 2D animation, motion graphics, or illustrated transitions.',
-                    'Interpret the poem and its themes visually.',
-                    'Collaborate closely with the Project Lead and Video Editor.'
+                    'Curate engaging short-form vertical video content (Reels, TikToks, Stories).',
+                    'Document the creative production process and behind-the-scenes moments.',
+                    'Plan campaign schedules and rollout strategies for releases.',
+                    'Engage with the student community and expand audience reach.',
+                    'Coordinate with the Project Lead on promotional milestones.'
                 ],
-                qualities: 'Creativity, drawing/digital art enthusiasm, sensitivity to literary mood.'
+                qualities: 'Storytelling passion, eye for social video trends, community engagement mindset.'
             },
             {
                 id: 'video-editor',
-                title: 'Video Editor & Post-Production',
+                title: 'Video Editor & Sound Designer',
                 icon: 'fa-film',
                 shortDesc: 'Combines all creative elements, audio narration, and visual layers into a cinematic final video.',
                 responsibilities: [
@@ -83,6 +83,20 @@ No previous professional experience is required. Students interested in art, lit
                     'Export master versions optimized for Instagram, TikTok, website, and archival showcase.'
                 ],
                 qualities: 'Technical editing curiosity, ear for pacing and audio rhythm, eye for typography.'
+            },
+            {
+                id: 'stem-engineering',
+                title: 'STEM & Creative Engineering',
+                icon: 'fa-laptop-code',
+                shortDesc: 'Bridges engineering, computer science, and technology with the creative arts through coding, rigging, and pipeline tools.',
+                responsibilities: [
+                    'Develop creative code, procedural effects, web interactions, or visual shaders.',
+                    'Build physical camera rigs, motorized turntable apparatus, or lighting automation.',
+                    'Automate file workflows, rendering pipelines, or audio-visual synchronization.',
+                    'Collaborate with artists and animators to solve technical challenges creatively.',
+                    'Document engineering experiments and technical solutions for future releases.'
+                ],
+                qualities: 'Curiosity in programming, robotics, hardware, physical engineering, or interactive technology applied to the arts.'
             }
         ],
         customQuestions: {
@@ -109,13 +123,6 @@ No previous professional experience is required. Students interested in art, lit
                     placeholder: 'Describe your approach to communication, milestones, and constructive feedback...'
                 },
                 {
-                    id: 'lead_conflict',
-                    label: 'If one member of your team falls behind schedule, how would you handle the situation?',
-                    type: 'textarea',
-                    required: true,
-                    placeholder: 'How would you offer support while keeping the project on track?'
-                },
-                {
                     id: 'lead_motivation',
                     label: 'Why are you interested in being a Project Lead for Poetry in Motion?',
                     type: 'textarea',
@@ -123,85 +130,83 @@ No previous professional experience is required. Students interested in art, lit
                     placeholder: 'What excites you about guiding this production?'
                 }
             ],
-            'claymation-animator': [
+            'artist-3d-2d': [
                 {
-                    id: 'clay_experience',
-                    label: 'Have you worked with clay, sculpture, crafts, or stop-motion before? Describe any relevant experience.',
-                    type: 'textarea',
-                    required: true,
-                    placeholder: 'Tell us about your background with clay, model making, or physical crafts (even beginner or hobby level)...'
+                    id: 'artist_medium',
+                    label: 'What artistic mediums or styles do you enjoy working in? (Select all that apply)',
+                    type: 'checkboxes',
+                    options: [
+                        '3D Modeling & Digital Sculpting (Blender, Maya, ZBrush, etc.)',
+                        '2D Digital Illustration & Animation (Procreate, Photoshop, etc.)',
+                        'Traditional Drawing, Painting, or Handcraft',
+                        'Physical Claymation & Stop-Motion',
+                        'Other'
+                    ],
+                    required: true
                 },
                 {
-                    id: 'clay_stopmotion',
-                    label: 'Have you ever created stop-motion animation? If so, what tools or apps have you used (e.g. Stop Motion Studio, Dragonframe, phone apps)?',
-                    type: 'textarea',
+                    id: 'artist_tools',
+                    label: 'What software, apps, or physical tools do you use or would like to learn?',
+                    type: 'text',
                     required: true,
-                    placeholder: 'Share any tools, apps, or experiments you have tried...'
+                    placeholder: 'e.g. Blender, Procreate, Photoshop, Clay, sketchbook...'
                 },
                 {
-                    id: 'clay_interpretation',
-                    label: 'What interests you about creating visual interpretations of literature through clay or stop-motion?',
+                    id: 'artist_experience',
+                    label: 'Describe your interest or experience in 3D or 2D art (all skill levels welcome):',
                     type: 'textarea',
                     required: true,
-                    placeholder: 'What appeals to you about bringing poetry or prose to life?'
+                    placeholder: 'Tell us about what you enjoy creating, artists who inspire you, or what you hope to explore...'
                 },
                 {
-                    id: 'clay_file',
-                    label: 'Upload photos or video clips of previous work, sculptures, or crafts (Optional but recommended):',
+                    id: 'artist_file',
+                    label: 'Upload examples of your art, 3D renders, sketches, or animation clips (Optional):',
                     type: 'file',
                     accept: 'image/*,video/*',
                     required: false
                 },
                 {
-                    id: 'clay_portfolio',
-                    label: 'Optional portfolio link, Instagram art page, or Google Drive link:',
+                    id: 'artist_portfolio',
+                    label: 'Optional portfolio link, ArtStation, Instagram, or Google Drive folder:',
                     type: 'url',
                     required: false,
                     placeholder: 'https://...'
                 }
             ],
-            'illustration-artist': [
+            'social-media': [
                 {
-                    id: 'art_medium',
-                    label: 'Do you primarily work with traditional art, digital art, or both?',
-                    type: 'select',
-                    options: ['Traditional Art (Pencil, Ink, Paint)', 'Digital Art (Procreate, Photoshop, etc.)', 'Both Traditional and Digital'],
+                    id: 'social_platforms',
+                    label: 'Which platforms do you feel most comfortable creating content for? (Select all that apply)',
+                    type: 'checkboxes',
+                    options: [
+                        'Instagram (Reels, Carousels, Stories)',
+                        'TikTok',
+                        'YouTube (Shorts & Long-form)',
+                        'LinkedIn / Professional Portfolios',
+                        'Other'
+                    ],
                     required: true
                 },
                 {
-                    id: 'art_tools',
-                    label: 'What drawing or illustration tools, programs, or apps do you regularly use?',
-                    type: 'text',
-                    required: true,
-                    placeholder: 'e.g. Procreate, Clip Studio, Photoshop, Adobe Illustrator, sketchbook & watercolors...'
-                },
-                {
-                    id: 'art_animation',
-                    label: 'Have you worked with animation or motion graphics before? Which programs or apps do you use?',
+                    id: 'social_experience',
+                    label: 'Have you managed social channels, edited short-form reels/tiktoks, or created digital content before?',
                     type: 'textarea',
                     required: true,
-                    placeholder: 'Describe any 2D animation, frame-by-frame, or motion graphics experience (all levels welcome)...'
+                    placeholder: 'Share any personal accounts, student clubs, work, or hobbies where you created content...'
                 },
                 {
-                    id: 'art_style',
-                    label: 'Describe your artistic style, visual influences, or aesthetic interests.',
+                    id: 'social_ideas',
+                    label: 'What kind of social media content or storytelling ideas would you like to see for Verba in Motion?',
                     type: 'textarea',
                     required: true,
-                    placeholder: 'What genres, visual tones, or artists inspire you?'
+                    placeholder: 'e.g. artist spotlights, time-lapses of sculpting/drawing, poetry narration teasers...'
                 },
                 {
-                    id: 'art_file',
-                    label: 'Upload examples of your artwork or illustrations (Optional but recommended):',
-                    type: 'file',
-                    accept: 'image/*',
-                    required: false
-                },
-                {
-                    id: 'art_portfolio',
-                    label: 'Optional portfolio link, ArtStation, Behance, or art Instagram:',
+                    id: 'social_link',
+                    label: 'Optional social handle, content link, or portfolio:',
                     type: 'url',
                     required: false,
-                    placeholder: 'https://...'
+                    placeholder: 'https://instagram.com/...'
                 }
             ],
             'video-editor': [
@@ -222,17 +227,10 @@ No previous professional experience is required. Students interested in art, lit
                 },
                 {
                     id: 'editor_experience',
-                    label: 'Describe your video editing experience.',
+                    label: 'Describe your video editing or sound design experience.',
                     type: 'textarea',
                     required: true,
                     placeholder: 'What kind of projects have you edited (YouTube, reels, short films, school projects)?'
-                },
-                {
-                    id: 'editor_technical',
-                    label: 'Have you worked with audio synchronization, subtitles/captions, transitions, or motion graphics?',
-                    type: 'textarea',
-                    required: true,
-                    placeholder: 'Share your familiarity with audio timing, dynamic text, sound effects, etc.'
                 },
                 {
                     id: 'editor_file',
@@ -248,9 +246,38 @@ No previous professional experience is required. Students interested in art, lit
                     required: false,
                     placeholder: 'https://...'
                 }
+            ],
+            'stem-engineering': [
+                {
+                    id: 'stem_field',
+                    label: 'What is your major, field of study, or technical background?',
+                    type: 'text',
+                    required: true,
+                    placeholder: 'e.g. Computer Science, Mechanical Engineering, Electrical, Data Science, etc.'
+                },
+                {
+                    id: 'stem_skills',
+                    label: 'What programming languages, hardware, software, or technical tools do you enjoy working with?',
+                    type: 'textarea',
+                    required: true,
+                    placeholder: 'e.g. Python, JavaScript/Web, Arduino/Raspberry Pi, CAD/3D printing, shader coding, etc.'
+                },
+                {
+                    id: 'stem_creative',
+                    label: 'How would you like to apply your engineering or STEM knowledge to this creative project?',
+                    type: 'textarea',
+                    required: true,
+                    placeholder: 'Share any interest in interactive websites, camera rigs, lighting automation, procedural visuals, or technical workflows...'
+                },
+                {
+                    id: 'stem_link',
+                    label: 'Optional GitHub link, technical portfolio, or project showcase:',
+                    type: 'url',
+                    required: false,
+                    placeholder: 'https://github.com/...'
+                }
             ]
-        }
-    }
+        }    }
 ];
 
 // Helper Functions
