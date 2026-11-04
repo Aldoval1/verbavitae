@@ -535,6 +535,14 @@ body {
     margin-bottom: 6px;
 }
 
+.dict-def-paragraph {
+    margin: 0 0 10px 0;
+    font-size: clamp(0.78rem, 0.98vw, 0.92rem);
+    line-height: 1.45;
+    color: #1f1b17;
+    text-align: justify;
+}
+
 .dict-def-list {
     margin: 0 0 8px 0;
     padding-left: 18px;
