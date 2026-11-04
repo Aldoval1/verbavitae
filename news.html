@@ -10,6 +10,11 @@
     <link rel="stylesheet" href="css/news.css?v=20260819">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="js/firebase-init.js"></script>
 </head>
 <body>
     <header class="main-header">
@@ -31,6 +36,7 @@
             <a href="eboard.html">Our E-Board</a>
             <a href="opportunities.html">Opportunities</a>
             <a href="news.html" class="active">News</a>
+            <a href="verbainmotion.html">Verba in Motion</a>
             <a href="events.html">Events</a>
             <a href="shop.html">Shop</a>
             <a href="voice.html" style="color: #3182ce; font-weight: 700;"><i class="fas fa-comments"></i> Verba Voice</a>
@@ -59,6 +65,8 @@
                 <div class="nav-links right-links">
                     <a href="news.html" class="active" style="color: #cccccc;">News</a>
                     <span class="divider">|</span>
+                    <a href="verbainmotion.html">Verba in Motion</a>
+                    <span class="divider">|</span>
                     <a href="events.html">Events</a>
                     <span class="divider">|</span>
                     <a href="shop.html">Shop</a>
@@ -82,7 +90,7 @@
         </div>
 
         <!-- Category Filters -->
-        <div class="filter-bar">
+        <div class="filter-bar" id="newsFilterBar">
             <button class="filter-btn active" onclick="filterNews('all', this)">All Stories</button>
             <button class="filter-btn" onclick="filterNews('announcement', this)">Announcements</button>
             <button class="filter-btn" onclick="filterNews('spotlight', this)">Spotlights</button>
@@ -143,103 +151,89 @@
                 .replace(/'/g, '&#039;');
         }
 
-        // Full Articles Data
-        const newsArticles = [
-            {
-                badge: 'Announcement',
-                category: 'announcement',
-                date: 'July 20, 2026',
-                title: 'Verba Vitae Launches Annual Academic Excellence Grant',
-                excerpt: 'Verba Vitae is proud to unveil the 2026 Academic Excellence Grant, designed to support students engaged in original research, conference presentations, and professional development programs.',
-                image: 'images/slide1.jpg',
-                content: `
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">Verba Vitae is proud to unveil the 2026 Academic Excellence Grant, designed to support students engaged in original research, conference presentations, and professional development programs.</p>
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">Through this initiative, active members can apply for stipends ranging from $250 to $1,000 to cover travel expenses, registration fees, or specialized study materials.</p>
-                    <h3 style="color:#1d0c8d; margin:20px 0 10px;">Application Details</h3>
-                    <ul style="padding-left:20px; line-height:1.6; color:#444;">
-                        <li>Open to all active Verba Vitae undergraduate & graduate members.</li>
-                        <li>Applications review happens on a rolling basis until September 1, 2026.</li>
-                        <li>Proposals should include a budget breakdown and faculty endorsement letter.</li>
-                    </ul>
-                `
-            },
-            {
-                badge: 'Spotlight',
-                category: 'spotlight',
-                date: 'July 15, 2026',
-                title: 'Leadership Spotlight: Building Empowered Student Communities',
-                excerpt: 'Our executive leadership team continues to innovate new pathways for student engagement across disciplines. In this spotlight, we reflect on the principles guiding our organizational growth.',
-                image: 'images/cover1.png',
-                content: `
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">Our executive leadership team continues to innovate new pathways for student engagement across disciplines. In this spotlight, we reflect on the principles guiding our organizational growth.</p>
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">By prioritizing transparent communication, peer-to-peer mentorship, and accessible digital tools, Verba Vitae is breaking down traditional barriers to career development.</p>
-                `
-            },
-            {
-                badge: 'Recap',
-                category: 'recap',
-                date: 'July 08, 2026',
-                title: 'Summer Leadership Summit Highlights & Takeaways',
-                excerpt: 'The 2026 Summer Leadership Summit gathered ambitious student organizers for a full day of collaborative workshops and keynote sessions.',
-                image: 'images/slide2.jpg',
-                content: `
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">The 2026 Summer Leadership Summit gathered ambitious student organizers for a full day of collaborative workshops and keynote sessions.</p>
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">Highlights included interactive panel sessions on grant writing, project management, and community outreach strategies led by alumni and faculty advisors.</p>
-                `
-            },
-            {
-                badge: 'Announcement',
-                category: 'announcement',
-                date: 'June 28, 2026',
-                title: 'New Peer Mentorship Program Applications Now Open',
-                excerpt: 'Our flagship Peer Mentorship Program pairs incoming and underclassmen students with experienced upperclassmen to foster academic achievement and personal growth.',
-                image: 'images/slide3.jpg',
-                content: `
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">Our flagship Peer Mentorship Program pairs incoming and underclassmen students with experienced upperclassmen to foster academic achievement and personal growth.</p>
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">Mentors provide guidance on course navigation, resume building, and balancing campus involvement.</p>
-                `
-            },
-            {
-                badge: 'Spotlight',
-                category: 'spotlight',
-                date: 'June 18, 2026',
-                title: 'Verba Vitae Expands Institutional Partner Network',
-                excerpt: 'We are excited to announce strategic partnerships with regional industry partners and academic associations to provide direct access to internships and fellowship opportunities.',
-                image: 'images/cover2.png',
-                content: `
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">We are excited to announce strategic partnerships with regional industry partners and academic associations to provide direct access to internships and fellowship opportunities.</p>
-                `
-            },
-            {
-                badge: 'Recap',
-                category: 'recap',
-                date: 'June 05, 2026',
-                title: 'Community Impact Report: 500+ Students Empowered',
-                excerpt: 'Our semi-annual impact report highlights milestone achievements: 500+ active participants, 12 hosted skill workshops, and over $5,000 distributed in student support awards.',
-                image: 'images/slide4.jpg',
-                content: `
-                    <p style="line-height:1.7; color:#333; margin-bottom:15px;">Our semi-annual impact report highlights milestone achievements: 500+ active participants, 12 hosted skill workshops, and over $5,000 distributed in student support awards.</p>
-                `
+        // News Articles Data (Empty default - populated dynamically)
+        let newsArticles = [];
+
+        async function loadNews() {
+            // 1. Try local storage cache
+            try {
+                const stored = localStorage.getItem('verba_news');
+                if (stored) {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        newsArticles = parsed;
+                    }
+                }
+            } catch (err) {
+                console.warn('Local news cache read error:', err);
             }
-        ];
+
+            // 2. Try Firestore 'news' collection if available
+            try {
+                if (window.db) {
+                    const snap = await db.collection('news').orderBy('createdAt', 'desc').get();
+                    if (!snap.empty) {
+                        const fetched = [];
+                        snap.forEach(doc => {
+                            const d = doc.data();
+                            fetched.push({
+                                id: doc.id,
+                                badge: d.badge || 'Announcement',
+                                category: (d.category || d.badge || 'announcement').toLowerCase(),
+                                date: d.date || (d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''),
+                                title: d.title || 'Untitled',
+                                excerpt: d.excerpt || '',
+                                image: d.image || 'images/slide1.jpg',
+                                content: d.content || ('<p style="line-height:1.7; color:#333;">' + escapeHtml(d.excerpt || '') + '</p>')
+                            });
+                        });
+                        if (fetched.length > 0) {
+                            newsArticles = fetched;
+                        }
+                    }
+                }
+            } catch (err) {
+                // Graceful fallback when collection is empty or rules apply
+                console.log('Remote news info:', err.message);
+            }
+
+            renderNewsArticles();
+        }
 
         function renderNewsArticles() {
             const grid = document.getElementById('newsGrid');
+            const filterBar = document.getElementById('newsFilterBar');
             if (!grid) return;
-            if (!newsArticles || newsArticles.length === 0) return;
 
+            if (!newsArticles || newsArticles.length === 0) {
+                if (filterBar) filterBar.style.display = 'none';
+                grid.innerHTML = `
+                    <div class="news-empty-container" style="grid-column: 1 / -1; text-align: center; padding: 70px 24px; background: #ffffff; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); max-width: 580px; margin: 30px auto;">
+                        <div style="width: 64px; height: 64px; margin: 0 auto 18px; background: #eff6ff; color: #2563eb; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem;">
+                            <i class="far fa-newspaper"></i>
+                        </div>
+                        <h3 style="font-size: 1.4rem; color: #1e293b; margin-bottom: 10px; font-weight: 700;">No Stories Published Yet</h3>
+                        <p style="color: #64748b; font-size: 0.98rem; line-height: 1.6; margin: 0 auto;">
+                            We're currently preparing exciting updates, announcements, and spotlights. Please check back soon for our latest news!
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (filterBar) filterBar.style.display = 'flex';
             grid.innerHTML = newsArticles.map((article, index) => `
-                <article class="news-card" data-category="${escapeHtml(article.category || article.badge.toLowerCase())}">
+                <article class="news-card" data-category="${escapeHtml(article.category || (article.badge ? article.badge.toLowerCase() : 'all'))}">
                     <div class="news-image-wrapper">
-                        <img src="${escapeHtml(article.image)}" alt="${escapeHtml(article.title)}" loading="lazy">
-                        <span class="news-badge">${escapeHtml(article.badge)}</span>
+                        <img src="${escapeHtml(article.image || 'images/slide1.jpg')}" alt="${escapeHtml(article.title || 'News')}" loading="lazy">
+                        <span class="news-badge">${escapeHtml(article.badge || 'News')}</span>
                     </div>
                     <div class="news-content">
                         <div class="news-meta">
-                            <span><i class="far fa-calendar-alt"></i> ${escapeHtml(article.date)}</span>
+                            <span><i class="far fa-calendar-alt"></i> ${escapeHtml(article.date || '')}</span>
                         </div>
-                        <h3 class="news-title">${escapeHtml(article.title)}</h3>
-                        <p class="news-excerpt">${escapeHtml(article.excerpt)}</p>
+                        <h3 class="news-title">${escapeHtml(article.title || '')}</h3>
+                        <p class="news-excerpt">${escapeHtml(article.excerpt || '')}</p>
                         <button class="btn-read-more" onclick="openNewsModal(${index})">
                             Read Full Story <i class="fas fa-arrow-right"></i>
                         </button>
@@ -248,7 +242,12 @@
             `).join('');
         }
 
-        document.addEventListener('DOMContentLoaded', renderNewsArticles);
+        document.addEventListener('DOMContentLoaded', loadNews);
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'verba_news') {
+                loadNews();
+            }
+        });
 
         // Filter Stories Function
         function filterNews(category, btn) {
