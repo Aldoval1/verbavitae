@@ -6,15 +6,15 @@
     <meta name="description" content="Verba in Motion - Poetry, Literature, and Visual Cinema. Transform literary works through claymation, stop-motion, illustration, and film.">
     <title>Verba in Motion — Poetry in Motion by Verba Vitae</title>
     <link rel="icon" type="image/png" href="images/verbavitaelogoblue.png">
-    
+
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=Permanent+Marker&family=Titan+One&family=Caveat+Brush:wght@700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <!-- Bespoke Stylesheet with Cache Busting -->
-    <link rel="stylesheet" href="css/verbainmotion.css?v=20261103_dict">
+    <link rel="stylesheet" href="css/verbainmotion.css?v=20261103_webgl_v4">
 </head>
 <body>
 
@@ -24,14 +24,14 @@
             <img src="images/verbavitaelogoblue.png" alt="Verba Vitae" class="vim-nav-logo">
             <span class="vim-nav-title">VERBA <span>IN MOTION</span></span>
         </a>
-        
+
         <nav class="vim-nav-links">
             <a href="#vision" class="vim-nav-link">Vision</a>
             <a href="#references" class="vim-nav-link">Visual References</a>
             <a href="#roles" class="vim-nav-link">Creative Roles</a>
             <a href="opportunity.html?id=poetry-in-motion" class="vim-nav-link">Full Specs</a>
         </nav>
-        
+
         <div class="vim-nav-actions">
             <a href="opportunities.html" class="vim-nav-btn-back"><i class="fas fa-arrow-left"></i> Opportunities</a>
             <a href="apply.html?id=poetry-in-motion" class="vim-nav-btn-apply">Apply Now</a>
@@ -44,7 +44,7 @@
          ================================================================= -->
     <div class="hero-scroll-track" id="hero-scroll-track">
         <div class="hero-sticky-stage" id="hero-sticky-stage">
-            
+
             <!-- Ambient Subtle Radial Glow -->
             <div class="hero-ambient-glow" id="hero-ambient-glow"></div>
 
@@ -55,10 +55,10 @@
 
             <!-- Stage 2: Scroll-Driven VERBA IN MOTION 10-Frame Animation -->
             <div class="hero-motion-wrapper" id="hero-motion-wrapper">
-                <img 
-                    id="hero-motion-frame" 
-                    src="images/verba_in_motion_frames/frame_0.png" 
-                    alt="Verba in Motion" 
+                <img
+                    id="hero-motion-frame"
+                    src="images/verba_in_motion_frames/frame_0.png"
+                    alt="Verba in Motion"
                     class="hero-motion-frame"
                     data-base-path="images/verba_in_motion_frames/"
                     onerror="this.onerror=null; this.src='images/VERBA_IN_MOTION.gif';">
@@ -66,9 +66,9 @@
             </div>
 
             <!-- Stage 3: 3D Floating Dictionary & Page-Flip Sequence -->
-            <div class="hero-dict-scene" id="hero-dict-scene">
+            <div class="hero-dict-scene" id="hero-dict-scene" aria-label="An illustrated dictionary opens to Creative Lab">
                 <div class="dict-book-3d" id="dict-book-3d">
-                    
+
                     <!-- Spine & Back Hardcover Base -->
                     <div class="dict-back-cover" id="dict-back-cover"></div>
                     <div class="dict-spine-hinge" id="dict-spine-hinge"></div>
@@ -104,18 +104,18 @@
                                 <div class="dict-meta-row dict-fade-on-blackout">
                                     <span class="dict-pron">/kriˈeɪ.tɪv ˈlæb/</span>
                                     <span class="dict-pos">n. phr.</span>
-                                    <span class="dict-etym">[Lat. <em>verba vitae</em>, living words]</span>
+                                    <span class="dict-etym">[Verba Vitae · Dictionary of Living Arts]</span>
                                 </div>
                                 <ol class="dict-def-list dict-fade-on-blackout">
                                     <li>
-                                        An experimental sanctuary within <em>Verba Vitae</em> where original literature and poetry escape the static page—transformed into living short-form cinema through physical claymation, hand-crafted illustration, stop-motion, and immersive sound.
+                                        A space within <em>Verba Vitae</em> for turning original writing and poetry into short films through claymation, illustration, stop-motion, and immersive sound.
                                     </li>
                                     <li>
-                                        A multidisciplinary atelier uniting writers, sculptors, animators, and audio architects to give human words palpable, tactile weight.
+                                        A meeting place for writers, sculptors, illustrators, animators, and sound artists to experiment, collaborate, and bring words to life.
                                     </li>
                                 </ol>
                                 <blockquote class="dict-quote dict-fade-on-blackout">
-                                    “In the <strong>Creative Lab</strong>, verse is no longer read in silence—it is sculpted, illuminated, and breathed into motion.”
+                                    “Words become worlds. Make something move.”
                                 </blockquote>
                             </div>
 
@@ -133,7 +133,7 @@
 
                     <!-- Flipping Leaves (Leaf 6 is bottom-most flipping page, Leaf 1 is top-most) -->
                     <!-- Leaf 6: Flips last, its back becomes the final Left Page of the open spread -->
-                    <div class="dict-leaf" id="dict-leaf-6" data-leaf-index="5">
+                    <div class="dict-leaf" id="dict-leaf-6" data-leaf-index="5" aria-hidden="true">
                         <div class="dict-leaf-face dict-leaf-front">
                             <div class="dict-running-header"><span>CONFLUENCE — CRAFT</span><span>410</span></div>
                             <div class="dict-columns">
@@ -157,7 +157,7 @@
                     </div>
 
                     <!-- Leaf 5 -->
-                    <div class="dict-leaf" id="dict-leaf-5" data-leaf-index="4">
+                    <div class="dict-leaf" id="dict-leaf-5" data-leaf-index="4" aria-hidden="true">
                         <div class="dict-leaf-face dict-leaf-front">
                             <div class="dict-running-header"><span>CLAYMATION — CODEX</span><span>318</span></div>
                             <div class="dict-columns">
@@ -179,7 +179,7 @@
                     </div>
 
                     <!-- Leaf 4 -->
-                    <div class="dict-leaf" id="dict-leaf-4" data-leaf-index="3">
+                    <div class="dict-leaf" id="dict-leaf-4" data-leaf-index="3" aria-hidden="true">
                         <div class="dict-leaf-face dict-leaf-front">
                             <div class="dict-running-header"><span>CHIAROSCURO — CHRONICLE</span><span>244</span></div>
                             <div class="dict-columns">
@@ -201,7 +201,7 @@
                     </div>
 
                     <!-- Leaf 3 -->
-                    <div class="dict-leaf" id="dict-leaf-3" data-leaf-index="2">
+                    <div class="dict-leaf" id="dict-leaf-3" data-leaf-index="2" aria-hidden="true">
                         <div class="dict-leaf-face dict-leaf-front">
                             <div class="dict-running-header"><span>BALLAD — BREATH</span><span>162</span></div>
                             <div class="dict-columns">
@@ -223,7 +223,7 @@
                     </div>
 
                     <!-- Leaf 2 -->
-                    <div class="dict-leaf" id="dict-leaf-2" data-leaf-index="1">
+                    <div class="dict-leaf" id="dict-leaf-2" data-leaf-index="1" aria-hidden="true">
                         <div class="dict-leaf-face dict-leaf-front">
                             <div class="dict-running-header"><span>ANTHOLOGY — APERTURE</span><span>088</span></div>
                             <div class="dict-columns">
@@ -245,7 +245,7 @@
                     </div>
 
                     <!-- Leaf 1 (First page seen when cover opens) -->
-                    <div class="dict-leaf" id="dict-leaf-1" data-leaf-index="0">
+                    <div class="dict-leaf" id="dict-leaf-1" data-leaf-index="0" aria-hidden="true">
                         <div class="dict-leaf-face dict-leaf-front">
                             <div class="dict-running-header"><span>AETHER — ALCHEMY</span><span>014</span></div>
                             <div class="dict-columns">
@@ -267,7 +267,7 @@
                     </div>
 
                     <!-- Front Hardcover (Swings open from 0deg to -175deg) -->
-                    <div class="dict-front-cover" id="dict-front-cover">
+                    <div class="dict-front-cover" id="dict-front-cover" aria-hidden="true">
                         <!-- Outer Leather & Gold Foil Face -->
                         <div class="dict-cover-face dict-cover-outer">
                             <div class="dict-cover-gold-frame">
@@ -313,7 +313,7 @@
     <section class="vim-section" id="vision">
         <div class="vim-section-header reveal-on-scroll">
             <span class="vim-section-tag">The Philosophy</span>
-            <h2 class="vim-section-title">Where poetry escapes the page.</h2>
+            <h2 class="vim-section-title">Our projects in Spring!</h2>
             <p class="vim-section-desc">
                 Verba in Motion is an internal creative lab inside Verba Vitae. We assemble writers, sculptors, illustrators, and sound artists to turn literature into cinematic shorts for modern digital culture.
             </p>
@@ -323,7 +323,7 @@
             <div class="manifesto-card reveal-on-scroll">
                 <div class="manifesto-card-num">01 / TACTILE</div>
                 <div class="manifesto-card-icon"><i class="fas fa-fingerprint"></i></div>
-                <h3 class="manifesto-card-title">Physical Claymation</h3>
+                <h3 class="manifesto-card-title">Claymotion through Instagram</h3>
                 <p class="manifesto-card-text">
                     Real clay, physical textures, hand-manipulated armatures, and stop-motion craft that give poetic verses palpable, organic weight.
                 </p>
@@ -377,7 +377,7 @@
         </svg>
 
         <div class="videos-container">
-            
+
             <!-- Video 01 -->
             <div class="ref-split-row reveal-on-scroll">
                 <div class="ref-title-col">
@@ -387,14 +387,14 @@
                 <div class="ref-embed-col">
                     <div class="drawn-frame-box">
                         <div class="ref-media-stage clip-ref-1">
-                            <video 
-                                class="ref-native-video" 
-                                src="videos/ref_1.mp4" 
+                            <video
+                                class="ref-native-video"
+                                src="videos/ref_1.mp4"
                                 poster="images/ref_thumb_1.jpg"
-                                autoplay 
-                                loop 
-                                muted 
-                                playsinline 
+                                autoplay
+                                loop
+                                muted
+                                playsinline
                                 preload="metadata">
                             </video>
                             <div class="ref-video-controls">
@@ -422,14 +422,14 @@
                 <div class="ref-embed-col">
                     <div class="drawn-frame-box">
                         <div class="ref-media-stage clip-ref-2">
-                            <video 
-                                class="ref-native-video" 
-                                src="videos/ref_2.mp4" 
+                            <video
+                                class="ref-native-video"
+                                src="videos/ref_2.mp4"
                                 poster="images/ref_thumb_2.jpg"
-                                autoplay 
-                                loop 
-                                muted 
-                                playsinline 
+                                autoplay
+                                loop
+                                muted
+                                playsinline
                                 preload="metadata">
                             </video>
                             <div class="ref-video-controls">
@@ -457,14 +457,14 @@
                 <div class="ref-embed-col">
                     <div class="drawn-frame-box">
                         <div class="ref-media-stage clip-ref-3">
-                            <video 
-                                class="ref-native-video" 
-                                src="videos/ref_3.mp4" 
+                            <video
+                                class="ref-native-video"
+                                src="videos/ref_3.mp4"
                                 poster="images/ref_thumb_3.jpg"
-                                autoplay 
-                                loop 
-                                muted 
-                                playsinline 
+                                autoplay
+                                loop
+                                muted
+                                playsinline
                                 preload="metadata">
                             </video>
                             <div class="ref-video-controls">
@@ -499,7 +499,7 @@
         </div>
 
         <div class="roles-grid">
-            
+
             <!-- Role 1 -->
             <div class="role-arch-card reveal-on-scroll">
                 <div>
@@ -625,6 +625,7 @@
     </footer>
 
     <!-- Interactive Script with Cache Busting -->
-    <script src="js/verbainmotion.js?v=20261103_dict"></script>
+    <script type="module" src="js/dictionary-webgl.js?v=20261103_webgl_v4"></script>
+    <script src="js/verbainmotion.js?v=20261103_webgl_v4"></script>
 </body>
 </html>

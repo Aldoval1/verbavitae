@@ -170,7 +170,7 @@ body {
 .hero-scroll-track {
     position: relative;
     width: 100%;
-    height: 580vh; /* Extended track for claymation + 3D dictionary open, leafing, definition & spotlight blackout */
+    height: 1000vh; /* Extended track for claymation + 3D dictionary open, leafing, definition & spotlight blackout */
     background: var(--bg-black);
 }
 
@@ -1342,22 +1342,22 @@ body {
     .manifesto-grid {
         grid-template-columns: 1fr;
     }
-    
+
     .ref-split-row,
     .ref-split-row.reverse {
         grid-template-columns: 1fr;
         gap: 28px;
     }
-    
+
     .ref-split-row.reverse .ref-embed-col {
         order: 2;
     }
-    
+
     .ref-split-row.reverse .ref-title-col {
         order: 1;
         text-align: left;
     }
-    
+
     .roles-grid {
         grid-template-columns: 1fr;
     }
@@ -1372,26 +1372,90 @@ body {
     .vim-nav {
         padding: 14px 18px;
     }
-    
+
     .vim-nav-links {
         display: none;
     }
-    
+
     .vim-section {
         padding: 90px 18px;
     }
-    
+
     .video-info-box {
         padding: 28px 20px;
     }
-    
+
     .role-arch-card {
         padding: 30px 22px;
     }
-    
+
     .vim-footer-inner {
         flex-direction: column;
         text-align: center;
         justify-content: center;
     }
 }
+
+/* Local CC0 materials. The width and height are measured once per resize. */
+.hero-dict-scene { --dict-darkness: 0; }
+.dict-book-3d { font-size: calc(var(--dict-page-w) / 26); }
+.dict-back-cover, .dict-cover-outer {
+    background: linear-gradient(135deg, #142135d9, #050b17ef), url('../images/dictionary/brown-leather.jpg') center / cover;
+}
+.dict-page-paper-bg, .dict-leaf-face {
+    background-image: linear-gradient(90deg, #89785a55, #f8efda88 9%, #fff7e888 85%, #baa88366), url('../images/dictionary/paper.jpg');
+    background-size: cover;
+}
+.dict-page-inner { padding: 1.55em 1.5em 1.4em 2em; gap: .45em; }
+.dict-running-header { font-size: .59em; letter-spacing: .08em; gap: 1em; }
+.dict-page-num { font-size: 1.15em; }
+.dict-entry-minor { font-size: .78em; line-height: 1.3; }
+.dict-headword-minor { font-size: 1.1em; }
+.dict-meta-row { font-size: .76em; }
+.dict-etym { display: block; margin-top: .3em; }
+.dict-spotlight-word { font-size: 2.5em; white-space: nowrap; }
+.dict-def-list { font-size: 1em; line-height: 1.35; padding-left: 1.1em; }
+.dict-def-list li { margin-bottom: .65em; }
+.dict-quote { font-size: .84em; line-height: 1.3; }
+.dict-columns { font-size: .9em; line-height: 1.5; }
+.dict-columns p { margin-bottom: 1.2em; }
+.dict-leaf-face { padding: 1.55em; }
+.dict-leaf-back { background-position: right center; }
+.dict-cover-outer { padding: 1.3em; }
+.dict-cover-gold-frame { padding: 1em; }
+.dict-cover-title { font-size: 2.4em; }
+.dict-cover-subtitle { font-size: 1em; }
+.dict-cover-edition { font-size: .62em; }
+.dict-cover-footer { font-size: .55em; }
+.dict-cover-emblem { width: 3em; height: 3em; font-size: 1.2em; }
+.dict-cover-inner { padding: 1em; }
+.dict-ex-libris { padding: 1em; }
+.dict-ex-libris h4 { font-size: 1em; }
+.dict-ex-libris p { font-size: .8em; }
+.ex-libris-top { font-size: .6em; }
+.dict-back-cover, .dict-spine-hinge, .dict-page-stack-edges,
+.dict-page-paper-bg, .dict-page-gutter-shadow, .dict-fade-on-blackout {
+    opacity: calc(1 - var(--dict-darkness));
+}
+.hero-dict-scene.is-dark .dict-front-cover,
+.hero-dict-scene.is-dark .dict-leaf { visibility: hidden; }
+@media (max-width: 600px) {
+    .dict-entry-minor { font-size: .76em; }
+    .dict-entry-minor .dict-pron { display: none; }
+    .vim-nav-title { font-size: .65rem; }
+    .vim-nav-btn-back { display: none; }
+    .vim-nav-btn-apply { padding: 9px 12px; font-size: .7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .hero-main-logo { animation: none; }
+    .hero-motion-wrapper, .hero-logo-box, .reveal-on-scroll { transition: none; }
+    .hero-scroll-track { height: 480vh; }
+}
+
+/* Preserve the two-sided leaves in the 3D rendering context. */
+.dict-front-cover, .dict-leaf { will-change: transform; }
+
+/* WebGL takes over only after the actual mesh and local textures are ready. */
+.dictionary-webgl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hero-dict-scene.has-webgl #dict-book-3d { opacity: 0; pointer-events: none; }
