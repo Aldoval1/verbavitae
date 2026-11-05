@@ -196,6 +196,7 @@
         let userRegisteredEventIds = new Set();
         let userRegistrationsMap = new Map();
         let allEventRegistrations = [];
+        let eventsFetchError = false;
 
         function isUserLoggedIn() {
             return !!(currentUser || (typeof auth !== 'undefined' && auth && auth.currentUser));
@@ -324,6 +325,7 @@
                     if (k && !mergedMap.has(k)) mergedMap.set(k, r);
                 });
                 const attendeesList = Array.from(mergedMap.values());
+                const regCount = attendeesList.length;
                 const approvedCount = attendeesList.filter(r => (r.status || 'Approved') === 'Approved').length;
                 const holdCount = attendeesList.filter(r => (r.status || '').toLowerCase() === 'hold').length;
                 const maxSlots = parseInt(ev.maxSlots, 10) || 20;
@@ -406,7 +408,9 @@
                         console.warn("Could not read event_registrations collection:", regErr);
                     }
                 }
+                eventsFetchError = false;
             } catch (err) {
+                eventsFetchError = true;
                 console.warn("Firestore fetch events warning:", err);
             }
 

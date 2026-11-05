@@ -811,9 +811,7 @@
     <script>
         function openEventsModal() {
             const iframe = document.getElementById('eventsIframe');
-            if (!iframe.src || iframe.src === 'about:blank' || !iframe.src.includes('events.html')) {
-                iframe.src = 'events.html?embed=true';
-            }
+            iframe.src = 'events.html?embed=true&v=' + Date.now();
             document.getElementById('eventsPreviewModal').style.display = 'flex';
         }
         function closeEventsModal() {
