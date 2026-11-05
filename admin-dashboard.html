@@ -2552,17 +2552,28 @@
                     const regSnap = await db.collection('event_registrations').get();
                     regSnap.forEach(doc => {
                         const data = doc.data();
-                        const evId = data.eventId || data.id;
+                        const evId = String(data.eventId || data.id);
                         const email = data.userEmail || data.uid || doc.id;
-                        if (!allRegistrations.some(r => (r.id === evId || r.eventId === evId || r.title === data.title) && (r.userEmail === email || r.uid === data.uid))) {
+                        const userId = data.userId || data.uid || (doc.id.includes('_') ? doc.id.split('_')[0] : '');
+                        const existing = allRegistrations.find(r => (String(r.id) === evId || String(r.eventId) === evId || r.title === (data.title || data.eventTitle)) && (r.userEmail === email || (userId && r.userId === userId)));
+                        if (existing) {
+                            existing.status = data.status || existing.status || 'Approved';
+                            existing.userId = userId || existing.userId;
+                            existing.userName = data.userName || existing.userName;
+                            existing.docId = doc.id;
+                        } else {
                             allRegistrations.push({
                                 id: evId,
                                 eventId: evId,
-                                title: data.title,
+                                docId: doc.id,
+                                title: data.title || data.eventTitle,
                                 userName: data.userName,
                                 userEmail: data.userEmail,
-                                uid: data.uid,
-                                registeredAt: data.registeredAt
+                                userId: userId,
+                                uid: userId,
+                                status: data.status || 'Approved',
+                                registeredAt: data.registeredAt,
+                                serviceHours: data.serviceHours
                             });
                         }
                     });
@@ -2640,7 +2651,8 @@
 
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(ev.location || '')}`;
                 const registeredForThis = cachedAllEventRegistrations.filter(r => String(r.id) === String(ev.id) || String(r.eventId) === String(ev.id) || r.title === ev.title);
-                const regCount = registeredForThis.length;
+                const approvedCount = registeredForThis.filter(r => (r.status || 'Approved') === 'Approved').length;
+                const holdCount = registeredForThis.filter(r => (r.status || '').toLowerCase() === 'hold').length;
                 const maxSlots = parseInt(ev.maxSlots, 10) || 20;
                 const safeEvId = escapeJsSingleQuote(ev.id);
                 const safeEvTitle = escapeJsSingleQuote(ev.title || '');
@@ -2656,8 +2668,9 @@
                             <strong style="font-size:1.15rem; color:var(--admin-primary);">${escapeAdminHtml(ev.title)}</strong>
                             ${statusBadge}
                         </div>
-                        <div style="display:flex; gap:8px;">
-                            <span style="background:#feebc8; color:#744210; padding:4px 12px; border-radius:12px; font-size:0.8rem; font-weight:700;"><i class="fas fa-users"></i> ${regCount} / ${maxSlots} Slots Filled</span>
+                        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                            ${holdCount > 0 ? `<span style="background:#fef3c7; color:#92400e; padding:4px 10px; border-radius:12px; font-size:0.8rem; font-weight:700; border:1px solid #fcd34d;"><i class="fas fa-hourglass-half"></i> ${holdCount} on Hold</span>` : ''}
+                            <span style="background:#feebc8; color:#744210; padding:4px 12px; border-radius:12px; font-size:0.8rem; font-weight:700;"><i class="fas fa-users"></i> ${approvedCount} / ${maxSlots} Confirmed</span>
                             <span style="background:#e3f2fd; color:#1976d2; padding:4px 12px; border-radius:12px; font-size:0.8rem; font-weight:600;"><i class="fas fa-award"></i> ${parseFloat(ev.serviceHours) || 0} Hours</span>
                         </div>
                     </div>
@@ -2671,7 +2684,9 @@
                         <a href="events.html" target="_blank" style="font-size:0.82rem; color:var(--admin-accent); text-decoration:none;"><i class="fas fa-external-link-alt"></i> Public Event Page</a>
                         <div style="display:flex; gap:10px;">
                             <button class="admin-btn" style="padding:5px 14px; font-size:0.82rem; background:#dd6b20;" onclick="editEvent('${safeEvId}')"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="admin-btn" style="padding:5px 14px; font-size:0.82rem; background:#3182ce;" onclick="viewEventAttendees('${safeEvId}', '${safeEvTitle}')"><i class="fas fa-users"></i> Attendees (${regCount})</button>
+                            <button class="admin-btn" style="padding:5px 14px; font-size:0.82rem; background:${holdCount > 0 ? '#d97706' : '#3182ce'};" onclick="viewEventAttendees('${safeEvId}', '${safeEvTitle}')">
+                                <i class="fas fa-users"></i> Attendees (${registeredForThis.length})${holdCount > 0 ? ` [${holdCount} HOLD]` : ''}
+                            </button>
                             <button class="btn-expel" onclick="deleteEvent('${safeEvId}', '${safeEvTitle}')"><i class="fas fa-trash-alt"></i> Delete</button>
                         </div>
                     </div>
@@ -2681,35 +2696,185 @@
         }
 
         window.viewEventAttendees = async function(eventId, eventTitle) {
-            document.getElementById('attendeesEventTitle').textContent = eventTitle;
             const modal = document.getElementById('attendeesModal');
             const list = document.getElementById('attendeesModalList');
             
             const allRegistrations = cachedAllEventRegistrations.length > 0 ? cachedAllEventRegistrations : await fetchAllEventRegistrations();
             const eventRegs = allRegistrations.filter(r => String(r.id) === String(eventId) || String(r.eventId) === String(eventId) || r.title === eventTitle);
 
+            const approvedCount = eventRegs.filter(r => (r.status || 'Approved') === 'Approved').length;
+            const holdCount = eventRegs.filter(r => (r.status || '').toLowerCase() === 'hold').length;
+
+            const titleEl = document.getElementById('attendeesEventTitle');
+            if (titleEl) {
+                titleEl.innerHTML = `${escapeAdminHtml(eventTitle)} <span style="font-size:0.82rem; font-weight:600; color:#4a5568;">(${approvedCount} Confirmed • ${holdCount} on Hold)</span>`;
+            }
+
             list.innerHTML = '';
             if (eventRegs.length === 0) {
                 list.innerHTML = '<p style="padding: 15px; color: var(--admin-text-muted);">No members have registered for this event yet.</p>';
             } else {
+                // Show Hold registrations at the top so admin can quickly review and approve
+                eventRegs.sort((a, b) => {
+                    const aHold = (a.status || '').toLowerCase() === 'hold' ? 1 : 0;
+                    const bHold = (b.status || '').toLowerCase() === 'hold' ? 1 : 0;
+                    return bHold - aHold;
+                });
+
                 eventRegs.forEach((r, idx) => {
                     const div = document.createElement('div');
                     div.className = 'member-item';
-                    div.style.padding = '10px 12px';
+                    div.style.padding = '12px 14px';
                     div.style.marginBottom = '8px';
+                    div.style.borderRadius = '8px';
+                    const isHold = (r.status || '').toLowerCase() === 'hold';
+                    const isApproved = (r.status || 'Approved') === 'Approved';
+
+                    div.style.borderLeft = isHold ? '4px solid #d97706' : '4px solid #38a169';
+                    div.style.background = isHold ? '#fffbeb' : '#ffffff';
+
                     const dateDisplay = r.registeredAt ? new Date(r.registeredAt).toLocaleDateString() + ' ' + new Date(r.registeredAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Registered Member';
-                    
+                    const safeEvId = escapeJsSingleQuote(eventId);
+                    const safeUserId = escapeJsSingleQuote(r.userId || r.uid || '');
+                    const safeEmail = escapeJsSingleQuote(r.userEmail || '');
+                    const safeTitle = escapeJsSingleQuote(eventTitle || '');
+
+                    const statusBadge = isHold
+                        ? `<span style="background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; border:1px solid #fcd34d;"><i class="fas fa-hourglass-half"></i> ON HOLD</span>`
+                        : `<span style="background:#def7ec; color:#03543f; padding:3px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; border:1px solid #bcf0da;"><i class="fas fa-check-circle"></i> APPROVED</span>`;
+
+                    let actionsHtml = '';
+                    if (isHold) {
+                        actionsHtml = `
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <button class="admin-btn" style="padding:5px 12px; font-size:0.78rem; background:#28a745;" onclick="updateEventAttendeeStatus('${safeEvId}', '${safeUserId}', '${safeEmail}', 'Approved', '${safeTitle}')" title="Accept and confirm participant">
+                                    <i class="fas fa-check"></i> Accept / Approve
+                                </button>
+                                <button class="btn-expel" style="padding:5px 10px; font-size:0.78rem;" onclick="removeEventAttendee('${safeEvId}', '${safeUserId}', '${safeEmail}', '${safeTitle}')" title="Reject registration">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                            </div>
+                        `;
+                    } else {
+                        actionsHtml = `
+                            <div style="display:flex; gap:6px; align-items:center;">
+                                <button class="admin-btn" style="padding:5px 10px; font-size:0.78rem; background:#d97706;" onclick="updateEventAttendeeStatus('${safeEvId}', '${safeUserId}', '${safeEmail}', 'Hold', '${safeTitle}')" title="Place back on Hold">
+                                    <i class="fas fa-hourglass-half"></i> Hold
+                                </button>
+                                <button class="btn-expel" style="padding:5px 10px; font-size:0.78rem;" onclick="removeEventAttendee('${safeEvId}', '${safeUserId}', '${safeEmail}', '${safeTitle}')" title="Remove attendee">
+                                    <i class="fas fa-trash-alt"></i> Remove
+                                </button>
+                            </div>
+                        `;
+                    }
+
                     div.innerHTML = `
-                        <div class="member-info">
-                            <strong>${escapeAdminHtml(r.userName || r.userEmail || ('Member #' + (idx + 1)))}</strong>
-                            <span>${escapeAdminHtml(r.userEmail || 'registered student')}</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:10px;">
+                            <div class="member-info" style="min-width:200px;">
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <strong>${escapeAdminHtml(r.userName || r.userEmail || ('Member #' + (idx + 1)))}</strong>
+                                    ${statusBadge}
+                                </div>
+                                <span style="font-size:0.82rem; color:var(--admin-text-muted);">${escapeAdminHtml(r.userEmail || 'registered student')}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                                <span style="font-size:0.78rem; color:var(--admin-text-muted);"><i class="far fa-clock"></i> ${escapeAdminHtml(dateDisplay)}</span>
+                                ${actionsHtml}
+                            </div>
                         </div>
-                        <span style="font-size:0.78rem; color:var(--admin-text-muted);"><i class="far fa-clock"></i> ${escapeAdminHtml(dateDisplay)}</span>
                     `;
                     list.appendChild(div);
                 });
             }
             modal.style.display = 'flex';
+        };
+
+        window.updateEventAttendeeStatus = async function(eventId, userId, userEmail, newStatus, eventTitle) {
+            try {
+                const adminUser = auth ? auth.currentUser : null;
+                const adminEmail = adminUser?.email || 'admin';
+
+                // Update in memory
+                cachedAllEventRegistrations.forEach(r => {
+                    if ((String(r.id) === String(eventId) || String(r.eventId) === String(eventId)) && 
+                        ((userId && (r.userId === userId || r.uid === userId)) || (userEmail && r.userEmail === userEmail))) {
+                        r.status = newStatus;
+                    }
+                });
+
+                // Update in localStorage
+                let localRegs = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+                localRegs.forEach(r => {
+                    if ((String(r.id) === String(eventId) || String(r.eventId) === String(eventId)) && 
+                        ((userId && (r.userId === userId || r.uid === userId)) || (userEmail && r.userEmail === userEmail))) {
+                        r.status = newStatus;
+                    }
+                });
+                localStorage.setItem('verba_registered_events', JSON.stringify(localRegs));
+
+                // Update in Firestore
+                if (db) {
+                    const updatePayload = {
+                        status: newStatus,
+                        statusUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        statusUpdatedBy: adminEmail
+                    };
+                    if (newStatus === 'Approved') {
+                        updatePayload.approvedAt = firebase.firestore.FieldValue.serverTimestamp();
+                        updatePayload.approvedBy = adminEmail;
+                    }
+
+                    if (userId) {
+                        await Promise.all([
+                            db.collection('event_registrations').doc(`${userId}_${eventId}`).set(updatePayload, { merge: true }).catch(err => console.warn(err)),
+                            db.collection('users').doc(userId).collection('registered_events').doc(String(eventId)).set(updatePayload, { merge: true }).catch(err => console.warn(err))
+                        ]);
+                    } else if (userEmail) {
+                        const qSnap = await db.collection('event_registrations').where('eventId', '==', eventId).where('userEmail', '==', userEmail).get();
+                        qSnap.forEach(async d => {
+                            await d.ref.set(updatePayload, { merge: true });
+                        });
+                    }
+                }
+
+                showToast(`Attendee ${newStatus === 'Approved' ? 'accepted & approved' : 'placed on Hold'} successfully!`);
+                renderAdminEventsListUI();
+                viewEventAttendees(eventId, eventTitle);
+            } catch (err) {
+                console.error("Error updating attendee status:", err);
+                showToast('Error updating status: ' + (err.message || err));
+            }
+        };
+
+        window.removeEventAttendee = async function(eventId, userId, userEmail, eventTitle) {
+            if (!confirm("Are you sure you want to remove this registration?")) return;
+            try {
+                cachedAllEventRegistrations = cachedAllEventRegistrations.filter(r => 
+                    !((String(r.id) === String(eventId) || String(r.eventId) === String(eventId)) && 
+                      ((userId && (r.userId === userId || r.uid === userId)) || (userEmail && r.userEmail === userEmail)))
+                );
+
+                let localRegs = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+                localRegs = localRegs.filter(r => 
+                    !((String(r.id) === String(eventId) || String(r.eventId) === String(eventId)) && 
+                      ((userId && (r.userId === userId || r.uid === userId)) || (userEmail && r.userEmail === userEmail)))
+                );
+                localStorage.setItem('verba_registered_events', JSON.stringify(localRegs));
+
+                if (db && userId) {
+                    await Promise.all([
+                        db.collection('event_registrations').doc(`${userId}_${eventId}`).delete().catch(err => console.warn(err)),
+                        db.collection('users').doc(userId).collection('registered_events').doc(String(eventId)).delete().catch(err => console.warn(err))
+                    ]);
+                }
+
+                showToast("Registration removed.");
+                renderAdminEventsListUI();
+                viewEventAttendees(eventId, eventTitle);
+            } catch (err) {
+                console.error("Error removing attendee:", err);
+                showToast('Error removing attendee: ' + (err.message || err));
+            }
         };
 
         window.closeAttendeesModal = function() {

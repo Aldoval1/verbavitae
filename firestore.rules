@@ -33,6 +33,9 @@ rules_version = '2';
 //   - location: string (optional, <= 500 chars)
 //   - serviceHours: number (optional, 0..1000)
 //   - registeredAt: timestamp | string (optional)
+//   - status: string (optional, enum: ['Hold', 'Approved', 'Rejected', 'Pending'])
+//   - approvedAt: timestamp | string (optional)
+//   - approvedBy: string (optional)
 //
 // Collection: invitations
 // Document ID: {code}
@@ -72,6 +75,11 @@ rules_version = '2';
 //   - title: string (optional, <= 300 chars)
 //   - serviceHours: number (optional, 0..1000)
 //   - registeredAt: timestamp | string (optional)
+//   - status: string (optional, enum: ['Hold', 'Approved', 'Rejected', 'Pending'])
+//   - approvedAt: timestamp | string (optional)
+//   - approvedBy: string (optional)
+//   - statusUpdatedAt: timestamp | string (optional)
+//   - statusUpdatedBy: string (optional)
 //
 // Collection: applications
 // Document ID: {appId}
@@ -280,12 +288,15 @@ service cloud.firestore {
 
     function isValidRegisteredEvent(data) {
       return data is map &&
-        data.keys().size() <= 20 &&
+        data.keys().size() <= 25 &&
         isValidOptionalString(data, 'eventTitle', 300) &&
         isValidOptionalString(data, 'title', 300) &&
         isValidOptionalString(data, 'date', 100) &&
         isValidOptionalString(data, 'time', 100) &&
-        isValidOptionalString(data, 'location', 500);
+        isValidOptionalString(data, 'location', 500) &&
+        isValidOptionalString(data, 'status', 50) &&
+        isValidOptionalString(data, 'approvedBy', 254) &&
+        isValidOptionalString(data, 'statusUpdatedBy', 254);
     }
 
     function isValidInvitation(data) {
@@ -312,13 +323,16 @@ service cloud.firestore {
 
     function isValidEventRegistration(data) {
       return data is map &&
-        data.keys().size() <= 20 &&
+        data.keys().size() <= 25 &&
         isValidOptionalString(data, 'userId', 128) &&
         isValidOptionalString(data, 'userEmail', 254) &&
         isValidOptionalString(data, 'userName', 200) &&
         isValidOptionalString(data, 'title', 300) &&
         isValidOptionalString(data, 'eventTitle', 300) &&
-        isValidOptionalString(data, 'location', 500);
+        isValidOptionalString(data, 'location', 500) &&
+        isValidOptionalString(data, 'status', 50) &&
+        isValidOptionalString(data, 'approvedBy', 254) &&
+        isValidOptionalString(data, 'statusUpdatedBy', 254);
     }
 
     function isValidApplication(data) {
@@ -489,9 +503,25 @@ service cloud.firestore {
 
       match /registered_events/{eventId} {
         allow read: if isOwner(userId) || isStaff();
-        allow create, update: if isValidRegisteredEvent(request.resource.data) &&
-          ((isOwner(userId) && isNotExpelled()) || isStaff());
-        allow delete: if (isOwner(userId) && isNotExpelled()) || isStaff();
+        allow create: if isValidRegisteredEvent(request.resource.data) &&
+          (
+            isStaff() ||
+            (
+              isOwner(userId) &&
+              isNotExpelled() &&
+              request.resource.data.get('status', 'Hold') == 'Hold'
+            )
+          );
+        allow update: if isValidRegisteredEvent(request.resource.data) &&
+          (
+            isStaff() ||
+            (
+              isOwner(userId) &&
+              isNotExpelled() &&
+              request.resource.data.get('status', 'Hold') == resource.data.get('status', 'Hold')
+            )
+          );
+        allow delete: if isStaff() || (isOwner(userId) && isNotExpelled());
       }
     }
 
@@ -523,17 +553,25 @@ service cloud.firestore {
     // Event Registrations
     match /event_registrations/{regId} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() &&
-        isNotExpelled() &&
-        request.resource.data.get('userId', '') == request.auth.uid &&
-        isValidEventRegistration(request.resource.data);
+      allow create: if isValidEventRegistration(request.resource.data) &&
+        (
+          isStaff() ||
+          (
+            isSignedIn() &&
+            isNotExpelled() &&
+            request.resource.data.get('userId', '') == request.auth.uid &&
+            request.resource.data.get('status', 'Hold') == 'Hold'
+          )
+        );
       allow update: if isValidEventRegistration(request.resource.data) &&
         (
           isStaff() ||
           (
             isSignedIn() &&
+            isNotExpelled() &&
             resource.data.get('userId', '') == request.auth.uid &&
-            request.resource.data.get('userId', '') == resource.data.get('userId', '')
+            request.resource.data.get('userId', '') == resource.data.get('userId', '') &&
+            request.resource.data.get('status', 'Hold') == resource.data.get('status', 'Hold')
           )
         );
       allow delete: if isStaff() || (isSignedIn() && resource.data.get('userId', '') == request.auth.uid);

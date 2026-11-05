@@ -194,15 +194,31 @@
         let currentIndex = 0;
         let currentUser = null;
         let userRegisteredEventIds = new Set();
+        let userRegistrationsMap = new Map();
         let allEventRegistrations = [];
 
         function isUserLoggedIn() {
             return !!(currentUser || (typeof auth !== 'undefined' && auth && auth.currentUser));
         }
 
+        function getUserRegistration(eventId) {
+            const strId = String(eventId);
+            if (userRegistrationsMap.has(strId)) {
+                return userRegistrationsMap.get(strId);
+            }
+            const uid = currentUser ? currentUser.uid : '';
+            const email = currentUser ? (currentUser.email || '').toLowerCase() : (localStorage.getItem('verba_user_email') || '').toLowerCase();
+            const registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+            const found = registered.find(r => (String(r.id) === strId || String(r.eventId) === strId) && (!uid || !r.userId || r.userId === uid || (email && (r.userEmail || '').toLowerCase() === email)));
+            return found || null;
+        }
+
         if (typeof auth !== 'undefined' && auth) {
             auth.onAuthStateChanged(async user => {
                 currentUser = user;
+                userRegisteredEventIds.clear();
+                userRegistrationsMap.clear();
+
                 if (user) {
                     localStorage.setItem('verba_logged_in', 'true');
                     const loginBtns = document.querySelectorAll('.btn-login, .mobile-nav a[href="login.html"]');
@@ -214,16 +230,27 @@
                         try {
                             const regSnap = await db.collection('users').doc(user.uid).collection('registered_events').get();
                             regSnap.forEach(doc => {
-                                userRegisteredEventIds.add(doc.id);
-                                const d = doc.data();
-                                if (d && d.eventId) userRegisteredEventIds.add(d.eventId);
+                                const d = doc.data() || {};
+                                const evId = String(d.eventId || doc.id);
+                                userRegisteredEventIds.add(evId);
+                                userRegistrationsMap.set(evId, { id: evId, eventId: evId, status: d.status || 'Hold', ...d });
                             });
                         } catch (e) {
                             console.warn('Could not fetch user registered_events:', e);
                         }
                     }
-                } else {
-                    userRegisteredEventIds.clear();
+                    // Also merge from local storage
+                    const localRegs = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
+                    localRegs.forEach(lr => {
+                        const evId = String(lr.id || lr.eventId);
+                        const belongsToUser = !lr.userId || lr.userId === user.uid || (lr.userEmail && lr.userEmail.toLowerCase() === (user.email || '').toLowerCase());
+                        if (belongsToUser) {
+                            userRegisteredEventIds.add(evId);
+                            if (!userRegistrationsMap.has(evId)) {
+                                userRegistrationsMap.set(evId, { id: evId, eventId: evId, status: lr.status || 'Hold', ...lr });
+                            }
+                        }
+                    });
                 }
                 fetchEvents();
             });
@@ -288,11 +315,19 @@
                         }
                     }
                 }
-                const firestoreRegCount = allEventRegistrations.filter(r => r.eventId === ev.id || r.id === ev.id || r.eventTitle === ev.title).length;
-                const localRegCount = localRegs.filter(r => r.id === ev.id || r.title === ev.title).length;
-                const regCount = Math.max(firestoreRegCount, localRegCount);
+                const firestoreRegsForThis = allEventRegistrations.filter(r => String(r.eventId) === String(ev.id) || String(r.id) === String(ev.id) || r.eventTitle === ev.title || r.title === ev.title);
+                const localRegsForThis = localRegs.filter(r => String(r.id) === String(ev.id) || String(r.eventId) === String(ev.id) || r.title === ev.title);
+                
+                const mergedMap = new Map();
+                [...firestoreRegsForThis, ...localRegsForThis].forEach(r => {
+                    const k = r.userId || r.userEmail || (r.id && r.id.includes('_') ? r.id.split('_')[0] : r.id);
+                    if (k && !mergedMap.has(k)) mergedMap.set(k, r);
+                });
+                const attendeesList = Array.from(mergedMap.values());
+                const approvedCount = attendeesList.filter(r => (r.status || 'Approved') === 'Approved').length;
+                const holdCount = attendeesList.filter(r => (r.status || '').toLowerCase() === 'hold').length;
                 const maxSlots = parseInt(ev.maxSlots, 10) || 20;
-                const slotsLeft = Math.max(0, maxSlots - regCount);
+                const slotsLeft = Math.max(0, maxSlots - approvedCount);
                 const address = ev.location || 'Miami, FL';
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
                 const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(address)}`;
@@ -322,12 +357,18 @@
                         <div class="event-meta-boxes">
                             <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: #1976d2; font-size: 0.95rem;">
                                 <i class="fas fa-award" style="font-size: 1.1rem;"></i> 
-                                <span>Volunteer Service Hours Granted: <strong>${escapeHtml(ev.serviceHours || 0)} Hours</strong></span>
+                                <span>Volunteer Service Hours: <strong>${escapeHtml(ev.serviceHours || 0)} Hours</strong> (Upon Verification)</span>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: ${slotsLeft > 0 ? '#2b6cb0' : '#e53e3e'}; font-size: 0.95rem;">
                                 <i class="fas fa-users" style="font-size: 1.1rem;"></i> 
-                                <span>Volunteer Capacity: <strong>${slotsLeft} / ${maxSlots} Slots Remaining</strong></span>
+                                <span>Capacity: <strong>${slotsLeft} / ${maxSlots} Confirmed Slots Remaining</strong></span>
                             </div>
+                            ${holdCount > 0 ? `
+                            <div style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: #92400e; font-size: 0.88rem; background: #fef3c7; padding: 6px 12px; border-radius: 6px; border: 1px solid #fcd34d;">
+                                <i class="fas fa-hourglass-half" style="color: #d97706;"></i> 
+                                <span><strong>${holdCount}</strong> registration request${holdCount === 1 ? '' : 's'} on Hold awaiting admin approval</span>
+                            </div>
+                            ` : ''}
                         </div>
                     `
                 };
@@ -416,10 +457,8 @@
         }
 
         function isEventRegistered(eventId) {
-            if (userRegisteredEventIds.has(eventId)) return true;
-            const uid = currentUser ? currentUser.uid : '';
-            const registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
-            return registered.some(r => r.id === eventId && (!uid || !r.userId || r.userId === uid));
+            const reg = getUserRegistration(eventId);
+            return !!reg;
         }
 
         async function registerForEvent(eventId) {
@@ -429,50 +468,49 @@
                 return;
             }
 
-            const ev = eventsData.find(e => e.id === eventId);
+            const ev = eventsData.find(e => String(e.id) === String(eventId));
             if (!ev) return;
 
             const userEmail = currentUser ? currentUser.email : (localStorage.getItem('verba_user_email') || '');
             const userUid = currentUser ? currentUser.uid : '';
             const userName = (currentUser && currentUser.displayName) || localStorage.getItem('verba_user_name') || userEmail;
 
-            userRegisteredEventIds.add(ev.id);
+            const newReg = {
+                id: ev.id,
+                eventId: ev.id,
+                eventTitle: ev.title,
+                title: ev.title,
+                date: ev.dateStr,
+                time: ev.time,
+                location: ev.location,
+                serviceHours: ev.serviceHours,
+                userEmail: userEmail,
+                userName: userName,
+                userId: userUid,
+                status: 'Hold',
+                registeredAt: new Date().toISOString()
+            };
+
+            userRegisteredEventIds.add(String(ev.id));
+            userRegistrationsMap.set(String(ev.id), newReg);
 
             let registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
-            if (!registered.some(r => r.id === eventId && (!userUid || r.userId === userUid))) {
-                registered.push({
-                    id: ev.id,
-                    title: ev.title,
-                    date: ev.dateStr,
-                    time: ev.time,
-                    location: ev.location,
-                    serviceHours: ev.serviceHours,
-                    userEmail: userEmail,
-                    userName: userName,
-                    userId: userUid,
-                    registeredAt: new Date().toISOString()
-                });
-                localStorage.setItem('verba_registered_events', JSON.stringify(registered));
+            const existingIdx = registered.findIndex(r => String(r.id) === String(eventId) && (!userUid || r.userId === userUid));
+            if (existingIdx >= 0) {
+                registered[existingIdx] = { ...registered[existingIdx], ...newReg };
+            } else {
+                registered.push(newReg);
             }
+            localStorage.setItem('verba_registered_events', JSON.stringify(registered));
 
             if (typeof db !== 'undefined' && db && userUid) {
                 const payload = {
-                    eventId: ev.id,
-                    id: ev.id,
-                    eventTitle: ev.title,
-                    title: ev.title,
-                    date: ev.dateStr,
-                    time: ev.time,
-                    location: ev.location,
-                    serviceHours: ev.serviceHours,
-                    userId: userUid,
-                    userEmail: userEmail,
-                    userName: userName,
+                    ...newReg,
                     registeredAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 try {
                     await Promise.all([
-                        db.collection('users').doc(userUid).collection('registered_events').doc(ev.id).set(payload, { merge: true }),
+                        db.collection('users').doc(userUid).collection('registered_events').doc(String(ev.id)).set(payload, { merge: true }),
                         db.collection('event_registrations').doc(`${userUid}_${ev.id}`).set(payload, { merge: true })
                     ]);
                 } catch (err) {
@@ -480,28 +518,26 @@
                 }
             }
 
-            ev.regCount = (ev.regCount || 0) + 1;
-            ev.slotsLeft = Math.max(0, ev.maxSlots - ev.regCount);
-
-            alert(`Successfully registered for "${ev.title}"! You will earn ${ev.serviceHours} volunteer service hours upon completion.`);
-            selectEvent(currentIndex);
+            alert(`Registration request submitted for "${ev.title}"!\n\nYour registration is currently on HOLD. An administrator must verify and approve your registration before your spot is confirmed.`);
+            fetchEvents();
         }
 
         async function unregisterFromEvent(eventId) {
-            const ev = eventsData.find(e => e.id === eventId);
+            const ev = eventsData.find(e => String(e.id) === String(eventId));
             if (!ev) return;
 
             const userUid = currentUser ? currentUser.uid : '';
-            userRegisteredEventIds.delete(ev.id);
+            userRegisteredEventIds.delete(String(ev.id));
+            userRegistrationsMap.delete(String(ev.id));
 
             let registered = JSON.parse(localStorage.getItem('verba_registered_events')) || [];
-            registered = registered.filter(r => r.id !== eventId && (!userUid || r.userId !== userUid));
+            registered = registered.filter(r => String(r.id) !== String(eventId) && (!userUid || r.userId !== userUid));
             localStorage.setItem('verba_registered_events', JSON.stringify(registered));
 
             if (typeof db !== 'undefined' && db && userUid) {
                 try {
                     await Promise.all([
-                        db.collection('users').doc(userUid).collection('registered_events').doc(ev.id).delete(),
+                        db.collection('users').doc(userUid).collection('registered_events').doc(String(ev.id)).delete(),
                         db.collection('event_registrations').doc(`${userUid}_${ev.id}`).delete()
                     ]);
                 } catch (err) {
@@ -509,11 +545,8 @@
                 }
             }
 
-            ev.regCount = Math.max(0, (ev.regCount || 1) - 1);
-            ev.slotsLeft = Math.max(0, ev.maxSlots - ev.regCount);
-
-            alert(`Your registration for "${ev.title}" has been cancelled. Your volunteer slot has been released.`);
-            selectEvent(currentIndex);
+            alert(`Your registration for "${ev.title}" has been cancelled.`);
+            fetchEvents();
         }
 
         let detailMap = null;
@@ -643,6 +676,8 @@
                     if (btn) {
                         btn.style.display = 'inline-block';
                         
+                        const userReg = getUserRegistration(event.id);
+
                         if (!isUserLoggedIn()) {
                             btn.innerHTML = `<i class="fas fa-lock"></i> LOG IN TO REGISTER (${escapeHtml(event.serviceHours)} HOURS)`;
                             btn.style.backgroundColor = '#d97706';
@@ -651,15 +686,34 @@
                                 alert('You must be logged into your Verba Vitae account to register for events. Redirecting to login...');
                                 window.location.href = 'login.html';
                             };
-                        } else if (isEventRegistered(event.id)) {
-                            btn.innerHTML = '<i class="fas fa-check"></i> REGISTERED <span style="font-size:0.75rem; opacity:0.85; margin-left:6px;">(Click to Cancel)</span>';
-                            btn.style.backgroundColor = '#38a169';
-                            btn.onclick = (e) => {
-                                e.preventDefault();
-                                if (confirm(`You are registered for "${event.title}". Would you like to cancel your registration and release your volunteer slot?`)) {
-                                    unregisterFromEvent(event.id);
-                                }
-                            };
+                        } else if (userReg) {
+                            const regStatus = (userReg.status || 'Hold').toLowerCase();
+                            if (regStatus === 'hold') {
+                                btn.innerHTML = '<i class="fas fa-hourglass-half"></i> ON HOLD (Awaiting Approval) <span style="font-size:0.75rem; opacity:0.85; margin-left:6px;">(Cancel Request)</span>';
+                                btn.style.backgroundColor = '#d97706';
+                                btn.onclick = (e) => {
+                                    e.preventDefault();
+                                    if (confirm(`Your registration for "${event.title}" is currently ON HOLD pending administrator approval.\n\nWould you like to cancel your registration request?`)) {
+                                        unregisterFromEvent(event.id);
+                                    }
+                                };
+                            } else if (regStatus === 'approved') {
+                                btn.innerHTML = '<i class="fas fa-check-circle"></i> CONFIRMED & APPROVED <span style="font-size:0.75rem; opacity:0.85; margin-left:6px;">(Cancel)</span>';
+                                btn.style.backgroundColor = '#38a169';
+                                btn.onclick = (e) => {
+                                    e.preventDefault();
+                                    if (confirm(`You are confirmed and approved for "${event.title}".\n\nWould you like to cancel your registration and release your spot?`)) {
+                                        unregisterFromEvent(event.id);
+                                    }
+                                };
+                            } else {
+                                btn.innerHTML = `<i class="fas fa-times-circle"></i> ${escapeHtml(userReg.status || 'DECLINED')} <span style="font-size:0.75rem; opacity:0.85; margin-left:6px;">(Re-apply)</span>`;
+                                btn.style.backgroundColor = '#e53e3e';
+                                btn.onclick = (e) => {
+                                    e.preventDefault();
+                                    registerForEvent(event.id);
+                                };
+                            }
                         } else if (event.slotsLeft <= 0) {
                             btn.innerText = 'FULL (NO SLOTS LEFT)';
                             btn.style.backgroundColor = '#a0aec0';
