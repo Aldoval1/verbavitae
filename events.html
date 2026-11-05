@@ -153,7 +153,7 @@
                 </div>
                 <div class="details-bottom">
                     <div class="time-badge"><i class="far fa-clock"></i> <span id="e-time">--:--</span></div>
-                    <a href="#" class="btn-enter" id="e-link">REGISTER NOW</a>
+                    <a href="login.html" class="btn-enter" id="e-link" style="background: #4a5568;"><i class="fas fa-lock"></i> LOG IN TO REGISTER</a>
                 </div>
             </div>
         </div>
@@ -193,13 +193,15 @@
         let eventsData = [];
         let currentIndex = 0;
         let currentUser = null;
+        let currentUserName = '';
+        let authResolved = false;
         let userRegisteredEventIds = new Set();
         let userRegistrationsMap = new Map();
         let allEventRegistrations = [];
         let eventsFetchError = false;
 
         function isUserLoggedIn() {
-            return !!(currentUser || (typeof auth !== 'undefined' && auth && auth.currentUser));
+            return !!(currentUser && currentUser.uid);
         }
 
         function getUserRegistration(eventId) {
@@ -216,9 +218,11 @@
 
         if (typeof auth !== 'undefined' && auth) {
             auth.onAuthStateChanged(async user => {
+                authResolved = true;
                 currentUser = user;
                 userRegisteredEventIds.clear();
                 userRegistrationsMap.clear();
+                currentUserName = '';
 
                 if (user) {
                     localStorage.setItem('verba_logged_in', 'true');
@@ -227,6 +231,24 @@
                         b.textContent = 'DASHBOARD';
                         b.href = 'dashboard.html';
                     });
+
+                    // Fetch user profile from Firestore to resolve real full name
+                    if (typeof db !== 'undefined' && db) {
+                        try {
+                            const userDoc = await db.collection('users').doc(user.uid).get();
+                            if (userDoc.exists) {
+                                const uData = userDoc.data();
+                                currentUserName = uData.displayName || uData.fullName || ((uData.firstName || uData.lastName) ? `${uData.firstName || ''} ${uData.lastName || ''}`.trim() : '');
+                            }
+                        } catch (e) {
+                            console.warn('Could not fetch user profile in events.html:', e);
+                        }
+                    }
+                    if (!currentUserName) {
+                        currentUserName = user.displayName || localStorage.getItem('verba_user_name') || (user.email ? user.email.split('@')[0] : 'Member');
+                    }
+                    localStorage.setItem('verba_user_name', currentUserName);
+
                     if (typeof db !== 'undefined' && db) {
                         try {
                             const regSnap = await db.collection('users').doc(user.uid).collection('registered_events').get();
@@ -468,16 +490,34 @@
         async function registerForEvent(eventId) {
             if (!isUserLoggedIn()) {
                 alert('You must be registered and logged into Verba Vitae to sign up for events.');
-                window.location.href = 'login.html';
+                if (window.top && window.top !== window) {
+                    window.top.location.href = 'login.html';
+                } else {
+                    window.location.href = 'login.html';
+                }
                 return;
             }
 
             const ev = eventsData.find(e => String(e.id) === String(eventId));
             if (!ev) return;
 
-            const userEmail = currentUser ? currentUser.email : (localStorage.getItem('verba_user_email') || '');
-            const userUid = currentUser ? currentUser.uid : '';
-            const userName = (currentUser && currentUser.displayName) || localStorage.getItem('verba_user_name') || userEmail;
+            const userUid = currentUser.uid;
+            const userEmail = currentUser.email || localStorage.getItem('verba_user_email') || '';
+
+            // Ensure we resolve the person's real full name
+            let finalName = currentUserName || currentUser.displayName || localStorage.getItem('verba_user_name') || '';
+            if (!finalName && typeof db !== 'undefined' && db && userUid) {
+                try {
+                    const uDoc = await db.collection('users').doc(userUid).get();
+                    if (uDoc.exists) {
+                        const ud = uDoc.data();
+                        finalName = ud.displayName || ud.fullName || ((ud.firstName || ud.lastName) ? `${ud.firstName || ''} ${ud.lastName || ''}`.trim() : '');
+                    }
+                } catch (e) {}
+            }
+            if (!finalName) {
+                finalName = userEmail ? userEmail.split('@')[0] : 'Member';
+            }
 
             const newReg = {
                 id: ev.id,
@@ -489,8 +529,10 @@
                 location: ev.location,
                 serviceHours: ev.serviceHours,
                 userEmail: userEmail,
-                userName: userName,
+                userName: finalName,
+                displayName: finalName,
                 userId: userUid,
+                uid: userUid,
                 status: 'Hold',
                 registeredAt: new Date().toISOString()
             };
@@ -682,13 +724,23 @@
                         
                         const userReg = getUserRegistration(event.id);
 
-                        if (!isUserLoggedIn()) {
+                        if (!authResolved) {
+                            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Account...';
+                            btn.style.backgroundColor = '#718096';
+                            btn.style.cursor = 'wait';
+                            btn.onclick = (e) => e.preventDefault();
+                        } else if (!isUserLoggedIn()) {
                             btn.innerHTML = `<i class="fas fa-lock"></i> LOG IN TO REGISTER (${escapeHtml(event.serviceHours)} HOURS)`;
-                            btn.style.backgroundColor = '#d97706';
+                            btn.style.backgroundColor = '#4a5568';
+                            btn.style.cursor = 'pointer';
                             btn.onclick = (e) => {
                                 e.preventDefault();
-                                alert('You must be logged into your Verba Vitae account to register for events. Redirecting to login...');
-                                window.location.href = 'login.html';
+                                alert('You must be logged into your Verba Vitae account to sign up for events.');
+                                if (window.top && window.top !== window) {
+                                    window.top.location.href = 'login.html';
+                                } else {
+                                    window.location.href = 'login.html';
+                                }
                             };
                         } else if (userReg) {
                             const regStatus = (userReg.status || 'Hold').toLowerCase();

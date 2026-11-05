@@ -2699,6 +2699,13 @@
             const modal = document.getElementById('attendeesModal');
             const list = document.getElementById('attendeesModalList');
             
+            // Ensure members cache is loaded to resolve user names
+            if (db && (!allMembersCache || allMembersCache.length === 0)) {
+                try {
+                    await loadMembers();
+                } catch (e) {}
+            }
+
             const allRegistrations = cachedAllEventRegistrations.length > 0 ? cachedAllEventRegistrations : await fetchAllEventRegistrations();
             const eventRegs = allRegistrations.filter(r => String(r.id) === String(eventId) || String(r.eventId) === String(eventId) || r.title === eventTitle);
 
@@ -2724,8 +2731,8 @@
                 eventRegs.forEach((r, idx) => {
                     const div = document.createElement('div');
                     div.className = 'member-item';
-                    div.style.padding = '12px 14px';
-                    div.style.marginBottom = '8px';
+                    div.style.padding = '12px 16px';
+                    div.style.marginBottom = '10px';
                     div.style.borderRadius = '8px';
                     const isHold = (r.status || '').toLowerCase() === 'hold';
                     const isApproved = (r.status || 'Approved') === 'Approved';
@@ -2733,11 +2740,25 @@
                     div.style.borderLeft = isHold ? '4px solid #d97706' : '4px solid #38a169';
                     div.style.background = isHold ? '#fffbeb' : '#ffffff';
 
+                    // Resolve the attendee's real name from profile cache or registration
+                    let attendeeName = r.userName || r.displayName || '';
+                    if (!attendeeName || attendeeName.includes('@') || attendeeName === 'Member') {
+                        const matchedMember = (allMembersCache || []).find(m => (r.userId && m.id === r.userId) || (r.userEmail && m.email && m.email.toLowerCase() === (r.userEmail || '').toLowerCase()));
+                        if (matchedMember && matchedMember.displayName && matchedMember.displayName !== 'Member') {
+                            attendeeName = matchedMember.displayName;
+                        }
+                    }
+                    if (!attendeeName || attendeeName.includes('@')) {
+                        attendeeName = r.userEmail ? r.userEmail.split('@')[0] : ('Member #' + (idx + 1));
+                    }
+
                     const dateDisplay = r.registeredAt ? new Date(r.registeredAt).toLocaleDateString() + ' ' + new Date(r.registeredAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : 'Registered Member';
                     const safeEvId = escapeJsSingleQuote(eventId);
                     const safeUserId = escapeJsSingleQuote(r.userId || r.uid || '');
                     const safeEmail = escapeJsSingleQuote(r.userEmail || '');
                     const safeTitle = escapeJsSingleQuote(eventTitle || '');
+                    const safeAttendeeName = escapeJsSingleQuote(attendeeName);
+                    const shortName = attendeeName.split(' ')[0] || attendeeName;
 
                     const statusBadge = isHold
                         ? `<span style="background:#fef3c7; color:#92400e; padding:3px 8px; border-radius:10px; font-size:0.75rem; font-weight:700; border:1px solid #fcd34d;"><i class="fas fa-hourglass-half"></i> ON HOLD</span>`
@@ -2746,38 +2767,45 @@
                     let actionsHtml = '';
                     if (isHold) {
                         actionsHtml = `
-                            <div style="display:flex; gap:6px; align-items:center;">
-                                <button class="admin-btn" style="padding:5px 12px; font-size:0.78rem; background:#28a745;" onclick="updateEventAttendeeStatus('${safeEvId}', '${safeUserId}', '${safeEmail}', 'Approved', '${safeTitle}')" title="Accept and confirm participant">
-                                    <i class="fas fa-check"></i> Accept / Approve
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <button class="admin-btn" style="padding:6px 14px; font-size:0.8rem; background:#28a745; font-weight:600;" onclick="updateEventAttendeeStatus('${safeEvId}', '${safeUserId}', '${safeEmail}', 'Approved', '${safeTitle}', '${safeAttendeeName}')" title="Accept ${escapeAdminHtml(attendeeName)} for this event">
+                                    <i class="fas fa-check"></i> Accept ${escapeAdminHtml(shortName)}
                                 </button>
-                                <button class="btn-expel" style="padding:5px 10px; font-size:0.78rem;" onclick="removeEventAttendee('${safeEvId}', '${safeUserId}', '${safeEmail}', '${safeTitle}')" title="Reject registration">
-                                    <i class="fas fa-times"></i> Reject
+                                <button class="btn-expel" style="padding:6px 14px; font-size:0.8rem; font-weight:600;" onclick="removeEventAttendee('${safeEvId}', '${safeUserId}', '${safeEmail}', '${safeTitle}', '${safeAttendeeName}')" title="Deny / reject registration for ${escapeAdminHtml(attendeeName)}">
+                                    <i class="fas fa-times"></i> Deny ${escapeAdminHtml(shortName)}
                                 </button>
                             </div>
                         `;
                     } else {
                         actionsHtml = `
-                            <div style="display:flex; gap:6px; align-items:center;">
-                                <button class="admin-btn" style="padding:5px 10px; font-size:0.78rem; background:#d97706;" onclick="updateEventAttendeeStatus('${safeEvId}', '${safeUserId}', '${safeEmail}', 'Hold', '${safeTitle}')" title="Place back on Hold">
-                                    <i class="fas fa-hourglass-half"></i> Hold
+                            <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                                <button class="admin-btn" style="padding:6px 12px; font-size:0.78rem; background:#d97706;" onclick="updateEventAttendeeStatus('${safeEvId}', '${safeUserId}', '${safeEmail}', 'Hold', '${safeTitle}', '${safeAttendeeName}')" title="Place ${escapeAdminHtml(attendeeName)} back on Hold">
+                                    <i class="fas fa-hourglass-half"></i> Move to Hold
                                 </button>
-                                <button class="btn-expel" style="padding:5px 10px; font-size:0.78rem;" onclick="removeEventAttendee('${safeEvId}', '${safeUserId}', '${safeEmail}', '${safeTitle}')" title="Remove attendee">
-                                    <i class="fas fa-trash-alt"></i> Remove
+                                <button class="btn-expel" style="padding:6px 12px; font-size:0.78rem;" onclick="removeEventAttendee('${safeEvId}', '${safeUserId}', '${safeEmail}', '${safeTitle}', '${safeAttendeeName}')" title="Remove attendee">
+                                    <i class="fas fa-trash-alt"></i> Remove ${escapeAdminHtml(shortName)}
                                 </button>
                             </div>
                         `;
                     }
 
                     div.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:10px;">
-                            <div class="member-info" style="min-width:200px;">
-                                <div style="display:flex; align-items:center; gap:8px;">
-                                    <strong>${escapeAdminHtml(r.userName || r.userEmail || ('Member #' + (idx + 1)))}</strong>
-                                    ${statusBadge}
+                        <div style="display:flex; justify-content:space-between; align-items:center; width:100%; flex-wrap:wrap; gap:12px;">
+                            <div class="member-info" style="min-width:240px;">
+                                <div style="display:flex; align-items:center; gap:10px;">
+                                    <i class="fas fa-user-circle" style="color:#3182ce; font-size:1.4rem;"></i>
+                                    <div>
+                                        <div style="display:flex; align-items:center; gap:8px;">
+                                            <strong style="font-size:1.02rem; color:#1a202c;">${escapeAdminHtml(attendeeName)}</strong>
+                                            ${statusBadge}
+                                        </div>
+                                        <span style="font-size:0.82rem; color:var(--admin-text-muted); display:block; margin-top:2px;">
+                                            <i class="far fa-envelope"></i> ${escapeAdminHtml(r.userEmail || 'registered student')}
+                                        </span>
+                                    </div>
                                 </div>
-                                <span style="font-size:0.82rem; color:var(--admin-text-muted);">${escapeAdminHtml(r.userEmail || 'registered student')}</span>
                             </div>
-                            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                            <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
                                 <span style="font-size:0.78rem; color:var(--admin-text-muted);"><i class="far fa-clock"></i> ${escapeAdminHtml(dateDisplay)}</span>
                                 ${actionsHtml}
                             </div>
@@ -2789,16 +2817,18 @@
             modal.style.display = 'flex';
         };
 
-        window.updateEventAttendeeStatus = async function(eventId, userId, userEmail, newStatus, eventTitle) {
+        window.updateEventAttendeeStatus = async function(eventId, userId, userEmail, newStatus, eventTitle, personName) {
             try {
                 const adminUser = auth ? auth.currentUser : null;
                 const adminEmail = adminUser?.email || 'admin';
+                const nameLabel = personName || 'Attendee';
 
                 // Update in memory
                 cachedAllEventRegistrations.forEach(r => {
                     if ((String(r.id) === String(eventId) || String(r.eventId) === String(eventId)) && 
                         ((userId && (r.userId === userId || r.uid === userId)) || (userEmail && r.userEmail === userEmail))) {
                         r.status = newStatus;
+                        if (personName && !r.userName) r.userName = personName;
                     }
                 });
 
@@ -2808,6 +2838,7 @@
                     if ((String(r.id) === String(eventId) || String(r.eventId) === String(eventId)) && 
                         ((userId && (r.userId === userId || r.uid === userId)) || (userEmail && r.userEmail === userEmail))) {
                         r.status = newStatus;
+                        if (personName && !r.userName) r.userName = personName;
                     }
                 });
                 localStorage.setItem('verba_registered_events', JSON.stringify(localRegs));
@@ -2819,6 +2850,9 @@
                         statusUpdatedAt: firebase.firestore.FieldValue.serverTimestamp(),
                         statusUpdatedBy: adminEmail
                     };
+                    if (personName) {
+                        updatePayload.userName = personName;
+                    }
                     if (newStatus === 'Approved') {
                         updatePayload.approvedAt = firebase.firestore.FieldValue.serverTimestamp();
                         updatePayload.approvedBy = adminEmail;
@@ -2837,7 +2871,7 @@
                     }
                 }
 
-                showToast(`Attendee ${newStatus === 'Approved' ? 'accepted & approved' : 'placed on Hold'} successfully!`);
+                showToast(`${nameLabel} ${newStatus === 'Approved' ? 'accepted and approved' : 'placed on Hold'} successfully!`);
                 renderAdminEventsListUI();
                 viewEventAttendees(eventId, eventTitle);
             } catch (err) {
@@ -2846,8 +2880,9 @@
             }
         };
 
-        window.removeEventAttendee = async function(eventId, userId, userEmail, eventTitle) {
-            if (!confirm("Are you sure you want to remove this registration?")) return;
+        window.removeEventAttendee = async function(eventId, userId, userEmail, eventTitle, personName) {
+            const nameLabel = personName || 'this registration';
+            if (!confirm(`Are you sure you want to deny / reject the registration for "${nameLabel}"?`)) return;
             try {
                 cachedAllEventRegistrations = cachedAllEventRegistrations.filter(r => 
                     !((String(r.id) === String(eventId) || String(r.eventId) === String(eventId)) && 
@@ -2868,7 +2903,7 @@
                     ]);
                 }
 
-                showToast("Registration removed.");
+                showToast(`Registration for ${nameLabel} denied.`);
                 renderAdminEventsListUI();
                 viewEventAttendees(eventId, eventTitle);
             } catch (err) {
