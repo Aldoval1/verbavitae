@@ -20,6 +20,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="js/firebase-init.js"></script>
+    <script src="js/event-notifications.js"></script>
     <style>
         .embed-mode .main-header,
         .embed-mode .mobile-header-bar,
@@ -225,6 +226,9 @@
                 currentUserName = '';
 
                 if (user) {
+                    if (window.VerbaEventNotifications && typeof db !== 'undefined' && db && user.uid) {
+                        window.VerbaEventNotifications.startWatcher(db, user.uid);
+                    }
                     localStorage.setItem('verba_logged_in', 'true');
                     const loginBtns = document.querySelectorAll('.btn-login, .mobile-nav a[href="login.html"]');
                     loginBtns.forEach(b => {
@@ -564,8 +568,14 @@
                 }
             }
 
-            alert(`Registration request submitted for "${ev.title}"!\n\nYour registration is currently on HOLD. An administrator must verify and approve your registration before your spot is confirmed.`);
-            fetchEvents();
+            if (window.VerbaEventNotifications && typeof window.VerbaEventNotifications.promptPermission === 'function') {
+                window.VerbaEventNotifications.promptPermission(ev.title, () => {
+                    fetchEvents();
+                });
+            } else {
+                alert(`Registration request submitted for "${ev.title}"!\n\nYour registration is currently on HOLD. An administrator must verify and approve your registration before your spot is confirmed.`);
+                fetchEvents();
+            }
         }
 
         async function unregisterFromEvent(eventId) {
